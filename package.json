@@ -1,0 +1,31 @@
+{
+  "name": "archastro-openapi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenAPI tooling for ArchAstro: SDK generator + channel-protocol contract harness",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/archastro/archastro-openapi"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:watch": "npm run test:watch --workspaces --if-present",
+    "lint": "eslint packages/*/src packages/*/__tests__",
+    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.12.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
