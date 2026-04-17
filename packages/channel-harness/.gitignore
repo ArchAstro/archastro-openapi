@@ -1,0 +1,6 @@
+dist/
+node_modules/
+
+# Regenerated on every `vitest run` via __tests__/setup/regenerate-sample-sdk.ts
+__tests__/generated-sdk/
+__tests__/__generated__/
