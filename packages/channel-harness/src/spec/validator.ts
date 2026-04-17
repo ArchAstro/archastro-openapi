@@ -78,13 +78,12 @@ export function buildValidator(loaded: LoadedSpec): ChannelValidator {
 
   // Register every component schema under its canonical $ref so that
   // inline channel schemas using { "$ref": "#/components/schemas/X" } resolve.
-  // Pass `_validateSchema: false` so Ajv accepts the raw OpenAPI schemas
-  // verbatim — some real specs have quirks (e.g. `description: false`)
-  // that aren't strictly JSON Schema valid but are harmless to our use.
+  // Schema-of-schema validation is already disabled by the constructor's
+  // `validateSchema: false`, so no per-call opt-out is needed.
   for (const [name, schema] of Object.entries(loaded.components)) {
     const id = `#/components/schemas/${name}`;
     if (!ajv.getSchema(id)) {
-      ajv.addSchema({ ...schema, $id: id }, undefined, undefined, false);
+      ajv.addSchema({ ...schema, $id: id });
     }
   }
 

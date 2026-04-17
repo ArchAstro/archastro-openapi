@@ -31,14 +31,26 @@ function parseArgs(argv: string[]): CliArgs {
   let controlPort: number | undefined;
   let host: string | undefined;
 
+  const takeValue = (flag: string, i: number): string => {
+    const v = args[i];
+    if (v === undefined) throw new Error(`${flag} requires a value`);
+    return v;
+  };
+  const takeNumber = (flag: string, i: number): number => {
+    const raw = takeValue(flag, i);
+    const n = Number(raw);
+    if (!Number.isFinite(n)) throw new Error(`${flag} requires a numeric value, got '${raw}'`);
+    return n;
+  };
+
   for (let i = 0; i < args.length; i++) {
     const a = args[i]!;
     if (a === "--ws-port") {
-      wsPort = Number(args[++i]);
+      wsPort = takeNumber(a, ++i);
     } else if (a === "--control-port") {
-      controlPort = Number(args[++i]);
+      controlPort = takeNumber(a, ++i);
     } else if (a === "--host") {
-      host = args[++i];
+      host = takeValue(a, ++i);
     } else if (a === "--help" || a === "-h") {
       printHelp();
       process.exit(0);
