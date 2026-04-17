@@ -183,6 +183,8 @@ function generatePackageInit(spec: SdkSpec): string {
     lines.push("from .auth import AuthClient, AuthTokens  # noqa: F401");
   }
   lines.push("");
-  lines.push('__version__ = _pkg_version("archastro-platform-sdk")');
+  // Use the configured package name so the importlib.metadata lookup
+  // matches whatever distro the SDK is published under.
+  lines.push(`__version__ = _pkg_version(${JSON.stringify(spec.name)})`);
   return lines.join("\n") + "\n";
 }
