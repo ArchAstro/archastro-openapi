@@ -103,8 +103,11 @@ function buildChannelContract(
   channelDef: ChannelDef,
   raw: RawXChannel | undefined
 ): ChannelContract {
-  const joins: JoinContract[] = channelDef.joins.map((joinDef, i) => {
-    const rawJoin = raw?.joins?.[i];
+  const joins: JoinContract[] = channelDef.joins.map((joinDef) => {
+    // Match by pattern, not positional index — mirrors how messages/pushes
+    // below correlate by `event`. Keeps us safe against any future reorder
+    // in parseOpenApiSpec.
+    const rawJoin = raw?.joins?.find((rj) => rj.pattern === joinDef.topicPattern);
     const { regex, vars } = topicPatternToRegex(joinDef.topicPattern);
     return {
       pattern: joinDef.topicPattern,
