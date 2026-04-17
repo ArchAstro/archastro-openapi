@@ -479,6 +479,10 @@ describe("Full Python generation", () => {
     expect(init).toContain("from .client import PlatformClient");
     expect(init).toContain("from .v1 import V1");
     expect(init).toContain("_pkg_version");
+    // The distro-name passed to importlib.metadata must match the
+    // configured SDK name so `__version__` resolves for whatever package
+    // the SDK is published under.
+    expect(init).toContain(`_pkg_version("${ast.name}")`);
   });
 
   it("versioned resource files use correct import depth", () => {
