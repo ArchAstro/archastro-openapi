@@ -549,8 +549,8 @@
             "type": "string"
           },
           "preset_config": {
-            "description": "Preset configuration",
-            "type": "object"
+            "$ref": "#/components/schemas/PresetConfig",
+            "description": "Preset configuration"
           },
           "preset_name": {
             "description": "Preset name",
@@ -567,6 +567,13 @@
           "status": {
             "description": "Routine status",
             "type": "string"
+          },
+          "steps": {
+            "description": "Ordered list of chain steps (present when handler_type is \"chain\"). Each step is a plain map with handler_type, optional body fields (preset_name / preset_config / script / config), and step-local plumbing (name, inputs, output_key, on_error).",
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
           },
           "trigger_context": {
             "description": "Trigger context",
@@ -1421,8 +1428,16 @@
             "description": "Organization",
             "type": "string"
           },
+          "parent": {
+            "description": "Parent config ID (bundle children only)",
+            "type": "string"
+          },
           "raw_content": {
             "description": "Raw file content (system configs only)",
+            "type": "string"
+          },
+          "relative_path": {
+            "description": "Path within parent bundle (bundle children only)",
             "type": "string"
           },
           "sandbox": {
@@ -1989,6 +2004,16 @@
         ],
         "type": "object"
       },
+      "LLMConfig": {
+        "description": "API schema for per-routine LLM invocation settings.\n\nMirrors `ArchAstro.Agents.Routines.LLMConfig`. When `model` is present,\nit overrides the agent's `default_model` for the routine (or step).\n",
+        "properties": {
+          "model": {
+            "description": "Model identifier. When set, overrides the agent's default_model.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "MediaVariant": {
         "description": "API schema for a media variant.",
         "properties": {
@@ -2249,19 +2274,51 @@
         ],
         "type": "object"
       },
-      "RoutinePreset": {
-        "description": "A routine preset with its metadata.",
+      "PresetConfig": {
+        "description": "API schema for preset handler configuration.\n\nMirrors `ArchAstro.Agents.Routines.PresetConfig`. Used wherever a request\nor response carries a preset config — routine-level and chain-step-level.\n\nServer-side validation (length/format rules on `instructions`, enum checks\non `session_mode`/`session_scope`, model lookup against\n`ChatCompletion.models/0`) is authoritative. This schema defines the\nrequest shape and typed response shape so OpenAPI consumers see real\ntypes instead of an opaque object.\n",
         "properties": {
-          "config": {
-            "description": "Default configuration",
-            "type": "object"
+          "instructions": {
+            "description": "Custom task or behavior instructions for the preset (max 10,000 chars).",
+            "type": "string"
+          },
+          "llm": {
+            "$ref": "#/components/schemas/LLMConfig",
+            "description": "LLM invocation settings (e.g. a `model` override for this routine/step)."
+          },
+          "session_mode": {
+            "description": "Session mode: `stateless` (default, new session per trigger) or `session` (find-or-create a persistent session scoped by `session_scope`).",
+            "type": "string"
+          },
+          "session_scope": {
+            "description": "When `session_mode` is `session`, controls session scoping: `per_user` (default), `per_key`, `per_org`, or `global`.",
+            "type": "string"
+          },
+          "structured_message_template_ids": {
+            "description": "Config IDs of AgentMessageSchema templates that constrain the agent's responses to predefined structured formats.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "RoutinePreset": {
+        "description": "A routine preset entry in the preset listing endpoint. Describes *what*\na preset is, not a per-routine configuration — that's `PresetConfig`.\n",
+        "properties": {
+          "applicable_events": {
+            "description": "Event types this preset accepts. `[\"*\"]` means any event. Other event types are rejected at routine validation time.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "chainable": {
+            "description": "Whether this preset may appear as a step inside a `:chain` routine. Presets with session or async execution models are not chainable.",
+            "type": "boolean"
           },
           "description": {
             "description": "Preset description",
-            "type": "string"
-          },
-          "event_type": {
-            "description": "Event type",
             "type": "string"
           },
           "label": {
@@ -2269,12 +2326,26 @@
             "type": "string"
           },
           "name": {
-            "description": "Preset name",
+            "description": "Preset name (e.g. do_task)",
             "type": "string"
+          },
+          "sessionable": {
+            "description": "Whether this preset maintains a persistent chatroom session across turns (e.g. `participate`). Sessionable presets don't expose instructions or session-mode fields at the routine level.",
+            "type": "boolean"
+          },
+          "unique": {
+            "description": "Whether only one routine with this preset may exist per agent. Enforced at the AgentRoutine unique-index layer.",
+            "type": "boolean"
           }
         },
         "required": [
-          "name"
+          "name",
+          "label",
+          "description",
+          "applicable_events",
+          "sessionable",
+          "unique",
+          "chainable"
         ],
         "type": "object"
       },
@@ -2857,6 +2928,452 @@
   },
   "openapi": "3.0.0",
   "paths": {
+    "/api/v1/activity_feed": {
+      "get": {
+        "operationId": "get_api_v1_activity_feed",
+        "parameters": [
+          {
+            "description": "Filter by kind (routine_run, automation_run, generic)",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Filter by level (debug, info, warn, error, audit)",
+            "in": "query",
+            "name": "level",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Filter by agent IDs",
+            "in": "query",
+            "name": "agent",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Filter by thread IDs",
+            "in": "query",
+            "name": "thread",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Filter by organization IDs",
+            "in": "query",
+            "name": "org",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Filter by correlation group",
+            "in": "query",
+            "name": "correlation_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of results (default 50, max 100)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Cursor for fetching older entries",
+            "in": "query",
+            "name": "before_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Cursor for fetching newer entries",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Cursor-paginated list of activity feed entries",
+                  "properties": {
+                    "after_cursor": {
+                      "description": "Cursor for fetching newer entries",
+                      "type": "string"
+                    },
+                    "before_cursor": {
+                      "description": "Cursor for fetching older entries",
+                      "type": "string"
+                    },
+                    "data": {
+                      "description": "The entries",
+                      "items": {
+                        "description": "API schema for an activity feed entry.",
+                        "properties": {
+                          "agent": {
+                            "description": "Agent (public ID or expanded object when loaded)",
+                            "oneOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "description": "API schema for an agent.",
+                                "properties": {
+                                  "acl": {
+                                    "description": "Access control list. Contains grants array with principal_type, principal, and actions. Null when no ACL restrictions are applied.",
+                                    "properties": {
+                                      "add": {
+                                        "description": "Patch mode: grants to add or merge into existing",
+                                        "items": {
+                                          "description": "API schema for a single ACL grant entry.",
+                                          "properties": {
+                                            "actions": {
+                                              "description": "List of allowed actions (e.g. read, write)",
+                                              "items": {
+                                                "type": "string"
+                                              },
+                                              "type": "array"
+                                            },
+                                            "principal": {
+                                              "description": "Principal identifier (UUID for user/team/org/agent_user, role name for org_role, omit for everyone)",
+                                              "type": "string"
+                                            },
+                                            "principal_type": {
+                                              "description": "Principal type: user, team, org, org_role, agent, or everyone",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "principal_type",
+                                            "actions"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "grants": {
+                                        "description": "Replace mode: full list of grants (replaces all existing). Use [] to clear.",
+                                        "items": {
+                                          "description": "API schema for a single ACL grant entry.",
+                                          "properties": {
+                                            "actions": {
+                                              "description": "List of allowed actions (e.g. read, write)",
+                                              "items": {
+                                                "type": "string"
+                                              },
+                                              "type": "array"
+                                            },
+                                            "principal": {
+                                              "description": "Principal identifier (UUID for user/team/org/agent_user, role name for org_role, omit for everyone)",
+                                              "type": "string"
+                                            },
+                                            "principal_type": {
+                                              "description": "Principal type: user, team, org, org_role, agent, or everyone",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "principal_type",
+                                            "actions"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "remove": {
+                                        "description": "Patch mode: principals to remove from existing",
+                                        "items": {
+                                          "description": "API schema for identifying a principal to remove from an ACL.",
+                                          "properties": {
+                                            "principal": {
+                                              "description": "Principal identifier to remove (omit for everyone)",
+                                              "type": "string"
+                                            },
+                                            "principal_type": {
+                                              "description": "Principal type to remove",
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "principal_type"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "type": "array"
+                                      }
+                                    },
+                                    "type": "object"
+                                  },
+                                  "app": {
+                                    "description": "Application",
+                                    "type": "string"
+                                  },
+                                  "created_at": {
+                                    "description": "Creation timestamp",
+                                    "format": "date-time",
+                                    "type": "string"
+                                  },
+                                  "default_model": {
+                                    "description": "Default AI model",
+                                    "type": "string"
+                                  },
+                                  "email": {
+                                    "description": "Agent email",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "Agent ID (agi_...)",
+                                    "type": "string"
+                                  },
+                                  "identity": {
+                                    "description": "Identity prompt",
+                                    "type": "string"
+                                  },
+                                  "lookup_key": {
+                                    "description": "Unique lookup key",
+                                    "type": "string"
+                                  },
+                                  "metadata": {
+                                    "description": "Arbitrary metadata",
+                                    "type": "object"
+                                  },
+                                  "name": {
+                                    "description": "Agent name",
+                                    "type": "string"
+                                  },
+                                  "org": {
+                                    "description": "Organization",
+                                    "type": "string"
+                                  },
+                                  "phone_number": {
+                                    "description": "Agent phone number",
+                                    "type": "string"
+                                  },
+                                  "sandbox": {
+                                    "description": "Sandbox",
+                                    "type": "string"
+                                  },
+                                  "team": {
+                                    "description": "Owning team",
+                                    "type": "string"
+                                  },
+                                  "updated_at": {
+                                    "description": "Last update timestamp",
+                                    "format": "date-time",
+                                    "type": "string"
+                                  },
+                                  "user": {
+                                    "description": "Owning user",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "app": {
+                            "description": "Application",
+                            "type": "string"
+                          },
+                          "attachments": {
+                            "description": "Entry attachments",
+                            "items": {
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "automation_run": {
+                            "description": "Automation run",
+                            "type": "string"
+                          },
+                          "content": {
+                            "description": "Longer explanation (markdown)",
+                            "type": "string"
+                          },
+                          "correlation_id": {
+                            "description": "Correlation ID for grouped entries",
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "description": "Creation timestamp",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "Entry ID (afe_...)",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "Entry kind",
+                            "type": "string"
+                          },
+                          "level": {
+                            "description": "Severity level",
+                            "type": "string"
+                          },
+                          "metadata": {
+                            "description": "Entry metadata",
+                            "type": "object"
+                          },
+                          "org": {
+                            "description": "Organization",
+                            "type": "string"
+                          },
+                          "routine_run": {
+                            "description": "Routine run",
+                            "type": "string"
+                          },
+                          "sandbox": {
+                            "description": "Sandbox identifier",
+                            "type": "string"
+                          },
+                          "session_record": {
+                            "description": "Agent session",
+                            "type": "string"
+                          },
+                          "team": {
+                            "description": "Team",
+                            "type": "string"
+                          },
+                          "thread": {
+                            "description": "Thread",
+                            "type": "string"
+                          },
+                          "title": {
+                            "description": "One-line summary",
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "description": "Last update timestamp",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "user": {
+                            "description": "User (public ID or expanded object when loaded)",
+                            "oneOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "description": "API schema for a user.",
+                                "properties": {
+                                  "alias": {
+                                    "description": "User alias/handle",
+                                    "type": "string"
+                                  },
+                                  "email": {
+                                    "description": "User email address",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "User ID",
+                                    "type": "string"
+                                  },
+                                  "metadata": {
+                                    "description": "User metadata",
+                                    "type": "object"
+                                  },
+                                  "name": {
+                                    "description": "User display name",
+                                    "type": "string"
+                                  },
+                                  "org": {
+                                    "description": "Organization",
+                                    "type": "string"
+                                  },
+                                  "sandbox": {
+                                    "description": "Sandbox",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "description": "Whether more items exist beyond this page",
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid cursor"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "App-scoped token required. Use a token scoped to the target app."
+          }
+        },
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/agent_computers/{computer}": {
       "delete": {
         "operationId": "delete_api_v1_agent_computers__computer",
@@ -2953,17 +3470,12 @@
                     "description": "Shell command to execute",
                     "type": "string"
                   },
-                  "computer": {
-                    "description": "Computer ID",
-                    "type": "string"
-                  },
                   "dir": {
                     "description": "Working directory for the command",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "computer",
                   "command"
                 ],
                 "type": "object"
@@ -3016,25 +3528,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "computer": {
-                    "description": "Computer ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "computer"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -3187,25 +3680,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "installation": {
-                    "description": "Installation ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "installation"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -3294,10 +3768,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "installation": {
-                    "description": "Installation ID",
-                    "type": "string"
-                  },
                   "payload": {
                     "description": "Source payload",
                     "type": "object"
@@ -3308,7 +3778,6 @@
                   }
                 },
                 "required": [
-                  "installation",
                   "type",
                   "payload"
                 ],
@@ -3362,25 +3831,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "installation": {
-                    "description": "Installation ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "installation"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -3430,18 +3880,11 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "installation": {
-                    "description": "Installation ID",
-                    "type": "string"
-                  },
                   "reason": {
                     "description": "Optional suspension reason",
                     "type": "string"
                   }
                 },
-                "required": [
-                  "installation"
-                ],
                 "type": "object"
               }
             }
@@ -3789,7 +4232,7 @@
                     "type": "string"
                   },
                   "handler_type": {
-                    "description": "Handler type",
+                    "description": "Handler type: workflow_graph, script, preset, or chain",
                     "type": "string"
                   },
                   "lookup_key": {
@@ -3806,14 +4249,41 @@
                   },
                   "preset_config": {
                     "description": "Preset config",
+                    "properties": {
+                      "instructions": {
+                        "description": "Custom task or behavior instructions for the preset (max 10,000 chars).",
+                        "type": "string"
+                      },
+                      "llm": {
+                        "description": "LLM invocation settings (e.g. a `model` override for this routine/step).",
+                        "properties": {
+                          "model": {
+                            "description": "Model identifier. When set, overrides the agent's default_model.",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "session_mode": {
+                        "description": "Session mode: `stateless` (default, new session per trigger) or `session` (find-or-create a persistent session scoped by `session_scope`).",
+                        "type": "string"
+                      },
+                      "session_scope": {
+                        "description": "When `session_mode` is `session`, controls session scoping: `per_user` (default), `per_key`, `per_org`, or `global`.",
+                        "type": "string"
+                      },
+                      "structured_message_template_ids": {
+                        "description": "Config IDs of AgentMessageSchema templates that constrain the agent's responses to predefined structured formats.",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
                     "type": "object"
                   },
                   "preset_name": {
                     "description": "Preset name",
-                    "type": "string"
-                  },
-                  "routine": {
-                    "description": "Routine ID",
                     "type": "string"
                   },
                   "schedule": {
@@ -3824,14 +4294,91 @@
                     "description": "Script content",
                     "type": "string"
                   },
+                  "steps": {
+                    "description": "Linear sequence of steps (required when handler_type is \"chain\"; must be empty otherwise). See the Step schema for per-step fields. Replaces the step list entirely — send the full desired list, not a diff.",
+                    "items": {
+                      "description": "API schema for a single chain-routine step.\n\nMirrors the shape of `ArchAstro.Agents.Routines.Step` as seen by clients,\nwith one API-side normalization: clients send `config` (matching the\nroutine-level field name), and `cast/1` rewrites it to `config_id` so\ndownstream changeset code sees the canonical key.\n\nServer-side validation (handler-body mutual exclusion, `config_id`\nexistence + kind, unique step names within a chain) is authoritative\n— this schema only defines the *shape* of the request payload.\n",
+                      "properties": {
+                        "config": {
+                          "description": "Config ID (for handler_type: workflow_graph, or as an alternative to inline `script` when handler_type: script). Normalized to `config_id` internally.",
+                          "type": "string"
+                        },
+                        "handler_type": {
+                          "description": "Handler type for this step: preset, script, or workflow_graph",
+                          "type": "string"
+                        },
+                        "inputs": {
+                          "description": "Optional map binding prior step outputs to this step's inputs.",
+                          "type": "object"
+                        },
+                        "name": {
+                          "description": "Optional step label. Must be unique within the chain if set.",
+                          "type": "string"
+                        },
+                        "on_error": {
+                          "description": "Error policy: halt (default), continue, or retry.",
+                          "type": "string"
+                        },
+                        "output_key": {
+                          "description": "Optional name under which this step's result is addressable downstream. Defaults to `name`.",
+                          "type": "string"
+                        },
+                        "preset_config": {
+                          "description": "Preset configuration (same shape as the routine-level preset_config). May include `llm: {model}` to override the agent's default_model for this step.",
+                          "properties": {
+                            "instructions": {
+                              "description": "Custom task or behavior instructions for the preset (max 10,000 chars).",
+                              "type": "string"
+                            },
+                            "llm": {
+                              "description": "LLM invocation settings (e.g. a `model` override for this routine/step).",
+                              "properties": {
+                                "model": {
+                                  "description": "Model identifier. When set, overrides the agent's default_model.",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "session_mode": {
+                              "description": "Session mode: `stateless` (default, new session per trigger) or `session` (find-or-create a persistent session scoped by `session_scope`).",
+                              "type": "string"
+                            },
+                            "session_scope": {
+                              "description": "When `session_mode` is `session`, controls session scoping: `per_user` (default), `per_key`, `per_org`, or `global`.",
+                              "type": "string"
+                            },
+                            "structured_message_template_ids": {
+                              "description": "Config IDs of AgentMessageSchema templates that constrain the agent's responses to predefined structured formats.",
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "preset_name": {
+                          "description": "Preset name (for handler_type: preset)",
+                          "type": "string"
+                        },
+                        "script": {
+                          "description": "Inline script source (for handler_type: script)",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "handler_type"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
                   "trigger_context": {
                     "description": "Trigger context: chat_session or event",
                     "type": "string"
                   }
                 },
-                "required": [
-                  "routine"
-                ],
                 "type": "object"
               }
             }
@@ -3882,25 +4429,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "routine": {
-                    "description": "Routine ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "routine"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -3962,10 +4490,6 @@
                     "description": "Optional per-call metadata",
                     "type": "object"
                   },
-                  "routine": {
-                    "description": "Routine ID or lookup_key",
-                    "type": "string"
-                  },
                   "session_key": {
                     "description": "Session key (required when session_scope is per_key)",
                     "type": "string"
@@ -3976,7 +4500,6 @@
                   }
                 },
                 "required": [
-                  "routine",
                   "message"
                 ],
                 "type": "object"
@@ -4029,25 +4552,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "routine": {
-                    "description": "Routine ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "routine"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -4313,6 +4817,9 @@
           "403": {
             "description": "Forbidden - app scope required"
           },
+          "404": {
+            "description": "Agent not found"
+          },
           "422": {
             "description": "Validation failed"
           }
@@ -4413,18 +4920,11 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent_session": {
-                    "description": "Agent session ID",
-                    "type": "string"
-                  },
                   "metadata": {
                     "description": "Arbitrary metadata",
                     "type": "object"
                   }
                 },
-                "required": [
-                  "agent_session"
-                ],
                 "type": "object"
               }
             }
@@ -4475,25 +4975,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "agent_session": {
-                    "description": "Agent session ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "agent_session"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -4540,10 +5021,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent_session": {
-                    "description": "Agent session ID",
-                    "type": "string"
-                  },
                   "content": {
                     "description": "Message content",
                     "type": "string"
@@ -4558,7 +5035,6 @@
                   }
                 },
                 "required": [
-                  "agent_session",
                   "content"
                 ],
                 "type": "object"
@@ -4630,6 +5106,9 @@
           },
           "403": {
             "description": "Forbidden - app scope required"
+          },
+          "404": {
+            "description": "Agent not found"
           }
         },
         "x-auth": [
@@ -4792,10 +5271,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent_skill": {
-                    "description": "Agent skill ID",
-                    "type": "string"
-                  },
                   "instruction": {
                     "description": "Instruction override",
                     "type": "string"
@@ -4805,9 +5280,6 @@
                     "type": "object"
                   }
                 },
-                "required": [
-                  "agent_skill"
-                ],
                 "type": "object"
               }
             }
@@ -4858,25 +5330,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "agent_skill": {
-                    "description": "Agent skill ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "agent_skill"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -4918,25 +5371,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "agent_skill": {
-                    "description": "Agent skill ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "agent_skill"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -5003,6 +5437,9 @@
           },
           "403": {
             "description": "Forbidden - app scope required"
+          },
+          "404": {
+            "description": "Agent not found"
           }
         },
         "x-auth": [
@@ -5171,15 +5608,8 @@
                   "parameters_config": {
                     "description": "Config ID for a reusable JsonSchema",
                     "type": "string"
-                  },
-                  "tool": {
-                    "description": "Tool ID",
-                    "type": "string"
                   }
                 },
-                "required": [
-                  "tool"
-                ],
                 "type": "object"
               }
             }
@@ -5230,25 +5660,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "tool": {
-                    "description": "Tool ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "tool"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -5293,25 +5704,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "tool": {
-                    "description": "Tool ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "tool"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -5625,7 +6017,7 @@
             "description": "Unauthorized"
           },
           "403": {
-            "description": "Forbidden - app scope required"
+            "description": "App-scoped token required. Use a token scoped to the target app.; Permission denied. The connected account may not have the required permissions. Try reconnecting your account."
           },
           "404": {
             "description": "Agent not found"
@@ -5778,10 +6170,6 @@
                     },
                     "type": "object"
                   },
-                  "agent": {
-                    "description": "Agent ID",
-                    "type": "string"
-                  },
                   "email": {
                     "description": "Agent email",
                     "type": "string"
@@ -5846,9 +6234,6 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "agent"
-                ],
                 "type": "object"
               }
             }
@@ -5943,10 +6328,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent": {
-                    "description": "Agent ID",
-                    "type": "string"
-                  },
                   "config": {
                     "description": "Computer configuration",
                     "type": "object"
@@ -5969,7 +6350,6 @@
                   }
                 },
                 "required": [
-                  "agent",
                   "name"
                 ],
                 "type": "object"
@@ -6066,10 +6446,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent": {
-                    "description": "Agent ID",
-                    "type": "string"
-                  },
                   "config": {
                     "description": "Optional configuration",
                     "type": "object"
@@ -6110,7 +6486,6 @@
                   }
                 },
                 "required": [
-                  "agent",
                   "kind"
                 ],
                 "type": "object"
@@ -6291,10 +6666,6 @@
                     },
                     "type": "object"
                   },
-                  "agent": {
-                    "description": "Agent ID",
-                    "type": "string"
-                  },
                   "config": {
                     "description": "Config ID (for workflow_graph handler)",
                     "type": "string"
@@ -6312,7 +6683,7 @@
                     "type": "string"
                   },
                   "handler_type": {
-                    "description": "Handler type: workflow_graph, script, or preset",
+                    "description": "Handler type: workflow_graph, script, preset, or chain",
                     "type": "string"
                   },
                   "lookup_key": {
@@ -6329,6 +6700,37 @@
                   },
                   "preset_config": {
                     "description": "Preset config",
+                    "properties": {
+                      "instructions": {
+                        "description": "Custom task or behavior instructions for the preset (max 10,000 chars).",
+                        "type": "string"
+                      },
+                      "llm": {
+                        "description": "LLM invocation settings (e.g. a `model` override for this routine/step).",
+                        "properties": {
+                          "model": {
+                            "description": "Model identifier. When set, overrides the agent's default_model.",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "session_mode": {
+                        "description": "Session mode: `stateless` (default, new session per trigger) or `session` (find-or-create a persistent session scoped by `session_scope`).",
+                        "type": "string"
+                      },
+                      "session_scope": {
+                        "description": "When `session_mode` is `session`, controls session scoping: `per_user` (default), `per_key`, `per_org`, or `global`.",
+                        "type": "string"
+                      },
+                      "structured_message_template_ids": {
+                        "description": "Config IDs of AgentMessageSchema templates that constrain the agent's responses to predefined structured formats.",
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
                     "type": "object"
                   },
                   "preset_name": {
@@ -6347,13 +6749,92 @@
                     "description": "Initial status: draft or active (default: draft)",
                     "type": "string"
                   },
+                  "steps": {
+                    "description": "Linear sequence of steps (required when handler_type is \"chain\"; must be empty otherwise). See the Step schema for the per-step fields. Exactly one handler body field (preset_name, script, or config) must be populated per step, matching that step's handler_type.",
+                    "items": {
+                      "description": "API schema for a single chain-routine step.\n\nMirrors the shape of `ArchAstro.Agents.Routines.Step` as seen by clients,\nwith one API-side normalization: clients send `config` (matching the\nroutine-level field name), and `cast/1` rewrites it to `config_id` so\ndownstream changeset code sees the canonical key.\n\nServer-side validation (handler-body mutual exclusion, `config_id`\nexistence + kind, unique step names within a chain) is authoritative\n— this schema only defines the *shape* of the request payload.\n",
+                      "properties": {
+                        "config": {
+                          "description": "Config ID (for handler_type: workflow_graph, or as an alternative to inline `script` when handler_type: script). Normalized to `config_id` internally.",
+                          "type": "string"
+                        },
+                        "handler_type": {
+                          "description": "Handler type for this step: preset, script, or workflow_graph",
+                          "type": "string"
+                        },
+                        "inputs": {
+                          "description": "Optional map binding prior step outputs to this step's inputs.",
+                          "type": "object"
+                        },
+                        "name": {
+                          "description": "Optional step label. Must be unique within the chain if set.",
+                          "type": "string"
+                        },
+                        "on_error": {
+                          "description": "Error policy: halt (default), continue, or retry.",
+                          "type": "string"
+                        },
+                        "output_key": {
+                          "description": "Optional name under which this step's result is addressable downstream. Defaults to `name`.",
+                          "type": "string"
+                        },
+                        "preset_config": {
+                          "description": "Preset configuration (same shape as the routine-level preset_config). May include `llm: {model}` to override the agent's default_model for this step.",
+                          "properties": {
+                            "instructions": {
+                              "description": "Custom task or behavior instructions for the preset (max 10,000 chars).",
+                              "type": "string"
+                            },
+                            "llm": {
+                              "description": "LLM invocation settings (e.g. a `model` override for this routine/step).",
+                              "properties": {
+                                "model": {
+                                  "description": "Model identifier. When set, overrides the agent's default_model.",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "session_mode": {
+                              "description": "Session mode: `stateless` (default, new session per trigger) or `session` (find-or-create a persistent session scoped by `session_scope`).",
+                              "type": "string"
+                            },
+                            "session_scope": {
+                              "description": "When `session_mode` is `session`, controls session scoping: `per_user` (default), `per_key`, `per_org`, or `global`.",
+                              "type": "string"
+                            },
+                            "structured_message_template_ids": {
+                              "description": "Config IDs of AgentMessageSchema templates that constrain the agent's responses to predefined structured formats.",
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "preset_name": {
+                          "description": "Preset name (for handler_type: preset)",
+                          "type": "string"
+                        },
+                        "script": {
+                          "description": "Inline script source (for handler_type: script)",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "handler_type"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
                   "trigger_context": {
                     "description": "Trigger context: chat_session or event (default: event)",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "agent",
                   "name",
                   "handler_type"
                 ],
@@ -6432,6 +6913,9 @@
           },
           "403": {
             "description": "Forbidden - app scope required"
+          },
+          "404": {
+            "description": "Agent not found"
           }
         },
         "x-auth": [
@@ -6457,10 +6941,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent": {
-                    "description": "Agent ID",
-                    "type": "string"
-                  },
                   "builtin_tool_config": {
                     "description": "Built-in tool config",
                     "type": "object"
@@ -6507,7 +6987,6 @@
                   }
                 },
                 "required": [
-                  "agent",
                   "kind"
                 ],
                 "type": "object"
@@ -6865,10 +7344,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent": {
-                    "description": "Agent ID",
-                    "type": "string"
-                  },
                   "max_results": {
                     "description": "Max results to return",
                     "type": "integer"
@@ -6894,7 +7369,6 @@
                   }
                 },
                 "required": [
-                  "agent",
                   "query"
                 ],
                 "type": "object"
@@ -6997,10 +7471,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "agent": {
-                    "description": "Agent ID",
-                    "type": "string"
-                  },
                   "skip_welcome_message": {
                     "description": "Skip automatic welcome message",
                     "type": "boolean"
@@ -7041,7 +7511,6 @@
                   }
                 },
                 "required": [
-                  "agent",
                   "thread"
                 ],
                 "type": "object"
@@ -7687,10 +8156,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "artifact": {
-                    "description": "Artifact ID",
-                    "type": "string"
-                  },
                   "description": {
                     "description": "Artifact description",
                     "type": "string"
@@ -7717,7 +8182,6 @@
                   }
                 },
                 "required": [
-                  "artifact",
                   "from_version"
                 ],
                 "type": "object"
@@ -7773,25 +8237,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "artifact": {
-                    "description": "Artifact ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "artifact"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "204": {
             "description": "No content"
@@ -8167,10 +8612,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "automation": {
-                    "description": "Automation ID or lookup_key",
-                    "type": "string"
-                  },
                   "idempotency_key": {
                     "description": "Idempotency key to deduplicate invocations",
                     "type": "string"
@@ -8180,9 +8621,6 @@
                     "type": "object"
                   }
                 },
-                "required": [
-                  "automation"
-                ],
                 "type": "object"
               }
             }
@@ -8248,6 +8686,27 @@
             "required": false,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Filter by exact lookup_key match",
+            "in": "query",
+            "name": "lookup_key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter: children of any listed parent config ID (pass one ID to fetch a single bundle's children)",
+            "in": "query",
+            "name": "parents",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             }
           }
         ],
@@ -8331,8 +8790,16 @@
                             "description": "Organization",
                             "type": "string"
                           },
+                          "parent": {
+                            "description": "Parent config ID (bundle children only)",
+                            "type": "string"
+                          },
                           "raw_content": {
                             "description": "Raw file content (system configs only)",
+                            "type": "string"
+                          },
+                          "relative_path": {
+                            "description": "Path within parent bundle (bundle children only)",
                             "type": "string"
                           },
                           "sandbox": {
@@ -8415,8 +8882,16 @@
                     "description": "Content mime type",
                     "type": "string"
                   },
+                  "parent": {
+                    "description": "Parent config ID (for bundle children, e.g. files under a Skill)",
+                    "type": "string"
+                  },
                   "raw_content": {
                     "description": "Raw content (YAML/JSON/etc)",
+                    "type": "string"
+                  },
+                  "relative_path": {
+                    "description": "Path within the parent bundle (required when parent is set)",
                     "type": "string"
                   },
                   "team": {
@@ -8739,8 +9214,16 @@
                             "description": "Organization",
                             "type": "string"
                           },
+                          "parent": {
+                            "description": "Parent config ID (bundle children only)",
+                            "type": "string"
+                          },
                           "raw_content": {
                             "description": "Raw file content (system configs only)",
+                            "type": "string"
+                          },
+                          "relative_path": {
+                            "description": "Path within parent bundle (bundle children only)",
                             "type": "string"
                           },
                           "sandbox": {
@@ -8858,10 +9341,6 @@
                     "description": "Scope the clone to an org (must match viewer's org if set)",
                     "type": "string"
                   },
-                  "system": {
-                    "description": "Source system config path or lookup_key",
-                    "type": "string"
-                  },
                   "team": {
                     "description": "Clone to this team",
                     "type": "string"
@@ -8875,9 +9354,6 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "system"
-                ],
                 "type": "object"
               }
             }
@@ -9091,10 +9567,6 @@
                     "description": "Description of changes",
                     "type": "string"
                   },
-                  "config": {
-                    "description": "Config ID",
-                    "type": "string"
-                  },
                   "data": {
                     "description": "Additional structured data stored on the version",
                     "type": "object"
@@ -9111,6 +9583,10 @@
                     "description": "Raw content (YAML/JSON/etc)",
                     "type": "string"
                   },
+                  "relative_path": {
+                    "description": "Update relative path within parent bundle",
+                    "type": "string"
+                  },
                   "team": {
                     "description": "Team ID (for team-owned configs)",
                     "type": "string"
@@ -9125,7 +9601,6 @@
                   }
                 },
                 "required": [
-                  "config",
                   "raw_content",
                   "mime_type"
                 ],
@@ -9184,10 +9659,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "config": {
-                    "description": "Config ID",
-                    "type": "string"
-                  },
                   "team": {
                     "description": "Team ID (for team-owned configs)",
                     "type": "string"
@@ -9197,9 +9668,6 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "config"
-                ],
                 "type": "object"
               }
             }
@@ -9321,10 +9789,6 @@
             "application/json": {
               "schema": {
                 "properties": {
-                  "config": {
-                    "description": "Config ID",
-                    "type": "string"
-                  },
                   "team": {
                     "description": "Team ID (for team-owned configs)",
                     "type": "string"
@@ -9334,9 +9798,6 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "config"
-                ],
                 "type": "object"
               }
             }
@@ -9579,17 +10040,12 @@
                     "description": "Object field values to update",
                     "type": "object"
                   },
-                  "object": {
-                    "description": "Object ID",
-                    "type": "string"
-                  },
                   "type": {
                     "description": "Object schema type (lookup_key)",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "object",
                   "fields"
                 ],
                 "type": "object"
@@ -10973,15 +11429,8 @@
                       }
                     },
                     "type": "object"
-                  },
-                  "team": {
-                    "description": "Team ID",
-                    "type": "string"
                   }
                 },
-                "required": [
-                  "team"
-                ],
                 "type": "object"
               }
             }
@@ -11400,17 +11849,12 @@
                     "description": "Object field values",
                     "type": "object"
                   },
-                  "team": {
-                    "description": "Team ID",
-                    "type": "string"
-                  },
                   "type": {
                     "description": "Object schema type (lookup_key)",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "team",
                   "type",
                   "fields"
                 ],
@@ -11461,25 +11905,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "team": {
-                    "description": "Team ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "team"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -11521,25 +11946,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "team": {
-                    "description": "Team ID",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "team"
-                ],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
         "responses": {
           "200": {
             "content": {
@@ -11599,15 +12005,8 @@
                   "agent": {
                     "description": "Optional agent ID — when provided, adds the agent to the team instead of the user",
                     "type": "string"
-                  },
-                  "team": {
-                    "description": "Team ID",
-                    "type": "string"
                   }
                 },
-                "required": [
-                  "team"
-                ],
                 "type": "object"
               }
             }
@@ -12023,18 +12422,11 @@
                     "description": "Member role (default: member)",
                     "type": "string"
                   },
-                  "team": {
-                    "description": "Team ID",
-                    "type": "string"
-                  },
                   "user": {
                     "description": "User ID (provide exactly one of user_id or agent_id)",
                     "type": "string"
                   }
                 },
-                "required": [
-                  "team"
-                ],
                 "type": "object"
               }
             }
@@ -12879,10 +13271,6 @@
                     "description": "Skip automatic welcome message",
                     "type": "boolean"
                   },
-                  "team": {
-                    "description": "Team ID",
-                    "type": "string"
-                  },
                   "thread": {
                     "description": "Thread attributes",
                     "properties": {
@@ -12947,7 +13335,6 @@
                   }
                 },
                 "required": [
-                  "team",
                   "thread"
                 ],
                 "type": "object"
@@ -13040,15 +13427,8 @@
                   "content": {
                     "description": "New message content",
                     "type": "string"
-                  },
-                  "message": {
-                    "description": "Message ID",
-                    "type": "string"
                   }
                 },
-                "required": [
-                  "message"
-                ],
                 "type": "object"
               }
             }
@@ -13142,14 +13522,9 @@
                   "emoji": {
                     "description": "Emoji to add as reaction",
                     "type": "string"
-                  },
-                  "message": {
-                    "description": "Message ID",
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "message",
                   "emoji"
                 ],
                 "type": "object"
@@ -13429,18 +13804,11 @@
                     },
                     "type": "object"
                   },
-                  "thread": {
-                    "description": "Thread ID",
-                    "type": "string"
-                  },
                   "title": {
                     "description": "Thread title",
                     "type": "string"
                   }
                 },
-                "required": [
-                  "thread"
-                ],
                 "type": "object"
               }
             }
@@ -13718,10 +14086,6 @@
                     "description": "The message ID to mark as the last read",
                     "type": "string"
                   },
-                  "thread": {
-                    "description": "Thread ID",
-                    "type": "string"
-                  },
                   "use_latest_message": {
                     "description": "If true, uses the latest message in the thread",
                     "type": "boolean"
@@ -13731,9 +14095,6 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "thread"
-                ],
                 "type": "object"
               }
             }
@@ -13919,10 +14280,6 @@
                     "description": "Membership type: \"owner\" or \"member\" (defaults to \"member\")",
                     "type": "string"
                   },
-                  "thread": {
-                    "description": "Thread ID",
-                    "type": "string"
-                  },
                   "type": {
                     "description": "Member type: \"user\" or \"agent\"",
                     "type": "string"
@@ -13933,7 +14290,6 @@
                   }
                 },
                 "required": [
-                  "thread",
                   "type"
                 ],
                 "type": "object"
@@ -14489,14 +14845,9 @@
                       "filename"
                     ],
                     "type": "object"
-                  },
-                  "thread": {
-                    "description": "Thread ID",
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "thread",
                   "picture"
                 ],
                 "type": "object"
@@ -14725,14 +15076,9 @@
                   "settings": {
                     "description": "Settings to update",
                     "type": "object"
-                  },
-                  "thread": {
-                    "description": "Thread ID",
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "thread",
                   "settings"
                 ],
                 "type": "object"
@@ -15079,14 +15425,9 @@
                       }
                     },
                     "type": "object"
-                  },
-                  "user": {
-                    "description": "User ID",
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "user",
                   "invite"
                 ],
                 "type": "object"
@@ -15276,15 +15617,8 @@
                       }
                     },
                     "type": "object"
-                  },
-                  "user": {
-                    "description": "User ID",
-                    "type": "string"
                   }
                 },
-                "required": [
-                  "user"
-                ],
                 "type": "object"
               }
             }
@@ -16229,14 +16563,9 @@
                       }
                     },
                     "type": "object"
-                  },
-                  "user": {
-                    "description": "User ID",
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "user",
                   "thread"
                 ],
                 "type": "object"
@@ -17773,6 +18102,96 @@
       ]
     },
     {
+      "description": "Phoenix channel for real-time activity feed updates.\n\nClients join a topic scoped to an agent or org and receive\n`new_entry` events as feed entries are created.\n\n## Topics\n\n  * `\"api:activity_feed:agent:{agent_user_id}\"` — entries for a specific agent\n  * `\"api:activity_feed:org:{org_id}\"` — entries for an entire org/tenant\n",
+      "joins": [
+        {
+          "description": "Join an agent-scoped activity feed",
+          "name": "join_agent",
+          "params": {
+            "properties": {
+              "agent_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "agent_id"
+            ],
+            "type": "object"
+          },
+          "pattern": "api:activity_feed:agent:{agent_id}",
+          "returns": {
+            "type": "object"
+          }
+        },
+        {
+          "description": "Join an org-scoped activity feed",
+          "name": "join_org",
+          "params": {
+            "properties": {
+              "org_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "org_id"
+            ],
+            "type": "object"
+          },
+          "pattern": "api:activity_feed:org:{org_id}",
+          "returns": {
+            "type": "object"
+          }
+        }
+      ],
+      "messages": [
+        {
+          "description": "List activity feed entries with cursor-based pagination",
+          "event": "list_entries",
+          "params": {
+            "properties": {
+              "after_cursor": {
+                "type": "string"
+              },
+              "before_cursor": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "level": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "returns": {
+            "type": "object"
+          }
+        }
+      ],
+      "name": "ApiActivityFeedChannel",
+      "pushes": [
+        {
+          "description": null,
+          "event": "new_entry",
+          "payload": {
+            "properties": {
+              "entry": {
+                "type": "object"
+              }
+            },
+            "type": "object"
+          }
+        }
+      ],
+      "x-auth": [
+        "bearer"
+      ]
+    },
+    {
       "description": "Channel for real-time custom object collaboration.\n\nClients join `api:object:{object_id}` to receive the current object state\nand subscribe to field-level updates. Mutations are sent as key:value maps.\n",
       "joins": [
         {
@@ -17876,96 +18295,6 @@
               },
               "id": {
                 "type": "string"
-              }
-            },
-            "type": "object"
-          }
-        }
-      ],
-      "x-auth": [
-        "bearer"
-      ]
-    },
-    {
-      "description": "Phoenix channel for real-time activity feed updates.\n\nClients join a topic scoped to an agent or org and receive\n`new_entry` events as feed entries are created.\n\n## Topics\n\n  * `\"api:activity_feed:agent:{agent_user_id}\"` — entries for a specific agent\n  * `\"api:activity_feed:org:{org_id}\"` — entries for an entire org/tenant\n",
-      "joins": [
-        {
-          "description": "Join an agent-scoped activity feed",
-          "name": "join_agent",
-          "params": {
-            "properties": {
-              "agent_id": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "agent_id"
-            ],
-            "type": "object"
-          },
-          "pattern": "api:activity_feed:agent:{agent_id}",
-          "returns": {
-            "type": "object"
-          }
-        },
-        {
-          "description": "Join an org-scoped activity feed",
-          "name": "join_org",
-          "params": {
-            "properties": {
-              "org_id": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "org_id"
-            ],
-            "type": "object"
-          },
-          "pattern": "api:activity_feed:org:{org_id}",
-          "returns": {
-            "type": "object"
-          }
-        }
-      ],
-      "messages": [
-        {
-          "description": "List activity feed entries with cursor-based pagination",
-          "event": "list_entries",
-          "params": {
-            "properties": {
-              "after_cursor": {
-                "type": "string"
-              },
-              "before_cursor": {
-                "type": "string"
-              },
-              "kind": {
-                "type": "string"
-              },
-              "level": {
-                "type": "string"
-              },
-              "limit": {
-                "type": "integer"
-              }
-            },
-            "type": "object"
-          },
-          "returns": {
-            "type": "object"
-          }
-        }
-      ],
-      "name": "ApiActivityFeedChannel",
-      "pushes": [
-        {
-          "description": null,
-          "event": "new_entry",
-          "payload": {
-            "properties": {
-              "entry": {
-                "type": "object"
               }
             },
             "type": "object"
