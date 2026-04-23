@@ -167,6 +167,62 @@ describe("Resource emitter", () => {
     expect(output).toContain('method: "PATCH"');
     expect(output).toContain('method: "DELETE"');
   });
+
+  it("types body param with the named schema when requestBody uses $ref", () => {
+    // Sample fixture: create_team's requestBody is `$ref: CreateTeamInput`;
+    // update_team's is `UpdateTeamInput`. The generated signature must use
+    // the named type, NOT `Record<string, unknown>`.
+    expect(output).toMatch(/async create\([^)]*input: CreateTeamInput[^)]*\)/);
+    expect(output).toMatch(/async update\([^)]*input: UpdateTeamInput[^)]*\)/);
+    expect(output).not.toMatch(
+      /async (?:create|update)\([^)]*input: Record<string, unknown>/
+    );
+  });
+
+  it("imports named body schemas from the types barrel", () => {
+    // Full production call path includes schemaImports — imports are emitted
+    // only when that option is provided (collectSchemaRefs walks body refs).
+    const schemaImports: Record<string, string> = {};
+    for (const schema of ast.schemas) {
+      schemaImports[schema.name] = `../../types/${schema.name}.js`;
+    }
+    const withImports = emitResourceFile(
+      teamsResource,
+      ast.apiPrefix,
+      { schemaImports }
+    );
+    expect(withImports).toMatch(
+      /import type \{[^}]*\bCreateTeamInput\b[^}]*\} from ["']\.\.\/\.\.\/types\//
+    );
+    expect(withImports).toMatch(
+      /import type \{[^}]*\bUpdateTeamInput\b[^}]*\} from ["']\.\.\/\.\.\/types\//
+    );
+  });
+});
+
+describe("Resource emitter types inline request bodies", () => {
+  // docFixture's /teams/join_by_code has an inline `{ join_code: string }`
+  // body — no $ref. The generated signature must emit a typed object
+  // literal, not `Record<string, unknown>`.
+  const docAst = parseOpenApiSpec(docFixture, {
+    name: "archastro-platform",
+    version: "0.1.0",
+    baseUrl: "https://platform.archastro.ai",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+  const teamsResource = docAst.resources.find((r) => r.name === "teams")!;
+  const output = emitResourceFile(teamsResource, "/api/v1");
+
+  it("emits an inline object type with the body's fields", () => {
+    // Optional field on an inline object is rendered as `T | undefined`
+    // by typeRefToTS — cover both spellings to avoid tying the assertion
+    // to that formatting detail.
+    expect(output).toMatch(
+      /input: \{\s*join_code\?: string(?: \| undefined)?\s*\}/
+    );
+    expect(output).not.toContain("input: Record<string, unknown>");
+  });
 });
 
 describe("Resource emitter uses requestRaw for raw responses", () => {

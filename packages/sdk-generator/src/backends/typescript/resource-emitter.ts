@@ -179,9 +179,10 @@ function buildParamList(op: OperationDef, resource: ResourceDef): string {
     parts.push(`${pp.name}: string`);
   }
 
-  // Body param — use named type if it has a real schema ref, otherwise Record
+  // Body param — use named type if it has a real schema ref, otherwise
+  // emit an inline object type built from the parsed body fields.
   if (op.body) {
-    parts.push(`input: Record<string, unknown>`);
+    parts.push(`input: ${bodyTypeString(op.body)}`);
   }
 
   // Query params as optional object
@@ -199,6 +200,28 @@ function buildQueryParamsType(params: ParamDef[]): string {
     return `${p.name}?: ${tsType}`;
   });
   return `{ ${fields.join("; ")} }`;
+}
+
+function bodyTypeString(body: NonNullable<OperationDef["body"]>): string {
+  // Inline bodies are given a synthesized `schema` name by the inferrer for
+  // stability, but no corresponding type is generated — so when `fields`
+  // are present we render the object literal directly.
+  if (body.fields && body.fields.length > 0) {
+    const shape = body.fields
+      .map((f) => {
+        const opt = f.required ? "" : "?";
+        return `${f.name}${opt}: ${typeRefToTS(f.type)}`;
+      })
+      .join("; ");
+    return `{ ${shape} }`;
+  }
+
+  // Otherwise the body is a named schema ref (e.g., CreateTeamInput). The
+  // resource file's import block is populated by collectSchemaRefs, which
+  // walks body refs too.
+  if (body.schema && body.schema !== "inline") return body.schema;
+
+  return "Record<string, unknown>";
 }
 
 function buildPathExpression(
@@ -292,12 +315,19 @@ export function typeRefToTS(ref: TypeRef): string {
   }
 }
 
-/** Collect all schema ref names used in return types across operations. */
+/** Collect all schema ref names used in return types and request bodies. */
 function collectSchemaRefs(resources: ResourceDef[]): Set<string> {
   const refs = new Set<string>();
   for (const resource of resources) {
     for (const op of resource.operations) {
       collectTypeRefs(op.returnType, refs);
+      if (op.body) {
+        if (op.body.fields && op.body.fields.length > 0) {
+          for (const f of op.body.fields) collectTypeRefs(f.type, refs);
+        } else if (op.body.schema && op.body.schema !== "inline") {
+          refs.add(op.body.schema);
+        }
+      }
     }
   }
   return refs;
