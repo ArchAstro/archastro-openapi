@@ -225,6 +225,73 @@ describe("Resource emitter types inline request bodies", () => {
   });
 });
 
+describe("Resource emitter preserves array query params", () => {
+  // An earlier version cast `params` to a scalars-only Record at the call
+  // boundary, silently discarding array-typed filter types like `string[]`.
+  // The cast must match HttpClient.request's QueryValue union so arrays
+  // stay type-safe on the way to appendQueryString.
+  const arrayQueryFixture = {
+    openapi: "3.0.0",
+    info: { title: "Array Query API", version: "1.0.0" },
+    paths: {
+      "/api/v1/activity_feed": {
+        get: {
+          operationId: "get_api_v1_activity_feed",
+          parameters: [
+            {
+              name: "kind",
+              in: "query",
+              schema: { type: "array", items: { type: "string" } },
+            },
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { data: { type: "array", items: { type: "string" } } },
+                    required: ["data"],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const ast = parseOpenApiSpec(arrayQueryFixture, {
+    name: "archastro-platform",
+    version: "0.1.0",
+    baseUrl: "https://platform.archastro.ai",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+  const resource = ast.resources.find((r) => r.name === "activity_feed")!;
+  const output = emitResourceFile(resource, "/api/v1");
+
+  it("types array query params as arrays in the method signature", () => {
+    expect(output).toMatch(/kind\?: string\[\]/);
+  });
+
+  it("casts params to a type that permits primitive arrays", () => {
+    expect(output).toContain(
+      "query: params as Record<string, string | number | boolean | Array<string | number | boolean> | undefined>"
+    );
+    expect(output).not.toContain(
+      "query: params as Record<string, string | number | boolean | undefined>"
+    );
+  });
+});
+
 describe("Resource emitter uses requestRaw for raw responses", () => {
   const rawAst = parseOpenApiSpec(rawFixture, {
     name: "archastro-platform",
