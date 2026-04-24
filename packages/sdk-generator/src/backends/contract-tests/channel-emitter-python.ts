@@ -93,8 +93,8 @@ function emitHeader(
   cb.line("import pytest");
   cb.line("import pytest_asyncio");
   cb.line();
-  cb.line("from phx_channel import HarnessServiceClient");
-  cb.line("from phx_channel.channel import ChannelError");
+  cb.line("from archastro.phx_channel import HarnessServiceClient");
+  cb.line("from archastro.phx_channel.channel import ChannelError");
   cb.line(
     `from ${channelImportModule} import ${channel.className}`
   );

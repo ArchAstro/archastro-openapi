@@ -32,7 +32,7 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
   cb.line("from typing import TYPE_CHECKING");
   cb.line();
   cb.line("if TYPE_CHECKING:");
-  cb.line("    from phx_channel.socket import Socket");
+  cb.line("    from archastro.phx_channel.socket import Socket");
   cb.line();
 
   if (channel.description) {

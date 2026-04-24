@@ -302,7 +302,7 @@ describe("Python channel emitter", () => {
   it("imports Socket only for type checking", () => {
     expect(output).toContain("from typing import TYPE_CHECKING");
     expect(output).toContain("if TYPE_CHECKING:");
-    expect(output).toContain("from phx_channel.socket import Socket");
+    expect(output).toContain("from archastro.phx_channel.socket import Socket");
   });
 
   it("generates leave method", () => {
@@ -584,8 +584,8 @@ describe("Python channel contract test emitter", () => {
   );
 
   it("imports phx_channel HarnessServiceClient + ChannelError + the channel class", () => {
-    expect(output).toContain("from phx_channel import HarnessServiceClient");
-    expect(output).toContain("from phx_channel.channel import ChannelError");
+    expect(output).toContain("from archastro.phx_channel import HarnessServiceClient");
+    expect(output).toContain("from archastro.phx_channel.channel import ChannelError");
     expect(output).toContain(
       "from archastro.platform.channels.chat import ChatChannel"
     );
