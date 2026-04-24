@@ -6,7 +6,7 @@
   "description": "OpenAPI tooling for ArchAstro: SDK generator + channel-protocol contract harness",
   "repository": {
     "type": "git",
-    "url": "https://github.com/archastro/archastro-openapi"
+    "url": "https://github.com/ArchAstro/archastro-openapi"
   },
   "workspaces": [
     "packages/*"
