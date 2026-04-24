@@ -1,39 +1,76 @@
-import type { ChannelDef, ParamDef } from "../../ast/types.js";
+import type {
+  ChannelDef,
+  ChannelMessageDef,
+  ChannelPushDef,
+  FieldDef,
+  ParamDef,
+  TypeRef,
+} from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
-import { snakeCase } from "../../utils/naming.js";
+import { pascalCase, snakeCase } from "../../utils/naming.js";
 import { typeRefToPython } from "./pydantic-emitter.js";
+import {
+  collectTypedDictImports,
+  emitTypedDictClass,
+} from "./typeddict-emitter.js";
 
 /**
  * Generate a Python async channel class.
  *
  * ```python
+ * class ChatPostMessageInput(TypedDict, total=False):
+ *     thread_id: Required[str]
+ *     content: Required[str]
+ *
  * class ChatChannel:
- *     def __init__(self, channel):
- *         self._channel = channel
+ *     async def post_message(self, payload: ChatPostMessageInput) -> dict[str, object]:
+ *         return await self._channel.push("post_message", payload)
  *
- *     @staticmethod
- *     def topic(team_id: str, thread_id: str) -> str:
- *         return f"api:chat:team:{team_id}:thread:{thread_id}"
- *
- *     async def send_message(self, payload: dict) -> dict:
- *         return await self._channel.push("send_message", payload)
- *
- *     def on_message_added(self, callback) -> callable:
+ *     def on_message_added(
+ *         self, callback: Callable[[ChatMessageAddedPayload], None]
+ *     ) -> Callable[[], None]:
  *         return self._channel.on("message_added", callback)
  * ```
  */
 export function emitPythonChannelFile(channel: ChannelDef): string {
   const cb = new CodeBuilder("    ");
 
+  // Inline TypedDicts for client→server message inputs and server→client
+  // push payloads. Built up-front so signatures can reference them by name.
+  const messageInputs = collectMessageInputs(channel);
+  const pushPayloads = collectPushPayloads(channel);
+  const inputNameByEvent = new Map(
+    messageInputs.map((g) => [g.event, g.className] as const)
+  );
+  const payloadNameByEvent = new Map(
+    pushPayloads.map((g) => [g.event, g.className] as const)
+  );
+
   for (const line of generatedHeaderPython().trim().split("\n")) {
     cb.line(line);
   }
   cb.line();
-  cb.line("from typing import TYPE_CHECKING");
+
+  const typedDictGroups = [...messageInputs, ...pushPayloads];
+  const typingImports = collectTypedDictImports(typedDictGroups);
+  const needsCallable = channel.pushes.length > 0;
+  const typingNames = [...typingImports, "TYPE_CHECKING"].sort();
+  cb.line(`from typing import ${typingNames.join(", ")}`);
+  if (needsCallable) {
+    cb.line("from collections.abc import Callable");
+  }
   cb.line();
   cb.line("if TYPE_CHECKING:");
   cb.line("    from archastro.phx_channel.socket import Socket");
   cb.line();
+
+  // TypedDict classes — emitted before the channel class so signatures
+  // can reference them.
+  for (const group of typedDictGroups) {
+    emitTypedDictClass(cb, group.className, group.fields, group.description);
+    cb.line();
+    cb.line();
+  }
 
   if (channel.description) {
     for (const line of channel.description.split("\n")) {
@@ -89,17 +126,63 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
     // Message methods (client → server)
     for (const msg of channel.messages) {
       cb.line();
-      emitMessageMethod(cb, msg.event, msg.description);
+      emitMessageMethod(cb, msg, inputNameByEvent.get(msg.event));
     }
 
     // Push handlers (server → client)
     for (const push of channel.pushes) {
       cb.line();
-      emitPushHandler(cb, push.event, push.description);
+      emitPushHandler(cb, push, payloadNameByEvent.get(push.event));
     }
   });
 
   return cb.toString();
+}
+
+interface InlineGroup {
+  event: string;
+  className: string;
+  fields: FieldDef[];
+  description?: string;
+}
+
+/**
+ * Collect TypedDicts for client→server message payloads. Names follow the
+ * `{EventInPascal}Input` convention; channel files are self-contained, so
+ * collisions across channels are fine.
+ */
+function collectMessageInputs(channel: ChannelDef): InlineGroup[] {
+  return channel.messages
+    .filter((m) => m.params.length > 0)
+    .map((m) => ({
+      event: m.event,
+      className: `${eventToPascal(m.event)}Input`,
+      fields: m.params,
+      description: m.description,
+    }));
+}
+
+/**
+ * Collect TypedDicts for server→client push payloads when the schema is an
+ * inline object. Refs and primitives stay as-is via typeRefToPython.
+ */
+function collectPushPayloads(channel: ChannelDef): InlineGroup[] {
+  const groups: InlineGroup[] = [];
+  for (const push of channel.pushes) {
+    if (push.payloadType.kind === "object" && push.payloadType.fields.length > 0) {
+      groups.push({
+        event: push.event,
+        className: `${eventToPascal(push.event)}Payload`,
+        fields: push.payloadType.fields,
+        description: push.description,
+      });
+    }
+  }
+  return groups;
+}
+
+function eventToPascal(event: string): string {
+  return pascalCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
 }
 
 function emitTopicBuilder(
@@ -202,33 +285,56 @@ function emitJoinMethod(
 
 function emitMessageMethod(
   cb: CodeBuilder,
-  event: string,
-  description?: string
+  msg: ChannelMessageDef,
+  inputClassName: string | undefined
 ): void {
-  const methodName = snakeCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const methodName = snakeCase(msg.event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const payloadType = inputClassName ?? "dict";
+  const returnType = typeRefToPython(msg.returnType);
 
-  if (description) {
-    cb.line(`# ${description}`);
+  if (msg.description) {
+    cb.line(`# ${msg.description}`);
   }
 
-  cb.pyBlock(`async def ${methodName}(self, payload: dict) -> dict`, () => {
-    cb.line(`return await self._channel.push("${event}", payload)`);
-  });
+  cb.pyBlock(
+    `async def ${methodName}(self, payload: ${payloadType}) -> ${returnType}`,
+    () => {
+      cb.line(`return await self._channel.push("${msg.event}", payload)`);
+    }
+  );
 }
 
 function emitPushHandler(
   cb: CodeBuilder,
-  rawEvent: string,
-  description?: string
+  push: ChannelPushDef,
+  payloadClassName: string | undefined
 ): void {
-  const event = rawEvent.replace(/[^a-zA-Z0-9_]/g, "_");
+  const event = push.event.replace(/[^a-zA-Z0-9_]/g, "_");
   const handlerName = "on_" + snakeCase(event);
+  const payloadType = payloadClassName ?? typeRefForPushPayload(push.payloadType);
+  // Phoenix channel handlers receive a single payload arg. Returning is
+  // unobserved in the runtime, but `None` is the right contract for users.
+  const callbackType = `Callable[[${payloadType}], None]`;
+  // The runtime returns an unsubscribe callable from `.on(...)`.
+  const returnType = "Callable[[], None]";
 
-  if (description) {
-    cb.line(`# ${description}`);
+  if (push.description) {
+    cb.line(`# ${push.description}`);
   }
 
-  cb.pyBlock(`def ${handlerName}(self, callback)`, () => {
-    cb.line(`return self._channel.on("${rawEvent}", callback)`);
-  });
+  cb.pyBlock(
+    `def ${handlerName}(self, callback: ${callbackType}) -> ${returnType}`,
+    () => {
+      cb.line(`return self._channel.on("${push.event}", callback)`);
+    }
+  );
+}
+
+function typeRefForPushPayload(ref: TypeRef): string {
+  // Empty / unknown object payloads collapse to dict[str, object] for
+  // forward-compat with payloads the spec hasn't fully described.
+  if (ref.kind === "object" && ref.fields.length === 0) {
+    return "dict[str, object]";
+  }
+  return typeRefToPython(ref);
 }

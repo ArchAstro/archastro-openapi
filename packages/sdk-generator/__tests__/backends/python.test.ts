@@ -228,7 +228,7 @@ describe("Python resource emitter uses summary and description in method docstri
       "Adds the caller or provided principal to the team."
     );
     expect(output).toContain(
-      "async def join_by_code(self, input: dict) -> dict[str, object]:"
+      "async def join_by_code(self, input: TeamJoinByCodeInput) -> dict[str, object]:"
     );
   });
 });
@@ -300,7 +300,7 @@ describe("Python channel emitter", () => {
   });
 
   it("imports Socket only for type checking", () => {
-    expect(output).toContain("from typing import TYPE_CHECKING");
+    expect(output).toContain("TYPE_CHECKING");
     expect(output).toContain("if TYPE_CHECKING:");
     expect(output).toContain("from archastro.phx_channel.socket import Socket");
   });
@@ -316,9 +316,22 @@ describe("Python channel emitter", () => {
   });
 
   it("generates push event handlers", () => {
-    expect(output).toContain("def on_message_added(self, callback)");
+    expect(output).toContain("def on_message_added(self, callback:");
     expect(output).toContain('self._channel.on("message_added"');
-    expect(output).toContain("def on_message_updated(self, callback)");
+    expect(output).toContain("def on_message_updated(self, callback:");
+  });
+
+  it("types message payloads + push callbacks via generated TypedDicts", () => {
+    expect(output).toContain("from typing import");
+    expect(output).toContain("TypedDict");
+    // Required appears only when there's a mix of required + optional fields.
+    expect(output).toContain("class SendMessageInput(TypedDict");
+    expect(output).toContain("payload: SendMessageInput");
+    expect(output).toContain("class MessageAddedPayload(TypedDict");
+    expect(output).toContain(
+      "callback: Callable[[MessageAddedPayload], None]"
+    );
+    expect(output).toContain("from collections.abc import Callable");
   });
 });
 
