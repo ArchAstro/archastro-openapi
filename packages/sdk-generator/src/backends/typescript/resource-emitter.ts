@@ -251,8 +251,12 @@ function buildRequestOptions(op: OperationDef): string | null {
   }
 
   if (op.queryParams.length > 0) {
+    // Cast must match HttpClient.request's `query` type
+    // (Record<string, QueryValue>, where QueryValue allows primitive arrays).
+    // A scalars-only cast would silently drop array-typed filters like
+    // `kind?: string[]` at the boundary.
     parts.push(
-      "query: params as Record<string, string | number | boolean | undefined>"
+      "query: params as Record<string, string | number | boolean | Array<string | number | boolean> | undefined>"
     );
   }
 
