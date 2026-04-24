@@ -11,6 +11,11 @@
     "archastro"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArchAstro/archastro-openapi.git",
+    "directory": "packages/channel-harness"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

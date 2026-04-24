@@ -1,0 +1,96 @@
+name: Publish
+
+# Triggered by tags that release.yml pushes, or by a direct tag push.
+# Authenticates to npm via OIDC (Trusted Publishing) — no NPM_TOKEN.
+#
+# One-time setup per package:
+#   1. Configure a trusted publisher at
+#      https://www.npmjs.com/package/<name>/access pointing at
+#      workflow filename publish.yml in ArchAstro/archastro-openapi
+#   2. Ensure package.json has a "repository" field matching the
+#      canonical GitHub URL exactly (casing matters — provenance
+#      verification is strict).
+
+on:
+  push:
+    tags:
+      - 'sdk-generator-v*'
+      - 'channel-harness-v*'
+  # release.yml dispatches with --ref <tag> because tags pushed by
+  # GITHUB_TOKEN don't themselves trigger runs.
+  workflow_dispatch:
+
+permissions:
+  contents: write      # create GitHub Release
+  id-token: write      # OIDC token for npm Trusted Publishing
+
+jobs:
+  publish:
+    name: npm publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # Node 24 ships npm >= 11.5 which is required for Trusted Publishing.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Resolve package from tag
+        id: pkg
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          case "$TAG" in
+            sdk-generator-v*)
+              echo "name=sdk-generator" >> "$GITHUB_OUTPUT"
+              echo "npm_name=@archastro/sdk-generator" >> "$GITHUB_OUTPUT"
+              echo "version=${TAG#sdk-generator-v}" >> "$GITHUB_OUTPUT"
+              ;;
+            channel-harness-v*)
+              echo "name=channel-harness" >> "$GITHUB_OUTPUT"
+              echo "npm_name=@archastro/channel-harness" >> "$GITHUB_OUTPUT"
+              echo "version=${TAG#channel-harness-v}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unrecognized tag: $TAG" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Verify package.json version matches tag
+        env:
+          DIR: packages/${{ steps.pkg.outputs.name }}
+          EXPECTED: ${{ steps.pkg.outputs.version }}
+        run: |
+          set -euo pipefail
+          actual=$(node -p "require('./$DIR/package.json').version")
+          if [ "$actual" != "$EXPECTED" ]; then
+            echo "Version mismatch: tag says $EXPECTED, package.json says $actual" >&2
+            exit 1
+          fi
+
+      - name: npm publish (OIDC)
+        working-directory: packages/${{ steps.pkg.outputs.name }}
+        run: npm publish --access public --provenance
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+          NPM_NAME: ${{ steps.pkg.outputs.npm_name }}
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            --title "$NPM_NAME v$VERSION" \
+            --notes "Published to npm: https://www.npmjs.com/package/$NPM_NAME/v/$VERSION" \
+            --generate-notes
