@@ -6,7 +6,7 @@ import type {
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython, emitPythonImportLine } from "../../utils/codegen.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
-import { typeRefToPython } from "./pydantic-emitter.js";
+import { typeRefToPython, typeRefsUseDatetime } from "./pydantic-emitter.js";
 import {
   collectTypedDictImports,
   emitTypedDictClass,
@@ -48,6 +48,10 @@ export function emitPythonResourceFile(
   cb.line();
 
   const typingImports = collectTypedDictImports(inlineInputs);
+  const inputFieldTypes = inlineInputs.flatMap((g) => g.fields.map((f) => f.type));
+  if (typeRefsUseDatetime(inputFieldTypes)) {
+    cb.line("from datetime import datetime");
+  }
   if (typingImports.size > 0) {
     cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
   }

@@ -126,6 +126,46 @@ describe("Pydantic emitter", () => {
     expect(output).toContain("Optional");
   });
 
+  it("emits `from datetime import datetime` only when a field actually uses it", () => {
+    const noDatetime = emitPydanticFile([
+      {
+        name: "Plain",
+        fields: [{ name: "id", type: { kind: "primitive", type: "string" }, required: true }],
+      },
+    ]);
+    expect(noDatetime).not.toContain("from datetime import datetime");
+  });
+
+  it("emits `datetime` (not `str`) for date-time fields and imports it", () => {
+    // Synthetic schema covers both required and optional datetime fields, so a
+    // single assertion exercises the whole pipeline: TypeRef → annotation → import.
+    const out = emitPydanticFile([
+      {
+        name: "Event",
+        fields: [
+          {
+            name: "created_at",
+            type: { kind: "primitive", type: "datetime" },
+            required: true,
+          },
+          {
+            name: "updated_at",
+            type: {
+              kind: "optional",
+              inner: { kind: "primitive", type: "datetime" },
+            },
+            required: false,
+          },
+        ],
+      },
+    ]);
+    expect(out).toContain("from datetime import datetime");
+    expect(out).toMatch(/created_at: datetime$/m);
+    expect(out).toMatch(/updated_at: Optional\[datetime\] = None/);
+    // Sanity: not the old behavior.
+    expect(out).not.toMatch(/created_at: str$/m);
+  });
+
   it("handles enum types with Literal", () => {
     const memberSchemas = ast.schemas.filter(
       (s) => s.name === "TeamMember" || s.name === "AddTeamMemberInput"
@@ -591,6 +631,45 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).toContain("input: dict");
     expect(out).not.toContain("(TypedDict");
   });
+
+  it("imports `datetime` when a TypedDict body field uses it", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "events",
+        className: "EventResource",
+        path: "/events",
+        scopeParams: [],
+        operations: [
+          {
+            name: "create",
+            operationId: "post_event",
+            method: "POST",
+            path: "/api/v1/events",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            body: {
+              schema: "CreateInput",
+              contentType: "application/json",
+              fields: [
+                {
+                  name: "scheduled_at",
+                  type: { kind: "primitive", type: "datetime" },
+                  required: true,
+                },
+              ],
+            },
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain("from datetime import datetime");
+    expect(out).toContain("scheduled_at: datetime");
+  });
 });
 
 describe("Python channel emitter typed payloads", () => {
@@ -718,6 +797,33 @@ describe("Python channel emitter typed payloads", () => {
     expect(out).toContain("# Send a chat message");
     expect(out).toContain("class SendMessageInput(TypedDict):");
     expect(out).toContain("content: str");
+  });
+
+  it("imports `datetime` when a generated TypedDict uses it", () => {
+    const out = emitPythonChannelFile({
+      name: "Stamp",
+      className: "StampChannel",
+      joins: [
+        {
+          topicPattern: "stamp",
+          name: "join",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [
+        {
+          event: "tick",
+          params: [
+            { name: "at", type: { kind: "primitive", type: "datetime" }, required: true },
+          ],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      pushes: [],
+    });
+    expect(out).toContain("from datetime import datetime");
+    expect(out).toContain("at: datetime");
   });
 });
 

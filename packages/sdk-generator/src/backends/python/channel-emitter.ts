@@ -8,7 +8,7 @@ import type {
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
-import { typeRefToPython } from "./pydantic-emitter.js";
+import { typeRefToPython, typeRefsUseDatetime } from "./pydantic-emitter.js";
 import {
   collectTypedDictImports,
   emitTypedDictClass,
@@ -54,6 +54,12 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
   const typedDictGroups = [...messageInputs, ...pushPayloads];
   const typingImports = collectTypedDictImports(typedDictGroups);
   const needsCallable = channel.pushes.length > 0;
+  const typedDictFieldTypes = typedDictGroups.flatMap((g) =>
+    g.fields.map((f) => f.type)
+  );
+  if (typeRefsUseDatetime(typedDictFieldTypes)) {
+    cb.line("from datetime import datetime");
+  }
   const typingNames = [...typingImports, "TYPE_CHECKING"].sort();
   cb.line(`from typing import ${typingNames.join(", ")}`);
   if (needsCallable) {
