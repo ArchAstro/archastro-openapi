@@ -6,7 +6,11 @@ import type {
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython, emitPythonImportLine } from "../../utils/codegen.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
-import { typeRefToPython, typeRefsUseDatetime } from "./pydantic-emitter.js";
+import {
+  emitPydanticModel,
+  typeRefToPython,
+  typeRefsUseDatetime,
+} from "./pydantic-emitter.js";
 import {
   collectTypedDictImports,
   emitTypedDictClass,
@@ -42,15 +46,35 @@ export function emitPythonResourceFile(
     inlineInputs.map((g) => [g.operationId, g.className] as const)
   );
 
+  // Inline response schemas need Pydantic models so callers get attribute
+  // access on the response object instead of dict[str, object].
+  const inlineResponses = collectInlineResponses(allResources);
+  const responseNameByOpId = new Map(
+    inlineResponses.map((g) => [g.operationId, g.name] as const)
+  );
+
   for (const line of generatedHeaderPython().trim().split("\n")) { cb.line(line); };
   cb.line();
   cb.line("from __future__ import annotations");
   cb.line();
 
   const typingImports = collectTypedDictImports(inlineInputs);
-  const inputFieldTypes = inlineInputs.flatMap((g) => g.fields.map((f) => f.type));
-  if (typeRefsUseDatetime(inputFieldTypes)) {
+  // Inline response models are Pydantic BaseModels — extend typing imports
+  // (Optional/Literal/etc.) with whatever their fields need.
+  for (const group of inlineResponses) {
+    for (const field of group.fields) {
+      collectTypingFromTypeRef(field.type, typingImports);
+    }
+  }
+  const allFieldTypes = [
+    ...inlineInputs.flatMap((g) => g.fields.map((f) => f.type)),
+    ...inlineResponses.flatMap((g) => g.fields.map((f) => f.type)),
+  ];
+  if (typeRefsUseDatetime(allFieldTypes)) {
     cb.line("from datetime import datetime");
+  }
+  if (inlineResponses.length > 0) {
+    cb.line("from pydantic import BaseModel");
   }
   if (typingImports.size > 0) {
     cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
@@ -86,8 +110,19 @@ export function emitPythonResourceFile(
     cb.line();
   }
 
+  // Pydantic response models — same idea, ahead of resource classes.
+  for (const group of inlineResponses) {
+    emitPydanticModel(cb, {
+      name: group.name,
+      fields: group.fields,
+      description: group.description,
+    });
+    cb.line();
+    cb.line();
+  }
+
   for (let i = 0; i < allResources.length; i++) {
-    emitResourceClass(cb, allResources[i]!, inputNameByOpId);
+    emitResourceClass(cb, allResources[i]!, inputNameByOpId, responseNameByOpId);
     if (i < allResources.length - 1) { cb.line(); cb.line(); }
   }
 
@@ -121,6 +156,63 @@ interface InlineInputGroup {
  * `body.fields` distinguishes inline bodies from $ref bodies — the frontend
  * only attaches `fields` when the schema was inline.
  */
+interface InlineResponseGroup {
+  operationId: string;
+  name: string;
+  fields: FieldDef[];
+  description?: string;
+}
+
+/**
+ * Find every operation whose response is an inline (non-$ref) object schema
+ * and assign it a `{ResourceShortName}{OpName}Response` BaseModel name.
+ * Empty objects (`{type: "object"}` with no properties) stay as
+ * `dict[str, object]` — there is nothing to put on the model.
+ */
+function collectInlineResponses(resources: ResourceDef[]): InlineResponseGroup[] {
+  const groups: InlineResponseGroup[] = [];
+  for (const resource of resources) {
+    const shortName = resource.className.replace(/Resource$/, "");
+    for (const op of resource.operations) {
+      if (op.rawResponse) continue;
+      if (
+        op.returnType.kind === "object" &&
+        op.returnType.fields.length > 0
+      ) {
+        groups.push({
+          operationId: op.operationId,
+          name: `${shortName}${pascalCase(op.name)}Response`,
+          fields: op.returnType.fields,
+          description: op.summary,
+        });
+      }
+    }
+  }
+  return groups;
+}
+
+/** Mirror of pydantic-emitter's typing-import collector for inline TypeRefs. */
+function collectTypingFromTypeRef(ref: TypeRef, imports: Set<string>): void {
+  switch (ref.kind) {
+    case "optional":
+      imports.add("Optional");
+      collectTypingFromTypeRef(ref.inner, imports);
+      break;
+    case "enum":
+      if (ref.values.length > 0) imports.add("Literal");
+      break;
+    case "array":
+      collectTypingFromTypeRef(ref.items, imports);
+      break;
+    case "union":
+      for (const v of ref.variants) collectTypingFromTypeRef(v, imports);
+      break;
+    case "map":
+      collectTypingFromTypeRef(ref.valueType, imports);
+      break;
+  }
+}
+
 function collectInlineInputs(resources: ResourceDef[]): InlineInputGroup[] {
   const groups: InlineInputGroup[] = [];
   for (const resource of resources) {
@@ -142,7 +234,8 @@ function collectInlineInputs(resources: ResourceDef[]): InlineInputGroup[] {
 function emitResourceClass(
   cb: CodeBuilder,
   resource: ResourceDef,
-  inputNameByOpId: Map<string, string>
+  inputNameByOpId: Map<string, string>,
+  responseNameByOpId: Map<string, string>
 ): void {
   cb.pyBlock(`class ${resource.className}`, () => {
     // __init__
@@ -156,7 +249,7 @@ function emitResourceClass(
     // Operations
     for (const op of resource.operations) {
       cb.line();
-      emitOperation(cb, op, resource, inputNameByOpId);
+      emitOperation(cb, op, resource, inputNameByOpId, responseNameByOpId);
     }
   });
 }
@@ -165,10 +258,14 @@ function emitOperation(
   cb: CodeBuilder,
   op: OperationDef,
   resource: ResourceDef,
-  inputNameByOpId: Map<string, string>
+  inputNameByOpId: Map<string, string>,
+  responseNameByOpId: Map<string, string>
 ): void {
   const params = buildParamList(op, resource, inputNameByOpId);
-  const returnType = op.rawResponse ? "dict[str, str]" : typeRefToPython(op.returnType);
+  const responseName = responseNameByOpId.get(op.operationId);
+  const returnType = op.rawResponse
+    ? "dict[str, str]"
+    : (responseName ?? typeRefToPython(op.returnType));
   const returnAnnotation = returnType;
 
   cb.pyBlock(

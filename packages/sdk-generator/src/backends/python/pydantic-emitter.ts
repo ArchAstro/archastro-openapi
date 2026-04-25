@@ -65,6 +65,10 @@ export function emitPydanticFile(
   return cb.toString();
 }
 
+export function emitPydanticModel(cb: CodeBuilder, schema: SchemaDef): void {
+  emitModel(cb, schema);
+}
+
 function emitModel(cb: CodeBuilder, schema: SchemaDef): void {
   if (schema.description) {
     for (const line of schema.description.split("\n")) {

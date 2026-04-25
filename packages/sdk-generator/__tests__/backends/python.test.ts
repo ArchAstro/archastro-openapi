@@ -273,7 +273,7 @@ describe("Python resource emitter uses summary and description in method docstri
       "Adds the caller or provided principal to the team."
     );
     expect(output).toContain(
-      "async def join_by_code(self, input: TeamJoinByCodeInput) -> dict[str, object]:"
+      "async def join_by_code(self, input: TeamJoinByCodeInput) -> TeamJoinByCodeResponse:"
     );
   });
 });
@@ -630,6 +630,177 @@ describe("Python resource emitter typed bodies", () => {
     );
     expect(out).toContain("input: dict");
     expect(out).not.toContain("(TypedDict");
+  });
+
+  it("emits a Pydantic response model for inline-object response schemas", () => {
+    // The frontend parses inline `{type: object, properties: ...}` responses
+    // as TypeRef.kind === "object". Emitter must hoist these as named
+    // BaseModels so callers do `result.data` instead of `result["data"]`.
+    const out = emitPythonResourceFile(
+      {
+        name: "teams",
+        className: "TeamResource",
+        path: "/teams",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "get_teams",
+            method: "GET",
+            path: "/api/v1/teams",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            returnType: {
+              kind: "object",
+              fields: [
+                {
+                  name: "data",
+                  type: {
+                    kind: "optional",
+                    inner: { kind: "array", items: { kind: "ref", schema: "Team" } },
+                  },
+                  required: false,
+                },
+                {
+                  name: "has_next",
+                  type: {
+                    kind: "optional",
+                    inner: { kind: "primitive", type: "boolean" },
+                  },
+                  required: false,
+                },
+              ],
+            },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain("from pydantic import BaseModel");
+    expect(out).toContain("class TeamListResponse(BaseModel):");
+    expect(out).toContain("data: Optional[list[Team]] = None");
+    expect(out).toContain("has_next: Optional[bool] = None");
+    expect(out).toContain("async def list(self) -> TeamListResponse:");
+  });
+
+  it("prefixes inline-response class names with the resource short name", () => {
+    // Two sibling resources both have a `list` op with inline responses.
+    // The emitted models must not collide.
+    const team = {
+      name: "teams",
+      className: "TeamResource",
+      path: "/teams",
+      scopeParams: [],
+      operations: [
+        {
+          name: "list",
+          operationId: "get_teams",
+          method: "GET" as const,
+          path: "/api/v1/teams",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          returnType: {
+            kind: "object" as const,
+            fields: [
+              { name: "id", type: { kind: "primitive" as const, type: "string" as const }, required: true },
+            ],
+          },
+          errors: [],
+        },
+      ],
+      children: [
+        {
+          name: "members",
+          className: "MemberResource",
+          path: "/teams/{team}/members",
+          scopeParams: [],
+          operations: [
+            {
+              name: "list",
+              operationId: "get_members",
+              method: "GET" as const,
+              path: "/api/v1/teams/{team}/members",
+              deprecated: false,
+              pathParams: [
+                { name: "team", type: { kind: "primitive" as const, type: "string" as const }, required: true },
+              ],
+              queryParams: [],
+              returnType: {
+                kind: "object" as const,
+                fields: [
+                  { name: "id", type: { kind: "primitive" as const, type: "string" as const }, required: true },
+                ],
+              },
+              errors: [],
+            },
+          ],
+          children: [],
+        },
+      ],
+    };
+    const out = emitPythonResourceFile(team, "/api/v1");
+    expect(out).toContain("class TeamListResponse(BaseModel):");
+    expect(out).toContain("class MemberListResponse(BaseModel):");
+  });
+
+  it("leaves $ref response types alone (no inline model emitted)", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "agents",
+        className: "AgentResource",
+        path: "/agents",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "get_agents",
+            method: "GET",
+            path: "/api/v1/agents",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            returnType: { kind: "ref", schema: "AgentListResponse" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain("-> AgentListResponse:");
+    expect(out).not.toContain("class AgentListResponse(BaseModel)");
+  });
+
+  it("leaves return type as dict[str, object] for empty inline responses", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "ping",
+        className: "PingResource",
+        path: "/ping",
+        scopeParams: [],
+        operations: [
+          {
+            name: "ping",
+            operationId: "get_ping",
+            method: "GET",
+            path: "/api/v1/ping",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            returnType: { kind: "object", fields: [] },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain("-> dict[str, object]:");
+    expect(out).not.toContain("(BaseModel)");
   });
 
   it("splays query params as keyword-only args with types and None defaults", () => {
