@@ -9,6 +9,7 @@ import type {
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
 import { typeRefToPython, typeRefsUseDatetime } from "./pydantic-emitter.js";
+import { hoistInlineObjects } from "./inline-object-hoist.js";
 import {
   collectTypedDictImports,
   emitTypedDictClass,
@@ -37,6 +38,8 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
 
   // Inline TypedDicts for client→server message inputs and server→client
   // push payloads. Built up-front so signatures can reference them by name.
+  // Hoist nested inline objects out as siblings so deeply-nested payloads
+  // don't collapse to dict[str, object].
   const messageInputs = collectMessageInputs(channel);
   const pushPayloads = collectPushPayloads(channel);
   const inputNameByEvent = new Map(
@@ -46,18 +49,25 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
     pushPayloads.map((g) => [g.event, g.className] as const)
   );
 
+  type EmitGroup = { name: string; fields: typeof messageInputs[number]["fields"]; description?: string };
+  const emitOrder: EmitGroup[] = [];
+  for (const group of [...messageInputs, ...pushPayloads]) {
+    const hoist = hoistInlineObjects(group.fields, group.className, "typeddict");
+    for (const child of hoist.hoisted) {
+      emitOrder.push({ name: child.name, fields: child.fields, description: child.description });
+    }
+    emitOrder.push({ name: group.className, fields: hoist.fields, description: group.description });
+  }
+
   for (const line of generatedHeaderPython().trim().split("\n")) {
     cb.line(line);
   }
   cb.line();
 
-  const typedDictGroups = [...messageInputs, ...pushPayloads];
-  const typingImports = collectTypedDictImports(typedDictGroups);
+  const typingImports = collectTypedDictImports(emitOrder);
   const needsCallable = channel.pushes.length > 0;
-  const typedDictFieldTypes = typedDictGroups.flatMap((g) =>
-    g.fields.map((f) => f.type)
-  );
-  if (typeRefsUseDatetime(typedDictFieldTypes)) {
+  const emitFieldTypes = emitOrder.flatMap((g) => g.fields.map((f) => f.type));
+  if (typeRefsUseDatetime(emitFieldTypes)) {
     cb.line("from datetime import datetime");
   }
   const typingNames = [...typingImports, "TYPE_CHECKING"].sort();
@@ -71,9 +81,10 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
   cb.line();
 
   // TypedDict classes — emitted before the channel class so signatures
-  // can reference them.
-  for (const group of typedDictGroups) {
-    emitTypedDictClass(cb, group.className, group.fields, group.description);
+  // can reference them. Hoisted nested objects come before their parents
+  // in the emit order; consumers never see a forward ref.
+  for (const group of emitOrder) {
+    emitTypedDictClass(cb, group.name, group.fields, group.description);
     cb.line();
     cb.line();
   }

@@ -632,6 +632,215 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).not.toContain("(TypedDict");
   });
 
+  it("hoists nested inline objects in inputs as sibling TypedDicts", () => {
+    // Inline `acl` object inside a request body should be a real type, not
+    // `dict[str, object] | None`. Same for nested array items (`add: AclGrant[]`).
+    const out = emitPythonResourceFile(
+      {
+        name: "teams",
+        className: "TeamResource",
+        path: "/teams",
+        scopeParams: [],
+        operations: [
+          {
+            name: "create",
+            operationId: "post_team",
+            method: "POST",
+            path: "/api/v1/teams",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            body: {
+              schema: "CreateInput",
+              contentType: "application/json",
+              fields: [
+                { name: "name", type: { kind: "primitive", type: "string" }, required: true },
+                {
+                  name: "acl",
+                  required: false,
+                  type: {
+                    kind: "optional",
+                    inner: {
+                      kind: "object",
+                      fields: [
+                        {
+                          name: "add",
+                          required: false,
+                          type: {
+                            kind: "array",
+                            items: {
+                              kind: "object",
+                              fields: [
+                                {
+                                  name: "principal",
+                                  type: { kind: "primitive", type: "string" },
+                                  required: true,
+                                },
+                              ],
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    // Sibling TypedDict for the `acl` object — named via parent + field path.
+    expect(out).toContain("class TeamCreateInputAcl(TypedDict, total=False):");
+    // Sibling TypedDict for the array items inside `acl.add`.
+    expect(out).toContain("class TeamCreateInputAclAddItem(TypedDict):");
+    expect(out).toContain("principal: str");
+    // Parent reference uses the hoisted name, not dict[str, object].
+    // Raw emitter renders Optional[X]; ruff's pyupgrade rewrites to `X | None`
+    // post-generation in the SDK repo, but we assert raw output here.
+    expect(out).toContain("acl: Optional[TeamCreateInputAcl]");
+    expect(out).toContain("add: list[TeamCreateInputAclAddItem]");
+  });
+
+  it("keeps `dict[str, object]` for empty objects (genuine freeform metadata)", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "teams",
+        className: "TeamResource",
+        path: "/teams",
+        scopeParams: [],
+        operations: [
+          {
+            name: "create",
+            operationId: "post_team",
+            method: "POST",
+            path: "/api/v1/teams",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            body: {
+              schema: "CreateInput",
+              contentType: "application/json",
+              fields: [
+                { name: "name", type: { kind: "primitive", type: "string" }, required: true },
+                {
+                  name: "metadata",
+                  required: false,
+                  type: {
+                    kind: "optional",
+                    // Object with NO fields = freeform key/value bag.
+                    inner: { kind: "object", fields: [] },
+                  },
+                },
+              ],
+            },
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain("metadata: Optional[dict[str, object]]");
+    expect(out).not.toContain("class TeamCreateInputMetadata");
+  });
+
+  it("hoists nested inline objects in response models as sibling BaseModels", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "teams",
+        className: "TeamResource",
+        path: "/teams",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "get_teams",
+            method: "GET",
+            path: "/api/v1/teams",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            returnType: {
+              kind: "object",
+              fields: [
+                {
+                  name: "data",
+                  required: false,
+                  type: {
+                    kind: "optional",
+                    inner: {
+                      kind: "array",
+                      items: {
+                        kind: "object",
+                        fields: [
+                          { name: "id", type: { kind: "primitive", type: "string" }, required: true },
+                          { name: "name", type: { kind: "primitive", type: "string" }, required: true },
+                        ],
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain("class TeamListResponseDataItem(BaseModel):");
+    expect(out).toContain("class TeamListResponse(BaseModel):");
+    expect(out).toContain("data: Optional[list[TeamListResponseDataItem]] = None");
+  });
+
+  it("hoists nested inline objects inside channel push payloads as sibling TypedDicts", () => {
+    const out = emitPythonChannelFile({
+      name: "Doc",
+      className: "DocChannel",
+      joins: [
+        {
+          topicPattern: "doc",
+          name: "join",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [],
+      pushes: [
+        {
+          event: "snapshot",
+          payloadType: {
+            kind: "object",
+            fields: [
+              {
+                name: "cursor",
+                required: false,
+                type: {
+                  kind: "optional",
+                  inner: {
+                    kind: "object",
+                    fields: [
+                      { name: "line", type: { kind: "primitive", type: "integer" }, required: true },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+    expect(out).toContain("class SnapshotPayloadCursor(TypedDict):");
+    expect(out).toContain("cursor: Optional[SnapshotPayloadCursor]");
+  });
+
   it("emits a Pydantic response model for inline-object response schemas", () => {
     // The frontend parses inline `{type: object, properties: ...}` responses
     // as TypeRef.kind === "object". Emitter must hoist these as named

@@ -11,6 +11,7 @@ import {
   typeRefToPython,
   typeRefsUseDatetime,
 } from "./pydantic-emitter.js";
+import { hoistInlineObjects } from "./inline-object-hoist.js";
 import {
   collectTypedDictImports,
   emitTypedDictClass,
@@ -41,16 +42,34 @@ export function emitPythonResourceFile(
 
   // Inline-body inputs need TypedDicts. Build the list once so we can both
   // emit the classes and look up the right name when typing the param list.
-  const inlineInputs = collectInlineInputs(allResources);
+  // Hoist nested inline objects out as sibling TypedDicts (children-first)
+  // so the parent's field references are bare names instead of nested objs.
+  const collectedInputs = collectInlineInputs(allResources);
+  const inputEmitOrder: Array<{ kind: "typeddict"; name: string; fields: FieldDef[]; description?: string }> = [];
+  for (const group of collectedInputs) {
+    const hoist = hoistInlineObjects(group.fields, group.className, "typeddict");
+    for (const child of hoist.hoisted) {
+      inputEmitOrder.push({ kind: "typeddict", name: child.name, fields: child.fields, description: child.description });
+    }
+    inputEmitOrder.push({ kind: "typeddict", name: group.className, fields: hoist.fields, description: group.description });
+  }
   const inputNameByOpId = new Map(
-    inlineInputs.map((g) => [g.operationId, g.className] as const)
+    collectedInputs.map((g) => [g.operationId, g.className] as const)
   );
 
   // Inline response schemas need Pydantic models so callers get attribute
   // access on the response object instead of dict[str, object].
-  const inlineResponses = collectInlineResponses(allResources);
+  const collectedResponses = collectInlineResponses(allResources);
+  const responseEmitOrder: Array<{ kind: "basemodel"; name: string; fields: FieldDef[]; description?: string }> = [];
+  for (const group of collectedResponses) {
+    const hoist = hoistInlineObjects(group.fields, group.name, "basemodel");
+    for (const child of hoist.hoisted) {
+      responseEmitOrder.push({ kind: "basemodel", name: child.name, fields: child.fields, description: child.description });
+    }
+    responseEmitOrder.push({ kind: "basemodel", name: group.name, fields: hoist.fields, description: group.description });
+  }
   const responseNameByOpId = new Map(
-    inlineResponses.map((g) => [g.operationId, g.name] as const)
+    collectedResponses.map((g) => [g.operationId, g.name] as const)
   );
 
   for (const line of generatedHeaderPython().trim().split("\n")) { cb.line(line); };
@@ -58,22 +77,24 @@ export function emitPythonResourceFile(
   cb.line("from __future__ import annotations");
   cb.line();
 
-  const typingImports = collectTypedDictImports(inlineInputs);
-  // Inline response models are Pydantic BaseModels — extend typing imports
-  // (Optional/Literal/etc.) with whatever their fields need.
-  for (const group of inlineResponses) {
+  // Typing imports cover both the TypedDict (input) and BaseModel (response)
+  // emit groups, including everything hoisted out of nested objects.
+  const typingImports = collectTypedDictImports(
+    inputEmitOrder.map((g) => ({ fields: g.fields }))
+  );
+  for (const group of responseEmitOrder) {
     for (const field of group.fields) {
       collectTypingFromTypeRef(field.type, typingImports);
     }
   }
   const allFieldTypes = [
-    ...inlineInputs.flatMap((g) => g.fields.map((f) => f.type)),
-    ...inlineResponses.flatMap((g) => g.fields.map((f) => f.type)),
+    ...inputEmitOrder.flatMap((g) => g.fields.map((f) => f.type)),
+    ...responseEmitOrder.flatMap((g) => g.fields.map((f) => f.type)),
   ];
   if (typeRefsUseDatetime(allFieldTypes)) {
     cb.line("from datetime import datetime");
   }
-  if (inlineResponses.length > 0) {
+  if (responseEmitOrder.length > 0) {
     cb.line("from pydantic import BaseModel");
   }
   if (typingImports.size > 0) {
@@ -103,15 +124,16 @@ export function emitPythonResourceFile(
   cb.line();
 
   // TypedDict input classes — emitted ahead of the resource classes so the
-  // method signatures can reference them by name.
-  for (const group of inlineInputs) {
-    emitTypedDictClass(cb, group.className, group.fields, group.description);
+  // method signatures can reference them by name. Hoisted children come
+  // before their parents in the emit order so forward refs never appear.
+  for (const group of inputEmitOrder) {
+    emitTypedDictClass(cb, group.name, group.fields, group.description);
     cb.line();
     cb.line();
   }
 
   // Pydantic response models — same idea, ahead of resource classes.
-  for (const group of inlineResponses) {
+  for (const group of responseEmitOrder) {
     emitPydanticModel(cb, {
       name: group.name,
       fields: group.fields,
