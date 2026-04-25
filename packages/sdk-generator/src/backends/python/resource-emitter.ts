@@ -2,10 +2,15 @@ import type {
   ResourceDef,
   OperationDef,
   TypeRef,
+  FieldDef,
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython, emitPythonImportLine } from "../../utils/codegen.js";
-import { snakeCase } from "../../utils/naming.js";
+import { pascalCase, snakeCase } from "../../utils/naming.js";
 import { typeRefToPython } from "./pydantic-emitter.js";
+import {
+  collectTypedDictImports,
+  emitTypedDictClass,
+} from "./typeddict-emitter.js";
 
 /**
  * Generate a Python resource file from a ResourceDef (and its children).
@@ -30,13 +35,25 @@ export function emitPythonResourceFile(
   // Emit all resources (children first, then parent)
   const allResources = flattenResourcesBottomUp(resource);
 
+  // Inline-body inputs need TypedDicts. Build the list once so we can both
+  // emit the classes and look up the right name when typing the param list.
+  const inlineInputs = collectInlineInputs(allResources);
+  const inputNameByOpId = new Map(
+    inlineInputs.map((g) => [g.operationId, g.className] as const)
+  );
+
   for (const line of generatedHeaderPython().trim().split("\n")) { cb.line(line); };
   cb.line();
   cb.line("from __future__ import annotations");
   cb.line();
+
+  const typingImports = collectTypedDictImports(inlineInputs);
+  if (typingImports.size > 0) {
+    cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
+  }
   cb.line(`from ${runtimeImport} import HttpClient`);
 
-  // Add type imports for schema refs used in operations
+  // Add type imports for schema refs used in operations + as $ref bodies
   if (options?.schemaImports) {
     const refs = collectSchemaRefs(allResources);
     // Group by module
@@ -57,8 +74,16 @@ export function emitPythonResourceFile(
   cb.line();
   cb.line();
 
+  // TypedDict input classes — emitted ahead of the resource classes so the
+  // method signatures can reference them by name.
+  for (const group of inlineInputs) {
+    emitTypedDictClass(cb, group.className, group.fields, group.description);
+    cb.line();
+    cb.line();
+  }
+
   for (let i = 0; i < allResources.length; i++) {
-    emitResourceClass(cb, allResources[i]!);
+    emitResourceClass(cb, allResources[i]!, inputNameByOpId);
     if (i < allResources.length - 1) { cb.line(); cb.line(); }
   }
 
@@ -74,7 +99,47 @@ function flattenResourcesBottomUp(resource: ResourceDef): ResourceDef[] {
   return result;
 }
 
-function emitResourceClass(cb: CodeBuilder, resource: ResourceDef): void {
+interface InlineInputGroup {
+  operationId: string;
+  className: string;
+  fields: FieldDef[];
+  description?: string;
+}
+
+/**
+ * Find every operation with an inline request body and assign it a stable
+ * `{ResourceShortName}{OpName}Input` class name. The short name strips the
+ * trailing "Resource" suffix from the className so we get e.g. `TeamCreateInput`
+ * rather than `TeamResourceCreateInput`. The resource prefix avoids collisions
+ * when sibling resources in the same file share an op name (e.g. multiple
+ * `create` operations in `teams.py`).
+ *
+ * `body.fields` distinguishes inline bodies from $ref bodies — the frontend
+ * only attaches `fields` when the schema was inline.
+ */
+function collectInlineInputs(resources: ResourceDef[]): InlineInputGroup[] {
+  const groups: InlineInputGroup[] = [];
+  for (const resource of resources) {
+    const shortName = resource.className.replace(/Resource$/, "");
+    for (const op of resource.operations) {
+      if (op.body?.fields && op.body.fields.length > 0) {
+        groups.push({
+          operationId: op.operationId,
+          className: `${shortName}${pascalCase(op.name)}Input`,
+          fields: op.body.fields,
+          description: op.summary ?? op.description,
+        });
+      }
+    }
+  }
+  return groups;
+}
+
+function emitResourceClass(
+  cb: CodeBuilder,
+  resource: ResourceDef,
+  inputNameByOpId: Map<string, string>
+): void {
   cb.pyBlock(`class ${resource.className}`, () => {
     // __init__
     cb.pyBlock("def __init__(self, http: HttpClient)", () => {
@@ -87,7 +152,7 @@ function emitResourceClass(cb: CodeBuilder, resource: ResourceDef): void {
     // Operations
     for (const op of resource.operations) {
       cb.line();
-      emitOperation(cb, op, resource);
+      emitOperation(cb, op, resource, inputNameByOpId);
     }
   });
 }
@@ -95,9 +160,10 @@ function emitResourceClass(cb: CodeBuilder, resource: ResourceDef): void {
 function emitOperation(
   cb: CodeBuilder,
   op: OperationDef,
-  resource: ResourceDef
+  resource: ResourceDef,
+  inputNameByOpId: Map<string, string>
 ): void {
-  const params = buildParamList(op, resource);
+  const params = buildParamList(op, resource, inputNameByOpId);
   const returnType = op.rawResponse ? "dict[str, str]" : typeRefToPython(op.returnType);
   const returnAnnotation = returnType;
 
@@ -147,7 +213,11 @@ function emitOperationDocstring(
   cb.line('"""');
 }
 
-function buildParamList(op: OperationDef, resource: ResourceDef): string {
+function buildParamList(
+  op: OperationDef,
+  resource: ResourceDef,
+  inputNameByOpId: Map<string, string>
+): string {
   const parts: string[] = [];
 
   // Scope params
@@ -160,9 +230,18 @@ function buildParamList(op: OperationDef, resource: ResourceDef): string {
     parts.push(`${snakeCase(pp.name)}: str`);
   }
 
-  // Body param — use named type if it has a real schema ref, otherwise dict
+  // Body param — typed via:
+  //  - generated TypedDict (this module) when the body is inline
+  //  - the named Pydantic model when the body is a $ref to a component schema
   if (op.body) {
-    parts.push(`input: dict`);
+    const inlineName = inputNameByOpId.get(op.operationId);
+    if (inlineName) {
+      parts.push(`input: ${inlineName}`);
+    } else if (op.body.schema) {
+      parts.push(`input: ${op.body.schema}`);
+    } else {
+      parts.push(`input: dict`);
+    }
   }
 
   // Query params as **kwargs or typed dict
@@ -208,12 +287,17 @@ function sanitizeComment(s: string): string {
   return s.replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
 }
 
-/** Collect all schema ref names used in return types across operations. */
+/** Collect all schema ref names used in return types or $ref bodies. */
 function collectSchemaRefs(resources: ResourceDef[]): Set<string> {
   const refs = new Set<string>();
   for (const resource of resources) {
     for (const op of resource.operations) {
       collectTypeRefs(op.returnType, refs);
+      // $ref bodies need a cross-module import; inline bodies (which carry
+      // `fields`) get a TypedDict emitted in this same file.
+      if (op.body?.schema && !op.body.fields) {
+        refs.add(op.body.schema);
+      }
     }
   }
   return refs;

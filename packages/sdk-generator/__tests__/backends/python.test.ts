@@ -8,6 +8,11 @@ import { emitPydanticFile } from "../../src/backends/python/pydantic-emitter.js"
 import { emitPythonResourceFile } from "../../src/backends/python/resource-emitter.js";
 import { emitPythonClientFile } from "../../src/backends/python/client-emitter.js";
 import { emitPythonChannelFile } from "../../src/backends/python/channel-emitter.js";
+import {
+  collectTypedDictImports,
+  emitTypedDictClass,
+} from "../../src/backends/python/typeddict-emitter.js";
+import { CodeBuilder } from "../../src/utils/codegen.js";
 import { emitPythonContractTests } from "../../src/backends/contract-tests/python-emitter.js";
 import { emitPythonChannelContractTestFile } from "../../src/backends/contract-tests/channel-emitter-python.js";
 
@@ -228,7 +233,7 @@ describe("Python resource emitter uses summary and description in method docstri
       "Adds the caller or provided principal to the team."
     );
     expect(output).toContain(
-      "async def join_by_code(self, input: dict) -> dict[str, object]:"
+      "async def join_by_code(self, input: TeamJoinByCodeInput) -> dict[str, object]:"
     );
   });
 });
@@ -300,7 +305,7 @@ describe("Python channel emitter", () => {
   });
 
   it("imports Socket only for type checking", () => {
-    expect(output).toContain("from typing import TYPE_CHECKING");
+    expect(output).toContain("TYPE_CHECKING");
     expect(output).toContain("if TYPE_CHECKING:");
     expect(output).toContain("from archastro.phx_channel.socket import Socket");
   });
@@ -316,9 +321,403 @@ describe("Python channel emitter", () => {
   });
 
   it("generates push event handlers", () => {
-    expect(output).toContain("def on_message_added(self, callback)");
+    expect(output).toContain("def on_message_added(self, callback:");
     expect(output).toContain('self._channel.on("message_added"');
-    expect(output).toContain("def on_message_updated(self, callback)");
+    expect(output).toContain("def on_message_updated(self, callback:");
+  });
+
+  it("types message payloads + push callbacks via generated TypedDicts", () => {
+    expect(output).toContain("from typing import");
+    expect(output).toContain("TypedDict");
+    // Required appears only when there's a mix of required + optional fields.
+    expect(output).toContain("class SendMessageInput(TypedDict");
+    expect(output).toContain("payload: SendMessageInput");
+    expect(output).toContain("class MessageAddedPayload(TypedDict");
+    expect(output).toContain(
+      "callback: Callable[[MessageAddedPayload], None]"
+    );
+    expect(output).toContain("from collections.abc import Callable");
+  });
+});
+
+describe("TypedDict emitter", () => {
+  function render(
+    className: string,
+    fields: Parameters<typeof emitTypedDictClass>[2],
+    description?: string
+  ): string {
+    const cb = new CodeBuilder("    ");
+    emitTypedDictClass(cb, className, fields, description);
+    return cb.toString();
+  }
+
+  it("uses bare TypedDict (no total=False) when every field is required", () => {
+    const out = render("AllRequiredInput", [
+      { name: "a", type: { kind: "primitive", type: "string" }, required: true },
+      { name: "b", type: { kind: "primitive", type: "integer" }, required: true },
+    ]);
+    expect(out).toContain("class AllRequiredInput(TypedDict):");
+    expect(out).not.toContain("total=False");
+    expect(out).not.toContain("Required[");
+    expect(out).toContain("a: str");
+    expect(out).toContain("b: int");
+  });
+
+  it("uses total=False with Required[] for required keys in mixed schemas", () => {
+    const out = render("MixedInput", [
+      { name: "id", type: { kind: "primitive", type: "string" }, required: true },
+      {
+        name: "tag",
+        type: { kind: "optional", inner: { kind: "primitive", type: "string" } },
+        required: false,
+      },
+    ]);
+    expect(out).toContain("class MixedInput(TypedDict, total=False):");
+    expect(out).toContain("id: Required[str]");
+    expect(out).toContain("tag: Optional[str]");
+  });
+
+  it("uses total=False without Required[] when every field is optional", () => {
+    const out = render("AllOptionalInput", [
+      {
+        name: "x",
+        type: { kind: "optional", inner: { kind: "primitive", type: "string" } },
+        required: false,
+      },
+    ]);
+    expect(out).toContain("class AllOptionalInput(TypedDict, total=False):");
+    expect(out).not.toContain("Required[");
+  });
+
+  it("emits an empty class with `pass` when there are no fields", () => {
+    const out = render("EmptyInput", []);
+    expect(out).toMatch(/class EmptyInput\(TypedDict(, total=False)?\):/);
+    expect(out).toContain("pass");
+  });
+
+  it("renders class-level descriptions as `# ...` comments above the class", () => {
+    const out = render(
+      "DocumentedInput",
+      [{ name: "id", type: { kind: "primitive", type: "string" }, required: true }],
+      "Multi-line\ndescription text"
+    );
+    expect(out).toContain("# Multi-line");
+    expect(out).toContain("# description text");
+    expect(out).toContain("class DocumentedInput(TypedDict):");
+  });
+
+  it("renders field descriptions as inline comments when they fit", () => {
+    const out = render("FieldDocsInput", [
+      {
+        name: "id",
+        type: { kind: "primitive", type: "string" },
+        required: true,
+        description: "Resource identifier",
+      },
+    ]);
+    expect(out).toMatch(/id: str\s+# Resource identifier/);
+  });
+
+  describe("collectTypedDictImports", () => {
+    it("returns empty when no TypedDicts are emitted", () => {
+      expect(collectTypedDictImports([])).toEqual(new Set());
+    });
+
+    it("emits TypedDict alone when every field is required (no Required needed)", () => {
+      const imports = collectTypedDictImports([
+        {
+          fields: [
+            { name: "a", type: { kind: "primitive", type: "string" }, required: true },
+          ],
+        },
+      ]);
+      expect(imports.has("TypedDict")).toBe(true);
+      expect(imports.has("Required")).toBe(false);
+    });
+
+    it("emits Required when at least one mixed group has required fields", () => {
+      const imports = collectTypedDictImports([
+        {
+          fields: [
+            { name: "id", type: { kind: "primitive", type: "string" }, required: true },
+            {
+              name: "tag",
+              type: { kind: "optional", inner: { kind: "primitive", type: "string" } },
+              required: false,
+            },
+          ],
+        },
+      ]);
+      expect(imports.has("TypedDict")).toBe(true);
+      expect(imports.has("Required")).toBe(true);
+      expect(imports.has("Optional")).toBe(true);
+    });
+
+    it("collects nested typing imports through optional/array/union/map", () => {
+      const imports = collectTypedDictImports([
+        {
+          fields: [
+            {
+              name: "list_field",
+              type: {
+                kind: "array",
+                items: {
+                  kind: "optional",
+                  inner: { kind: "enum", values: ["a", "b"] },
+                },
+              },
+              required: false,
+            },
+          ],
+        },
+      ]);
+      expect(imports.has("Optional")).toBe(true);
+      expect(imports.has("Literal")).toBe(true);
+    });
+  });
+});
+
+describe("Python resource emitter typed bodies", () => {
+  function teamsResourceWith(
+    ops: Array<Parameters<typeof emitPythonResourceFile>[0]["operations"][number]>
+  ): Parameters<typeof emitPythonResourceFile>[0] {
+    return {
+      name: "teams",
+      className: "TeamResource",
+      path: "/teams",
+      scopeParams: [],
+      operations: ops,
+      children: [],
+    };
+  }
+
+  it("prefixes inline-input class names with the resource short name to avoid collisions", () => {
+    const teams = teamsResourceWith([]);
+    const members = {
+      name: "members",
+      className: "MemberResource",
+      path: "/teams/{team}/members",
+      scopeParams: [],
+      operations: [
+        {
+          name: "create",
+          operationId: "post_members",
+          method: "POST" as const,
+          path: "/api/v1/teams/{team}/members",
+          deprecated: false,
+          pathParams: [{ name: "team", type: { kind: "primitive" as const, type: "string" as const }, required: true }],
+          queryParams: [],
+          body: {
+            schema: "CreateInput",
+            contentType: "application/json",
+            fields: [{ name: "user", type: { kind: "primitive" as const, type: "string" as const }, required: true }],
+          },
+          returnType: { kind: "unknown" as const },
+          errors: [],
+        },
+      ],
+      children: [],
+    };
+    const teamWithCreate = {
+      ...teams,
+      operations: [
+        {
+          name: "create",
+          operationId: "post_team",
+          method: "POST" as const,
+          path: "/api/v1/teams",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          body: {
+            schema: "CreateInput",
+            contentType: "application/json",
+            fields: [{ name: "name", type: { kind: "primitive" as const, type: "string" as const }, required: true }],
+          },
+          returnType: { kind: "unknown" as const },
+          errors: [],
+        },
+      ],
+      children: [members],
+    };
+    const out = emitPythonResourceFile(teamWithCreate, "/api/v1");
+    // Two distinct class names — no late definition wins because of identical names.
+    expect(out).toContain("class MemberCreateInput");
+    expect(out).toContain("class TeamCreateInput");
+    expect(out).toContain("input: MemberCreateInput");
+    expect(out).toContain("input: TeamCreateInput");
+  });
+
+  it("uses the existing Pydantic model name for $ref bodies (no TypedDict emitted)", () => {
+    const out = emitPythonResourceFile(
+      teamsResourceWith([
+        {
+          name: "create",
+          operationId: "post_team",
+          method: "POST",
+          path: "/api/v1/teams",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          body: { schema: "CreateTeamInput", contentType: "application/json" },
+          returnType: { kind: "ref", schema: "Team" },
+          errors: [],
+        },
+      ]),
+      "/api/v1"
+    );
+    expect(out).toContain("input: CreateTeamInput");
+    expect(out).not.toContain("class CreateTeamInput(TypedDict");
+  });
+
+  it("falls back to `input: dict` for bodies with no schema or fields (defensive)", () => {
+    const out = emitPythonResourceFile(
+      teamsResourceWith([
+        {
+          name: "create",
+          operationId: "post_team",
+          method: "POST",
+          path: "/api/v1/teams",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          body: { schema: "", contentType: "application/json" },
+          returnType: { kind: "unknown" },
+          errors: [],
+        },
+      ]),
+      "/api/v1"
+    );
+    expect(out).toContain("input: dict");
+    expect(out).not.toContain("(TypedDict");
+  });
+});
+
+describe("Python channel emitter typed payloads", () => {
+  it("keeps `payload: dict` for messages with no params (nothing to type)", () => {
+    const out = emitPythonChannelFile({
+      name: "Ping",
+      className: "PingChannel",
+      joins: [
+        {
+          topicPattern: "ping",
+          name: "join",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [
+        {
+          event: "ping",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      pushes: [],
+    });
+    expect(out).toContain("async def ping(self, payload: dict)");
+    expect(out).not.toContain("class PingInput(TypedDict");
+  });
+
+  it("does not emit a TypedDict for non-object push payloads but still types the callback", () => {
+    const out = emitPythonChannelFile({
+      name: "Cursor",
+      className: "CursorChannel",
+      joins: [
+        {
+          topicPattern: "cursor",
+          name: "join",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [],
+      pushes: [
+        {
+          event: "tick",
+          payloadType: { kind: "primitive", type: "integer" },
+        },
+      ],
+    });
+    expect(out).not.toContain("class TickPayload(TypedDict");
+    expect(out).toContain("def on_tick(self, callback: Callable[[int], None]) -> Callable[[], None]");
+  });
+
+  it("uses the existing Pydantic model name when push payload is a $ref", () => {
+    const out = emitPythonChannelFile({
+      name: "Doc",
+      className: "DocChannel",
+      joins: [
+        {
+          topicPattern: "doc",
+          name: "join",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [],
+      pushes: [
+        {
+          event: "snapshot",
+          payloadType: { kind: "ref", schema: "Document" },
+        },
+      ],
+    });
+    expect(out).not.toContain("class SnapshotPayload(TypedDict");
+    expect(out).toContain("callback: Callable[[Document], None]");
+  });
+
+  it("falls back to dict[str, object] for an empty inline-object push payload", () => {
+    const out = emitPythonChannelFile({
+      name: "Vacuum",
+      className: "VacuumChannel",
+      joins: [
+        {
+          topicPattern: "vac",
+          name: "join",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [],
+      pushes: [
+        {
+          event: "anything",
+          payloadType: { kind: "object", fields: [] },
+        },
+      ],
+    });
+    expect(out).toContain("callback: Callable[[dict[str, object]], None]");
+    expect(out).not.toContain("class AnythingPayload(TypedDict");
+  });
+
+  it("includes the spec description on the generated TypedDict class", () => {
+    const out = emitPythonChannelFile({
+      name: "Chat",
+      className: "ChatChannel",
+      joins: [
+        {
+          topicPattern: "chat",
+          name: "join",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [
+        {
+          event: "send_message",
+          description: "Send a chat message",
+          params: [
+            { name: "content", type: { kind: "primitive", type: "string" }, required: true },
+          ],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      pushes: [],
+    });
+    expect(out).toContain("# Send a chat message");
+    expect(out).toContain("class SendMessageInput(TypedDict):");
+    expect(out).toContain("content: str");
   });
 });
 
