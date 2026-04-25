@@ -176,6 +176,23 @@ function emitOperation(
     () => {
       emitOperationDocstring(cb, op.summary, op.description);
 
+      // Build the query dict ahead of the request call so optional params can
+      // be omitted entirely (vs. sending `?key=null`). Required params land
+      // unconditionally; optional params only when the kwarg is non-None.
+      if (op.queryParams.length > 0) {
+        cb.line("query: dict[str, object] = {}");
+        for (const qp of op.queryParams) {
+          const py = snakeCase(qp.name);
+          const wireKey = JSON.stringify(qp.name);
+          if (qp.required) {
+            cb.line(`query[${wireKey}] = ${py}`);
+          } else {
+            cb.line(`if ${py} is not None:`);
+            cb.line(`    query[${wireKey}] = ${py}`);
+          }
+        }
+      }
+
       const pathExpr = buildPathExpression(op, resource);
       const optParts = buildRequestOptionParts(op);
       const requestMethod = op.rawResponse ? "request_raw" : "request";
@@ -248,9 +265,21 @@ function buildParamList(
     }
   }
 
-  // Query params as **kwargs or typed dict
-  if (op.queryParams.length > 0) {
-    parts.push("**params");
+  // Query params split into required positional and optional keyword-only.
+  // Required ones precede the `*` separator; optional ones follow with
+  // `T | None = None` defaults so callers can omit any combination.
+  const required = op.queryParams.filter((p) => p.required);
+  const optional = op.queryParams.filter((p) => !p.required);
+  for (const qp of required) {
+    parts.push(`${snakeCase(qp.name)}: ${typeRefToPython(qp.type)}`);
+  }
+  if (optional.length > 0) {
+    parts.push("*");
+    for (const qp of optional) {
+      parts.push(
+        `${snakeCase(qp.name)}: ${typeRefToPython(qp.type)} | None = None`
+      );
+    }
   }
 
   return parts.join(", ");
@@ -280,7 +309,7 @@ function buildRequestOptionParts(op: OperationDef): string[] {
   }
 
   if (op.queryParams.length > 0) {
-    parts.push("query=params");
+    parts.push("query=query");
   }
 
   return parts;

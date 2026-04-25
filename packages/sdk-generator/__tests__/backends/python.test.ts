@@ -632,6 +632,135 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).not.toContain("(TypedDict");
   });
 
+  it("splays query params as keyword-only args with types and None defaults", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "teams",
+        className: "TeamResource",
+        path: "/teams",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "get_teams",
+            method: "GET",
+            path: "/api/v1/teams",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [
+              {
+                name: "page",
+                type: { kind: "primitive", type: "integer" },
+                required: false,
+                description: "Page number",
+              },
+              {
+                name: "page_size",
+                type: { kind: "primitive", type: "integer" },
+                required: false,
+              },
+              {
+                name: "sort",
+                type: { kind: "primitive", type: "string" },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain(
+      "async def list(self, *, page: int | None = None, page_size: int | None = None, sort: str | None = None)"
+    );
+    // Should NOT use the **params catch-all anymore.
+    expect(out).not.toContain("**params");
+  });
+
+  it("emits required query params before the `*` separator with no default", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "search",
+        className: "SearchResource",
+        path: "/search",
+        scopeParams: [],
+        operations: [
+          {
+            name: "run",
+            operationId: "get_search",
+            method: "GET",
+            path: "/api/v1/search",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [
+              {
+                name: "q",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+              {
+                name: "limit",
+                type: { kind: "primitive", type: "integer" },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    expect(out).toContain(
+      "async def run(self, q: str, *, limit: int | None = None)"
+    );
+  });
+
+  it("drops optional query params from the dict when caller passes None", () => {
+    // We render a literal dict in the call site so consumers don't need to
+    // think about which keys to omit. The runtime can drop None values, but
+    // exposing them as `None` keys in the wire dict is wrong — verify the
+    // emitter builds a conditional dict instead.
+    const out = emitPythonResourceFile(
+      {
+        name: "teams",
+        className: "TeamResource",
+        path: "/teams",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "get_teams",
+            method: "GET",
+            path: "/api/v1/teams",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [
+              {
+                name: "page",
+                type: { kind: "primitive", type: "integer" },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+    // Build query dict only with non-None values so the runtime never sends
+    // `?page=null` and the user can omit any optional kwarg.
+    expect(out).toMatch(/query: dict\[str, object\] = \{\}/);
+    expect(out).toMatch(/if page is not None:\s+query\["page"\] = page/);
+    expect(out).toContain('return await self._http.request(f"/api/v1/teams", query=query)');
+  });
+
   it("imports `datetime` when a TypedDict body field uses it", () => {
     const out = emitPythonResourceFile(
       {
