@@ -27,6 +27,10 @@ export function emitPydanticFile(
 
   for (const line of generatedHeaderPython().trim().split("\n")) { cb.line(line); };
   cb.line();
+  const allFieldTypes = schemas.flatMap((s) => s.fields.map((f) => f.type));
+  if (typeRefsUseDatetime(allFieldTypes)) {
+    cb.line("from datetime import datetime");
+  }
   cb.line("from pydantic import BaseModel");
   if (typingImports.size > 0) {
     cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
@@ -59,6 +63,10 @@ export function emitPydanticFile(
   }
 
   return cb.toString();
+}
+
+export function emitPydanticModel(cb: CodeBuilder, schema: SchemaDef): void {
+  emitModel(cb, schema);
 }
 
 function emitModel(cb: CodeBuilder, schema: SchemaDef): void {
@@ -148,8 +156,11 @@ export function typeRefToPython(ref: TypeRef): string {
 function primitiveToPython(type: string): string {
   switch (type) {
     case "string":
-    case "datetime":
       return "str";
+    case "datetime":
+      // Pydantic v2 auto-parses ISO-8601 strings into `datetime`. Emitting the
+      // typed annotation propagates the format up to the static type system.
+      return "datetime";
     case "integer":
       return "int";
     case "float":
@@ -158,6 +169,31 @@ function primitiveToPython(type: string): string {
       return "bool";
     default:
       return "object";
+  }
+}
+
+/** True if any TypeRef in `types` (recursively) is a datetime primitive. */
+export function typeRefsUseDatetime(types: ReadonlyArray<TypeRef>): boolean {
+  for (const t of types) if (typeRefUsesDatetime(t)) return true;
+  return false;
+}
+
+function typeRefUsesDatetime(ref: TypeRef): boolean {
+  switch (ref.kind) {
+    case "primitive":
+      return ref.type === "datetime";
+    case "array":
+      return typeRefUsesDatetime(ref.items);
+    case "object":
+      return ref.fields.some((f) => typeRefUsesDatetime(f.type));
+    case "optional":
+      return typeRefUsesDatetime(ref.inner);
+    case "union":
+      return ref.variants.some(typeRefUsesDatetime);
+    case "map":
+      return typeRefUsesDatetime(ref.valueType);
+    default:
+      return false;
   }
 }
 
