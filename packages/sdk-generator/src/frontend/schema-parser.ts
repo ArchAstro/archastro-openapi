@@ -3,6 +3,8 @@ import type {
   FieldDef,
   TypeRef,
   TypeDef,
+  UnionTypeRef,
+  UnionDiscriminator,
 } from "../ast/types.js";
 
 // ─── OpenAPI JSON Schema subset we consume ───────────────────────
@@ -24,6 +26,7 @@ interface JsonSchema {
   examples?: unknown[];
   pattern?: string;
   nullable?: boolean;
+  discriminator?: { propertyName: string; mapping?: Record<string, string> };
   "x-sdk"?: string;
 }
 
@@ -61,6 +64,9 @@ export function parseSchemas(components: OpenApiComponents): {
     for (const field of schema.fields) {
       collectRefsFromTypeRef(field.type, deps);
     }
+    if (schema.unionType) {
+      collectRefsFromTypeRef(schema.unionType, deps);
+    }
     deps.delete(schema.name); // exclude self-references
     schema.refDeps = [...deps];
   }
@@ -90,7 +96,11 @@ export function jsonSchemaToTypeRef(schema: JsonSchema): TypeRef {
     const nonNull = variants.filter(
       (v) => !(v.kind === "primitive" && v.type === "string" && false)
     );
-    return nonNull.length === 1 ? nonNull[0]! : { kind: "union", variants };
+    if (nonNull.length === 1) return nonNull[0]!;
+    const discriminator = parseDiscriminator(schema.discriminator);
+    return discriminator
+      ? { kind: "union", variants, discriminator }
+      : { kind: "union", variants };
   }
 
   if (schema.allOf) {
@@ -209,6 +219,19 @@ function parseTypeDef(name: string, schema: JsonSchema): TypeDef {
 }
 
 function parseSchemaDef(name: string, schema: JsonSchema): SchemaDef {
+  // A top-level oneOf (Schema.Union ref form) becomes a SchemaDef whose
+  // `unionType` carries variants + discriminator. `fields` stays empty —
+  // backends branch on `unionType` to emit a tagged-union schema instead of
+  // an object.
+  if (schema.oneOf && !schema.properties && !schema.allOf) {
+    return {
+      name,
+      description: schema.description,
+      fields: [],
+      unionType: buildUnionTypeRef(schema),
+    };
+  }
+
   // Handle allOf by merging schemas
   let merged = schema;
   if (schema.allOf) {
@@ -226,6 +249,26 @@ function parseSchemaDef(name: string, schema: JsonSchema): SchemaDef {
     description: merged.description ?? schema.description,
     fields: parseFields(merged),
   };
+}
+
+function buildUnionTypeRef(schema: JsonSchema): UnionTypeRef {
+  const variants = (schema.oneOf ?? []).map(jsonSchemaToTypeRef);
+  const discriminator = parseDiscriminator(schema.discriminator);
+  return discriminator
+    ? { kind: "union", variants, discriminator }
+    : { kind: "union", variants };
+}
+
+function parseDiscriminator(
+  raw: JsonSchema["discriminator"]
+): UnionDiscriminator | undefined {
+  if (!raw) return undefined;
+  if (!raw.mapping) return { propertyName: raw.propertyName };
+  const mapping: Record<string, string> = {};
+  for (const [tag, ref] of Object.entries(raw.mapping)) {
+    mapping[tag] = extractRefName(ref);
+  }
+  return { propertyName: raw.propertyName, mapping };
 }
 
 function parseFields(schema: JsonSchema): FieldDef[] {

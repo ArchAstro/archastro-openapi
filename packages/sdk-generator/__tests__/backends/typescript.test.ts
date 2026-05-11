@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { SchemaDef } from "../../src/ast/types.js";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generateTypeScript } from "../../src/backends/typescript/index.js";
 import { emitZodSchemaFile } from "../../src/backends/typescript/zod-emitter.js";
@@ -840,5 +841,157 @@ describe("Multi-version TypeScript generation", () => {
     expect(
       typeFiles.every((f) => f.startsWith("/tmp/test-multi-sdk/src/types/"))
     ).toBe(true);
+  });
+});
+
+describe("Zod emitter — enum edge cases", () => {
+  it("emits z.literal for single-value enums (used as discriminator on union variants)", () => {
+    const out = emitZodSchemaFile([
+      {
+        name: "EchoVariant",
+        fields: [
+          {
+            name: "type",
+            type: { kind: "enum", values: ["echo"] },
+            required: true,
+            default: "echo",
+          },
+          {
+            name: "message",
+            type: { kind: "primitive", type: "string" },
+            required: true,
+          },
+        ],
+      },
+    ]);
+    expect(out).toMatch(/type: z\.literal\("echo"\)/);
+    // z.discriminatedUnion requires a plain z.literal — never .default() —
+    // because the discriminator branch must be statically inferable.
+    expect(out).not.toMatch(/z\.literal\("echo"\)\.default/);
+  });
+});
+
+describe("Zod emitter — discriminated unions", () => {
+  const echoVariant: SchemaDef = {
+    name: "EchoVariant",
+    fields: [
+      {
+        name: "type",
+        type: { kind: "enum", values: ["echo"] },
+        required: true,
+        default: "echo",
+      },
+      {
+        name: "message",
+        type: { kind: "primitive", type: "string" },
+        required: true,
+      },
+    ],
+  };
+  const delayVariant: SchemaDef = {
+    name: "DelayVariant",
+    fields: [
+      {
+        name: "type",
+        type: { kind: "enum", values: ["delay"] },
+        required: true,
+        default: "delay",
+      },
+      {
+        name: "duration_ms",
+        type: { kind: "primitive", type: "integer" },
+        required: true,
+      },
+    ],
+  };
+  const builtinConfig: SchemaDef = {
+    name: "BuiltinConfig",
+    description: "Tagged union of builtin transforms.",
+    fields: [],
+    unionType: {
+      kind: "union",
+      variants: [
+        { kind: "ref", schema: "EchoVariant" },
+        { kind: "ref", schema: "DelayVariant" },
+      ],
+      discriminator: {
+        propertyName: "type",
+        mapping: { echo: "EchoVariant", delay: "DelayVariant" },
+      },
+    },
+  };
+  const output = emitZodSchemaFile([echoVariant, delayVariant, builtinConfig]);
+
+  it("emits variants as plain z.object with z.literal discriminator fields", () => {
+    expect(output).toContain("export const echoVariantSchema = z.object({");
+    expect(output).toContain("export const delayVariantSchema = z.object({");
+    expect(output).toMatch(/type: z\.literal\("echo"\)/);
+    expect(output).toMatch(/type: z\.literal\("delay"\)/);
+  });
+
+  it("emits the union as z.discriminatedUnion referencing the variant schemas", () => {
+    expect(output).toContain(
+      'export const builtinConfigSchema = z.discriminatedUnion("type", [echoVariantSchema, delayVariantSchema]);'
+    );
+  });
+
+  it("emits an inferred type alias on top of the union schema", () => {
+    expect(output).toContain(
+      "export type BuiltinConfig = z.infer<typeof builtinConfigSchema>;"
+    );
+  });
+
+  it("does not wrap the union in z.object", () => {
+    expect(output).not.toMatch(/builtinConfigSchema = z\.object/);
+  });
+
+  it("preserves the union description as a JSDoc comment above the schema", () => {
+    expect(output).toMatch(
+      /\/\*\* Tagged union of builtin transforms\. \*\/\s*\nexport const builtinConfigSchema = z\.discriminatedUnion/
+    );
+  });
+});
+
+describe("Zod emitter — plain oneOf (no discriminator)", () => {
+  const circle: SchemaDef = {
+    name: "Circle",
+    fields: [
+      {
+        name: "radius",
+        type: { kind: "primitive", type: "float" },
+        required: true,
+      },
+    ],
+  };
+  const square: SchemaDef = {
+    name: "Square",
+    fields: [
+      {
+        name: "side",
+        type: { kind: "primitive", type: "float" },
+        required: true,
+      },
+    ],
+  };
+  const anyShape: SchemaDef = {
+    name: "AnyShape",
+    fields: [],
+    unionType: {
+      kind: "union",
+      variants: [
+        { kind: "ref", schema: "Circle" },
+        { kind: "ref", schema: "Square" },
+      ],
+    },
+  };
+  const output = emitZodSchemaFile([circle, square, anyShape]);
+
+  it("falls back to z.union when no discriminator is present", () => {
+    expect(output).toContain(
+      "export const anyShapeSchema = z.union([circleSchema, squareSchema]);"
+    );
+    expect(output).toContain(
+      "export type AnyShape = z.infer<typeof anyShapeSchema>;"
+    );
   });
 });

@@ -421,3 +421,165 @@ describe("parseOpenApiSpec with multi-version spec and v2 default", () => {
     expect(ast.defaultVersion).toBe("v2");
   });
 });
+
+// ─── Discriminated unions (Schema.Union → OpenAPI oneOf + discriminator) ──
+//
+// The API DSL renders Schema.Union as:
+//   { oneOf: [{ $ref }, ...], discriminator: { propertyName, mapping } }
+// with each variant landing in components/schemas as a plain object schema
+// whose discriminator field is a single-value enum (e.g. `enum: ["echo"]`).
+
+const unionSpec = {
+  openapi: "3.0.0",
+  info: { title: "Union API", version: "1.0.0" },
+  paths: {},
+  components: {
+    schemas: {
+      BuiltinConfig: {
+        description:
+          "A built-in config — one of several shapes selected by `type`.",
+        oneOf: [
+          { $ref: "#/components/schemas/EchoVariant" },
+          { $ref: "#/components/schemas/DelayVariant" },
+        ],
+        discriminator: {
+          propertyName: "type",
+          mapping: {
+            echo: "#/components/schemas/EchoVariant",
+            delay: "#/components/schemas/DelayVariant",
+          },
+        },
+      },
+      EchoVariant: {
+        type: "object",
+        properties: {
+          type: { type: "string", enum: ["echo"], default: "echo" },
+          message: { type: "string" },
+        },
+        required: ["type", "message"],
+      },
+      DelayVariant: {
+        type: "object",
+        properties: {
+          type: { type: "string", enum: ["delay"], default: "delay" },
+          duration_ms: { type: "integer" },
+        },
+        required: ["type", "duration_ms"],
+      },
+    },
+  },
+};
+
+describe("parseOpenApiSpec discriminated unions", () => {
+  const ast = parseOpenApiSpec(unionSpec, {
+    name: "union-sdk",
+    version: "0.1.0",
+    baseUrl: "https://example.com",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+
+  it("represents BuiltinConfig as a SchemaDef whose `unionType` is the oneOf", () => {
+    const config = ast.schemas.find((s) => s.name === "BuiltinConfig");
+    expect(config).toBeDefined();
+    expect(config!.unionType).toBeDefined();
+    expect(config!.unionType!.kind).toBe("union");
+    // A top-level oneOf is not an object — no fields.
+    expect(config!.fields).toEqual([]);
+  });
+
+  it("captures discriminator.propertyName", () => {
+    const config = ast.schemas.find((s) => s.name === "BuiltinConfig")!;
+    expect(config.unionType!.discriminator).toBeDefined();
+    expect(config.unionType!.discriminator!.propertyName).toBe("type");
+  });
+
+  it("resolves discriminator.mapping $refs into bare schema names", () => {
+    const config = ast.schemas.find((s) => s.name === "BuiltinConfig")!;
+    expect(config.unionType!.discriminator!.mapping).toEqual({
+      echo: "EchoVariant",
+      delay: "DelayVariant",
+    });
+  });
+
+  it("captures variants as RefTypeRefs pointing to variant schemas", () => {
+    const config = ast.schemas.find((s) => s.name === "BuiltinConfig")!;
+    const variants = config.unionType!.variants;
+    expect(variants).toHaveLength(2);
+    expect(variants[0]).toEqual({ kind: "ref", schema: "EchoVariant" });
+    expect(variants[1]).toEqual({ kind: "ref", schema: "DelayVariant" });
+  });
+
+  it("records variant schemas in refDeps so cross-file imports + topo sort work", () => {
+    const config = ast.schemas.find((s) => s.name === "BuiltinConfig")!;
+    expect(config.refDeps).toContain("EchoVariant");
+    expect(config.refDeps).toContain("DelayVariant");
+  });
+
+  it("topo-sorts variant schemas before the union", () => {
+    const names = ast.schemas.map((s) => s.name);
+    expect(names.indexOf("EchoVariant")).toBeLessThan(
+      names.indexOf("BuiltinConfig")
+    );
+    expect(names.indexOf("DelayVariant")).toBeLessThan(
+      names.indexOf("BuiltinConfig")
+    );
+  });
+
+  it("preserves the variant's discriminator field as a single-value enum with default", () => {
+    const echo = ast.schemas.find((s) => s.name === "EchoVariant")!;
+    const typeField = echo.fields.find((f) => f.name === "type")!;
+    expect(typeField.type).toEqual({ kind: "enum", values: ["echo"] });
+    expect(typeField.default).toBe("echo");
+    expect(typeField.required).toBe(true);
+  });
+});
+
+describe("parseOpenApiSpec plain oneOf (no discriminator)", () => {
+  const plainOneOfSpec = {
+    openapi: "3.0.0",
+    info: { title: "Plain oneOf", version: "1.0.0" },
+    paths: {},
+    components: {
+      schemas: {
+        AnyShape: {
+          oneOf: [
+            { $ref: "#/components/schemas/Circle" },
+            { $ref: "#/components/schemas/Square" },
+          ],
+        },
+        Circle: {
+          type: "object",
+          properties: { radius: { type: "number" } },
+          required: ["radius"],
+        },
+        Square: {
+          type: "object",
+          properties: { side: { type: "number" } },
+          required: ["side"],
+        },
+      },
+    },
+  };
+
+  const ast = parseOpenApiSpec(plainOneOfSpec, {
+    name: "shape-sdk",
+    version: "0.1.0",
+    baseUrl: "https://example.com",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+
+  it("captures unionType with no discriminator", () => {
+    const shape = ast.schemas.find((s) => s.name === "AnyShape")!;
+    expect(shape.unionType).toBeDefined();
+    expect(shape.unionType!.discriminator).toBeUndefined();
+    expect(shape.unionType!.variants).toHaveLength(2);
+  });
+
+  it("variant refs still populate refDeps", () => {
+    const shape = ast.schemas.find((s) => s.name === "AnyShape")!;
+    expect(shape.refDeps).toContain("Circle");
+    expect(shape.refDeps).toContain("Square");
+  });
+});

@@ -117,6 +117,23 @@ export interface EnumTypeRef {
 export interface UnionTypeRef {
   kind: "union";
   variants: TypeRef[];
+  /**
+   * OpenAPI discriminator metadata. When present, this is a tagged union
+   * (oneOf + discriminator + mapping). Backends emit language-native tagged
+   * unions (Zod `z.discriminatedUnion`, Pydantic `Annotated[Union[...],
+   * Field(discriminator=...)]`).
+   */
+  discriminator?: UnionDiscriminator;
+}
+
+export interface UnionDiscriminator {
+  /** The field name whose value selects a variant (e.g. "type"). */
+  propertyName: string;
+  /**
+   * Tag value → variant schema name. Refs ("#/components/schemas/Foo") are
+   * resolved to bare names ("Foo") by the frontend.
+   */
+  mapping?: Record<string, string>;
 }
 
 export interface OptionalTypeRef {
@@ -166,7 +183,12 @@ export interface SchemaDef {
   name: string;
   description?: string;
   fields: FieldDef[];
-  oneOfGroups?: string[][];
+  /**
+   * When present, this SchemaDef represents a top-level oneOf union, not an
+   * object. `fields` is empty in that case; backends emit a tagged union
+   * (discriminated when `unionType.discriminator` is set, plain otherwise).
+   */
+  unionType?: UnionTypeRef;
   /** Names of other schemas referenced by this schema's fields (populated by frontend). */
   refDeps?: string[];
 }

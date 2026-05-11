@@ -70,6 +70,12 @@ function emitSchema(cb: CodeBuilder, schema: SchemaDef): void {
     cb.line(`/** ${schema.description} */`);
   }
 
+  if (schema.unionType) {
+    cb.line(`export const ${schemaVar} = ${unionTypeToZod(schema.unionType)};`);
+    cb.line(`export type ${typeName} = z.infer<typeof ${schemaVar}>;`);
+    return;
+  }
+
   cb.line(`export const ${schemaVar} = z.object({`);
   cb.indent();
 
@@ -80,6 +86,20 @@ function emitSchema(cb: CodeBuilder, schema: SchemaDef): void {
   cb.dedent();
   cb.line(`});`);
   cb.line(`export type ${typeName} = z.infer<typeof ${schemaVar}>;`);
+}
+
+/**
+ * Render a UnionTypeRef as a Zod schema expression for top-level union
+ * SchemaDefs. Discriminated unions use `z.discriminatedUnion`, which gives
+ * callers exhaustive switch typing and faster runtime parsing; plain oneOf
+ * falls back to `z.union`.
+ */
+function unionTypeToZod(union: import("../../ast/types.js").UnionTypeRef): string {
+  const variants = union.variants.map(typeRefToZod).join(", ");
+  if (union.discriminator) {
+    return `z.discriminatedUnion("${union.discriminator.propertyName}", [${variants}])`;
+  }
+  return `z.union([${variants}])`;
 }
 
 /**

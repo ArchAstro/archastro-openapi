@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { SchemaDef } from "../../src/ast/types.js";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generatePython } from "../../src/backends/python/index.js";
 import { emitPydanticFile } from "../../src/backends/python/pydantic-emitter.js";
@@ -1775,5 +1776,147 @@ describe("Python contract-tests emitter wires channels into the conftest", () =>
       files["/tmp/test-python-sdk-chanless/tests/contract/conftest.py"]!;
     expect(conftest).not.toContain("_start_harness_service");
     expect(conftest).not.toContain("ARCHASTRO_HARNESS_WS_URL");
+  });
+});
+
+describe("Pydantic emitter — enum edge cases", () => {
+  it("emits Literal with a single value for single-value enums (discriminator on union variants)", () => {
+    const out = emitPydanticFile([
+      {
+        name: "EchoVariant",
+        fields: [
+          {
+            name: "type",
+            type: { kind: "enum", values: ["echo"] },
+            required: true,
+            default: "echo",
+          },
+          {
+            name: "message",
+            type: { kind: "primitive", type: "string" },
+            required: true,
+          },
+        ],
+      },
+    ]);
+    expect(out).toMatch(/type: Literal\["echo"\] = "echo"/);
+    expect(out).toContain("from typing import");
+    expect(out).toMatch(/from typing import [^\n]*Literal/);
+  });
+});
+
+describe("Pydantic emitter — discriminated unions", () => {
+  const echoVariant: SchemaDef = {
+    name: "EchoVariant",
+    fields: [
+      {
+        name: "type",
+        type: { kind: "enum", values: ["echo"] },
+        required: true,
+        default: "echo",
+      },
+      {
+        name: "message",
+        type: { kind: "primitive", type: "string" },
+        required: true,
+      },
+    ],
+  };
+  const delayVariant: SchemaDef = {
+    name: "DelayVariant",
+    fields: [
+      {
+        name: "type",
+        type: { kind: "enum", values: ["delay"] },
+        required: true,
+        default: "delay",
+      },
+      {
+        name: "duration_ms",
+        type: { kind: "primitive", type: "integer" },
+        required: true,
+      },
+    ],
+  };
+  const builtinConfig: SchemaDef = {
+    name: "BuiltinConfig",
+    description: "Tagged union of builtin transforms.",
+    fields: [],
+    unionType: {
+      kind: "union",
+      variants: [
+        { kind: "ref", schema: "EchoVariant" },
+        { kind: "ref", schema: "DelayVariant" },
+      ],
+      discriminator: {
+        propertyName: "type",
+        mapping: { echo: "EchoVariant", delay: "DelayVariant" },
+      },
+    },
+  };
+  const output = emitPydanticFile([echoVariant, delayVariant, builtinConfig]);
+
+  it("emits variant classes with a Literal-typed discriminator + default", () => {
+    expect(output).toContain("class EchoVariant(BaseModel):");
+    expect(output).toContain("class DelayVariant(BaseModel):");
+    expect(output).toMatch(/type: Literal\["echo"\] = "echo"/);
+    expect(output).toMatch(/type: Literal\["delay"\] = "delay"/);
+  });
+
+  it("emits the union as Annotated[Union[...], Field(discriminator=...)]", () => {
+    expect(output).toContain(
+      'BuiltinConfig = Annotated[Union[EchoVariant, DelayVariant], Field(discriminator="type")]'
+    );
+  });
+
+  it("imports Annotated + Union from typing and Field from pydantic", () => {
+    expect(output).toMatch(/from typing import [^\n]*Annotated/);
+    expect(output).toMatch(/from typing import [^\n]*Union/);
+    expect(output).toMatch(/from pydantic import [^\n]*\bField\b/);
+  });
+
+  it("does NOT emit a `class BuiltinConfig(BaseModel)` for the union", () => {
+    expect(output).not.toContain("class BuiltinConfig(BaseModel):");
+  });
+});
+
+describe("Pydantic emitter — plain oneOf (no discriminator)", () => {
+  const circle: SchemaDef = {
+    name: "Circle",
+    fields: [
+      {
+        name: "radius",
+        type: { kind: "primitive", type: "float" },
+        required: true,
+      },
+    ],
+  };
+  const square: SchemaDef = {
+    name: "Square",
+    fields: [
+      {
+        name: "side",
+        type: { kind: "primitive", type: "float" },
+        required: true,
+      },
+    ],
+  };
+  const anyShape: SchemaDef = {
+    name: "AnyShape",
+    fields: [],
+    unionType: {
+      kind: "union",
+      variants: [
+        { kind: "ref", schema: "Circle" },
+        { kind: "ref", schema: "Square" },
+      ],
+    },
+  };
+  const output = emitPydanticFile([circle, square, anyShape]);
+
+  it("emits a Union type alias (no Field discriminator) when no discriminator is present", () => {
+    expect(output).toContain("AnyShape = Union[Circle, Square]");
+    expect(output).toMatch(/from typing import [^\n]*Union/);
+    expect(output).not.toContain('Field(discriminator=');
   });
 });

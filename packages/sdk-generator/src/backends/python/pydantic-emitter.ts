@@ -1,4 +1,4 @@
-import type { SchemaDef, FieldDef, TypeRef } from "../../ast/types.js";
+import type { SchemaDef, FieldDef, TypeRef, UnionTypeRef } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython, emitPythonImportLine } from "../../utils/codegen.js";
 
 /**
@@ -27,11 +27,20 @@ export function emitPydanticFile(
 
   for (const line of generatedHeaderPython().trim().split("\n")) { cb.line(line); };
   cb.line();
-  const allFieldTypes = schemas.flatMap((s) => s.fields.map((f) => f.type));
+  const allFieldTypes = schemas.flatMap((s) => {
+    const types: TypeRef[] = s.fields.map((f) => f.type);
+    if (s.unionType) types.push(s.unionType);
+    return types;
+  });
   if (typeRefsUseDatetime(allFieldTypes)) {
     cb.line("from datetime import datetime");
   }
-  cb.line("from pydantic import BaseModel");
+  // A discriminated union needs `pydantic.Field(discriminator=...)`; plain
+  // BaseModel-only files keep the smaller import to avoid lint noise.
+  const pydanticImports = schemas.some((s) => s.unionType?.discriminator)
+    ? "BaseModel, Field"
+    : "BaseModel";
+  cb.line(`from pydantic import ${pydanticImports}`);
   if (typingImports.size > 0) {
     cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
   }
@@ -79,6 +88,14 @@ function emitModel(cb: CodeBuilder, schema: SchemaDef): void {
     }
   }
 
+  // Top-level unions become a typing alias (not a BaseModel subclass).
+  // Discriminated unions get Pydantic's discriminator metadata for
+  // tagged-union deserialization.
+  if (schema.unionType) {
+    cb.line(`${schema.name} = ${unionTypeToPython(schema.unionType)}`);
+    return;
+  }
+
   cb.pyBlock(`class ${schema.name}(BaseModel)`, () => {
     if (schema.fields.length === 0) {
       cb.line("pass");
@@ -89,6 +106,14 @@ function emitModel(cb: CodeBuilder, schema: SchemaDef): void {
       emitField(cb, field);
     }
   });
+}
+
+function unionTypeToPython(union: UnionTypeRef): string {
+  const variants = union.variants.map(typeRefToPython).join(", ");
+  if (union.discriminator) {
+    return `Annotated[Union[${variants}], Field(discriminator="${union.discriminator.propertyName}")]`;
+  }
+  return `Union[${variants}]`;
 }
 
 function emitField(cb: CodeBuilder, field: FieldDef): void {
@@ -210,6 +235,16 @@ function collectTypingImports(schemas: SchemaDef[]): Set<string> {
   for (const schema of schemas) {
     for (const field of schema.fields) {
       collectImportsFromType(field.type, imports);
+    }
+    if (schema.unionType) {
+      // The union alias itself always needs `Union`; the tagged form adds
+      // `Annotated` (the discriminator wrapper). Walk variants so anything
+      // they expose (Literal, Optional, etc.) flows through too.
+      imports.add("Union");
+      if (schema.unionType.discriminator) imports.add("Annotated");
+      for (const v of schema.unionType.variants) {
+        collectImportsFromType(v, imports);
+      }
     }
   }
 
