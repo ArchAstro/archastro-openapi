@@ -8,6 +8,7 @@ import type {
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
+import { pythonParameterName, uniquePythonParameterNames } from "./identifiers.js";
 import { typeRefToPython, typeRefsUseDatetime } from "./pydantic-emitter.js";
 import { hoistInlineObjects } from "./inline-object-hoist.js";
 import {
@@ -109,9 +110,9 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
       const join = channel.joins[i]!;
       const suffix = channel.joins.length > 1 ? `_${i + 1}` : "";
       const topicName = join.name
-        ? snakeCase(join.name.replace(/^join_/, "topic_"))
+        ? pythonParameterName(join.name.replace(/^join_/, "topic_"))
         : undefined;
-      const joinName = join.name ? snakeCase(join.name) : undefined;
+      const joinName = join.name ? pythonParameterName(join.name) : undefined;
       cb.line();
       emitTopicBuilder(
         cb,
@@ -209,12 +210,12 @@ function emitTopicBuilder(
   suffix = "",
   explicitName?: string
 ): void {
-  const paramMatches = [...pattern.matchAll(/\{(\w+)\}/g)];
-  const params = paramMatches.map(([, name]) => snakeCase(name!));
-  const sig = params.map((p) => `${p}: str`).join(", ");
+  const params = topicPythonParams(pattern);
+  const sig = params.map((p) => `${p.pyName}: str`).join(", ");
 
+  let paramIndex = 0;
   const template = pattern.replace(/\{(\w+)\}/g, (_match, name: string) => {
-    return `{${snakeCase(name)}}`;
+    return `{${params[paramIndex++]?.pyName ?? pythonParameterName(name)}}`;
   });
 
   if (description) {
@@ -238,24 +239,18 @@ function emitJoinMethod(
   explicitName?: string,
   explicitTopicName?: string
 ): void {
-  const paramMatches = [...pattern.matchAll(/\{(\w+)\}/g)];
-  const topicParams = paramMatches.map(([, name]) => snakeCase(name!));
-  const topicSet = new Set(topicParams);
-  const payloadParams = joinParams.filter(
-    (p) => !topicSet.has(snakeCase(p.name))
-  );
+  const { topicParams, payloadParams } = joinPythonParams(pattern, joinParams);
 
   const sigParts = [
     "cls",
     'socket: "Socket"',
-    ...topicParams.map((p) => `${p}: str`),
+    ...topicParams.map((p) => `${p.pyName}: str`),
   ];
   if (payloadParams.length > 0) {
     sigParts.push("*");
-    for (const p of payloadParams) {
-      const pyName = snakeCase(p.name);
-      const pyType = typeRefToPython(p.type);
-      if (p.required) {
+    for (const { param, pyName } of payloadParams) {
+      const pyType = typeRefToPython(param.type);
+      if (param.required) {
         sigParts.push(`${pyName}: ${pyType}`);
       } else {
         sigParts.push(`${pyName}: ${pyType} | None = None`);
@@ -265,7 +260,7 @@ function emitJoinMethod(
   const sig = sigParts.join(", ");
   const topicMethod =
     explicitTopicName ?? (suffix ? `topic${suffix}` : "topic");
-  const topicArgs = topicParams.join(", ");
+  const topicArgs = topicParams.map((p) => p.pyName).join(", ");
   const methodName = explicitName ?? (suffix ? `join${suffix}` : "join");
 
   if (description) {
@@ -278,14 +273,13 @@ function emitJoinMethod(
     cb.line("channel = socket.channel(topic)");
     if (payloadParams.length > 0) {
       cb.line("payload: dict[str, object] = {}");
-      for (const p of payloadParams) {
-        const pyName = snakeCase(p.name);
+      for (const { param, pyName } of payloadParams) {
         // The wire key must match the spec field name; `p.name` preserves
         // the original casing (typically camelCase), while the Python kwarg
         // is snake_cased for idiom. Using `pyName` on both sides would
         // rename the field mid-flight and fail server-side validation.
-        const wireKey = JSON.stringify(p.name);
-        if (p.required) {
+        const wireKey = JSON.stringify(param.name);
+        if (param.required) {
           cb.line(`payload[${wireKey}] = ${pyName}`);
         } else {
           cb.line(`if ${pyName} is not None:`);
@@ -300,12 +294,77 @@ function emitJoinMethod(
   });
 }
 
+interface TopicParamName {
+  rawName: string;
+  pyName: string;
+}
+
+interface PayloadParamName {
+  param: ParamDef;
+  pyName: string;
+}
+
+function topicPythonParams(pattern: string): TopicParamName[] {
+  const rawNames = topicRawNames(pattern);
+  const pyNames = uniquePythonParameterNames(rawNames);
+  return rawNames.map((rawName, index) => ({
+    rawName,
+    pyName: pyNames[index]!,
+  }));
+}
+
+function joinPythonParams(
+  pattern: string,
+  joinParams: ParamDef[]
+): { topicParams: TopicParamName[]; payloadParams: PayloadParamName[] } {
+  const rawTopicNames = topicRawNames(pattern);
+  const topicMatcher = topicParamMatcher(rawTopicNames, joinParams);
+  const payloadParams = joinParams.filter(
+    (param) => !topicMatcher(param.name)
+  );
+  const pyNames = uniquePythonParameterNames([
+    ...rawTopicNames,
+    ...payloadParams.map((param) => param.name),
+  ]);
+  const topicParams = rawTopicNames.map((rawName, index) => ({
+    rawName,
+    pyName: pyNames[index]!,
+  }));
+  const namedPayloadParams = payloadParams.map((param, index) => ({
+    param,
+    pyName: pyNames[rawTopicNames.length + index]!,
+  }));
+
+  return { topicParams, payloadParams: namedPayloadParams };
+}
+
+function topicRawNames(pattern: string): string[] {
+  return [...pattern.matchAll(/\{(\w+)\}/g)].map(([, name]) => name!);
+}
+
+function topicParamMatcher(
+  rawTopicNames: string[],
+  joinParams: ParamDef[]
+): (paramName: string) => boolean {
+  const exactTopicNames = new Set(rawTopicNames);
+  const exactParamNames = new Set(joinParams.map((param) => param.name));
+  const legacySnakeTopicKeys = new Set(
+    rawTopicNames
+      .filter((name) => !exactParamNames.has(name) && snakeCase(name) === name)
+      .map((name) => snakeCase(name))
+  );
+
+  return (paramName: string) =>
+    exactTopicNames.has(paramName) ||
+    legacySnakeTopicKeys.has(snakeCase(paramName));
+}
+
 function emitMessageMethod(
   cb: CodeBuilder,
   msg: ChannelMessageDef,
   inputClassName: string | undefined
 ): void {
-  const methodName = snakeCase(msg.event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const methodName = pythonParameterName(msg.event.replace(/[^a-zA-Z0-9_]/g, "_"));
   const payloadType = inputClassName ?? "dict";
   const returnType = typeRefToPython(msg.returnType);
 
@@ -327,7 +386,7 @@ function emitPushHandler(
   payloadClassName: string | undefined
 ): void {
   const event = push.event.replace(/[^a-zA-Z0-9_]/g, "_");
-  const handlerName = "on_" + snakeCase(event);
+  const handlerName = "on_" + pythonParameterName(event);
   const payloadType = payloadClassName ?? typeRefForPushPayload(push.payloadType);
   // Phoenix channel handlers receive a single payload arg. Returning is
   // unobserved in the runtime, but `None` is the right contract for users.

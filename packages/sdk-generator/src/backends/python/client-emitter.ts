@@ -1,7 +1,7 @@
 import type { SdkSpec, OperationDef } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
-import { snakeCase } from "../../utils/naming.js";
-import { pyAuthMethodName } from "./auth-emitter.js";
+import { pythonParameterName } from "./identifiers.js";
+import { extractPythonAuthInputParams, pyAuthMethodName } from "./auth-emitter.js";
 import { pyVersionClassName } from "./namespace-emitter.js";
 
 export function emitPythonClientFile(spec: SdkSpec): string {
@@ -142,16 +142,16 @@ export function emitPythonClientFile(spec: SdkSpec): string {
           const header = schemes.publishable_key.name ?? "x-archastro-api-key";
           // Only required params for the factory constructor
           const requiredParams = getOperationRequiredInputParams(loginOp);
-          const sig = requiredParams.map((p) => `${p}: str`).join(", ");
+          const sig = requiredParams.map((p) => `${p.name}: str`).join(", ");
 
           // Discover token field accessors from the response schema
           const accessTokenField = findSdkField(loginOp, "access_token");
           const refreshTokenField = findSdkField(loginOp, "refresh_token");
           const tokenAccessor = accessTokenField
-            ? snakeCase(accessTokenField.sdkRole!)
+            ? pythonParameterName(accessTokenField.sdkRole!)
             : "access_token";
           const refreshAccessor = refreshTokenField
-            ? snakeCase(refreshTokenField.sdkRole!)
+            ? pythonParameterName(refreshTokenField.sdkRole!)
             : "refresh_token";
 
           const desc = (flows as Record<string, Record<string, unknown>>).login?.description as string
@@ -167,7 +167,9 @@ export function emitPythonClientFile(spec: SdkSpec): string {
               cb.line("kwargs = {}");
               cb.pyBlock("if base_url", () => { cb.line('kwargs["base_url"] = base_url'); });
               cb.line(`client = cls(default_headers={"${header}": api_key}, **kwargs)`);
-              cb.line(`tokens = await client.auth.${authMethod}(${requiredParams.join(", ")})`);
+              cb.line(
+                `tokens = await client.auth.${authMethod}(${requiredParams.map((p) => p.name).join(", ")})`
+              );
               cb.pyBlock(`if not tokens.${tokenAccessor}`, () => {
                 cb.line(`raise ValueError("Login did not return an access token")`);
               });
@@ -228,21 +230,10 @@ function findLoginOperation(
   );
 }
 
-function getOperationRequiredInputParams(op: OperationDef): string[] {
-  const params: string[] = [];
-  if (op.body?.fields) {
-    for (const f of op.body.fields) {
-      if (!f.sdkRole && f.required) {
-        params.push(snakeCase(f.name));
-      }
-    }
-  }
-  for (const p of op.queryParams) {
-    if (p.required) {
-      params.push(snakeCase(p.name));
-    }
-  }
-  return params;
+function getOperationRequiredInputParams(
+  op: OperationDef
+): ReturnType<typeof extractPythonAuthInputParams> {
+  return extractPythonAuthInputParams(op).filter((param) => param.required);
 }
 
 function findSdkField(

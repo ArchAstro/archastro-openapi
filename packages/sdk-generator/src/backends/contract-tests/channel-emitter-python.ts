@@ -7,6 +7,7 @@ import type {
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
+import { pythonParameterName, uniquePythonParameterNames } from "../python/identifiers.js";
 import { generateDummyValue } from "./value-generator.js";
 
 /**
@@ -366,8 +367,11 @@ interface ResolvedTopic {
 
 function resolveTopic(join: ChannelJoinDef): ResolvedTopic {
   const params: ResolvedTopic["params"] = [];
+  const rawNames = topicRawNames(join.topicPattern);
+  const pyNames = uniquePythonParameterNames(rawNames);
+  let paramIndex = 0;
   const concrete = join.topicPattern.replace(/\{(\w+)\}/g, (_, raw: string) => {
-    const pyName = snakeCase(raw);
+    const pyName = pyNames[paramIndex++] ?? pythonParameterName(raw);
     const stringValue = dummyStringValue(pyName);
     params.push({ pyName, rawName: raw, stringValue });
     return stringValue;
@@ -380,27 +384,21 @@ function pythonJoinMethodName(
   index: number,
   total: number
 ): string {
-  if (join.name) return snakeCase(join.name);
+  if (join.name) return pythonParameterName(join.name);
   return total > 1 ? `join_${index + 1}` : "join";
 }
 
 function pythonMessageMethodName(event: string): string {
-  return snakeCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  return pythonParameterName(event.replace(/[^a-zA-Z0-9_]/g, "_"));
 }
 
 function pythonPushHandlerName(event: string): string {
-  return "on_" + snakeCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  return "on_" + pythonParameterName(event.replace(/[^a-zA-Z0-9_]/g, "_"));
 }
 
 function joinPayloadParams(join: ChannelJoinDef): ParamDef[] {
-  const topicVars = new Set(
-    [...join.topicPattern.matchAll(/\{(\w+)\}/g)].map(([, n]) => n!)
-  );
-  // Use snake_case for comparison because the Python generator snake_cases
-  // kwargs; params whose snake_case matches a topic var name are the topic
-  // params and don't appear in the payload.
-  const topicSnakeSet = new Set(Array.from(topicVars).map((n) => snakeCase(n)));
-  return join.params.filter((p) => !topicSnakeSet.has(snakeCase(p.name)));
+  const topicMatcher = topicParamMatcher(topicRawNames(join.topicPattern), join.params);
+  return join.params.filter((param) => !topicMatcher(param.name));
 }
 
 function joinCall(
@@ -415,12 +413,38 @@ function joinCall(
   }
   if (payloadParams.length > 0) {
     // Python generator takes payload params as keyword args in snake_case.
-    for (const p of payloadParams) {
-      const kwarg = snakeCase(p.name);
+    const kwargNames = uniquePythonParameterNames([
+      ...topic.params.map((param) => param.rawName),
+      ...payloadParams.map((param) => param.name),
+    ]).slice(topic.params.length);
+    for (let i = 0; i < payloadParams.length; i++) {
+      const p = payloadParams[i]!;
+      const kwarg = kwargNames[i]!;
       parts.push(`${kwarg}=${generatePyValue(p)}`);
     }
   }
   return `${className}.${methodName}(${parts.join(", ")})`;
+}
+
+function topicRawNames(pattern: string): string[] {
+  return [...pattern.matchAll(/\{(\w+)\}/g)].map(([, name]) => name!);
+}
+
+function topicParamMatcher(
+  rawTopicNames: string[],
+  joinParams: ParamDef[]
+): (paramName: string) => boolean {
+  const exactTopicNames = new Set(rawTopicNames);
+  const exactParamNames = new Set(joinParams.map((param) => param.name));
+  const legacySnakeTopicKeys = new Set(
+    rawTopicNames
+      .filter((name) => !exactParamNames.has(name) && snakeCase(name) === name)
+      .map((name) => snakeCase(name))
+  );
+
+  return (paramName: string) =>
+    exactTopicNames.has(paramName) ||
+    legacySnakeTopicKeys.has(snakeCase(paramName));
 }
 
 /** Build a dict literal keyed by the SPEC field name (wire key). */

@@ -5,7 +5,12 @@ import type {
   FieldDef,
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython, emitPythonImportLine } from "../../utils/codegen.js";
-import { pascalCase, snakeCase } from "../../utils/naming.js";
+import { pascalCase } from "../../utils/naming.js";
+import {
+  pythonParameterName,
+  uniquePythonParameterNames,
+  uniquePythonPydanticFieldNames,
+} from "./identifiers.js";
 import {
   emitPydanticModel,
   typeRefToPython,
@@ -87,6 +92,7 @@ export function emitPythonResourceFile(
       collectTypingFromTypeRef(field.type, typingImports);
     }
   }
+  collectOperationTypingImports(allResources, typingImports);
   const allFieldTypes = [
     ...inputEmitOrder.flatMap((g) => g.fields.map((f) => f.type)),
     ...responseEmitOrder.flatMap((g) => g.fields.map((f) => f.type)),
@@ -95,7 +101,11 @@ export function emitPythonResourceFile(
     cb.line("from datetime import datetime");
   }
   if (responseEmitOrder.length > 0) {
-    cb.line("from pydantic import BaseModel");
+    const pydanticImports = ["BaseModel"];
+    if (responseEmitOrder.some((group) => groupHasAliasedPydanticFields(group.fields))) {
+      pydanticImports.push("ConfigDict", "Field");
+    }
+    cb.line(`from pydantic import ${pydanticImports.join(", ")}`);
   }
   if (typingImports.size > 0) {
     cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
@@ -235,6 +245,30 @@ function collectTypingFromTypeRef(ref: TypeRef, imports: Set<string>): void {
   }
 }
 
+function collectOperationTypingImports(
+  resources: ResourceDef[],
+  imports: Set<string>
+): void {
+  for (const resource of resources) {
+    for (const op of resource.operations) {
+      collectTypingFromTypeRef(op.returnType, imports);
+      if (op.body?.fields) {
+        for (const field of op.body.fields) {
+          collectTypingFromTypeRef(field.type, imports);
+        }
+      }
+      for (const param of op.queryParams) {
+        collectTypingFromTypeRef(param.type, imports);
+      }
+    }
+  }
+}
+
+function groupHasAliasedPydanticFields(fields: FieldDef[]): boolean {
+  const names = uniquePythonPydanticFieldNames(fields.map((field) => field.name));
+  return fields.some((field, index) => names[index] !== field.name);
+}
+
 function collectInlineInputs(resources: ResourceDef[]): InlineInputGroup[] {
   const groups: InlineInputGroup[] = [];
   for (const resource of resources) {
@@ -264,7 +298,7 @@ function emitResourceClass(
     cb.pyBlock("def __init__(self, http: HttpClient)", () => {
       cb.line("self._http = http");
       for (const child of resource.children) {
-        cb.line(`self.${child.name} = ${child.className}(http)`);
+        cb.line(`self.${pythonParameterName(child.name)} = ${child.className}(http)`);
       }
     });
 
@@ -283,7 +317,8 @@ function emitOperation(
   inputNameByOpId: Map<string, string>,
   responseNameByOpId: Map<string, string>
 ): void {
-  const params = buildParamList(op, resource, inputNameByOpId);
+  const pythonNames = buildOperationPythonNames(op, resource);
+  const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
   const responseName = responseNameByOpId.get(op.operationId);
   const returnType = op.rawResponse
     ? "dict[str, str]"
@@ -291,7 +326,7 @@ function emitOperation(
   const returnAnnotation = returnType;
 
   cb.pyBlock(
-    `async def ${snakeCase(op.name)}(self${params ? ", " + params : ""}) -> ${returnAnnotation}`,
+    `async def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> ${returnAnnotation}`,
     () => {
       emitOperationDocstring(cb, op.summary, op.description);
 
@@ -300,8 +335,9 @@ function emitOperation(
       // unconditionally; optional params only when the kwarg is non-None.
       if (op.queryParams.length > 0) {
         cb.line("query: dict[str, object] = {}");
-        for (const qp of op.queryParams) {
-          const py = snakeCase(qp.name);
+        for (let i = 0; i < op.queryParams.length; i++) {
+          const qp = op.queryParams[i]!;
+          const py = pythonNames.query[i]!;
           const wireKey = JSON.stringify(qp.name);
           if (qp.required) {
             cb.line(`query[${wireKey}] = ${py}`);
@@ -312,8 +348,8 @@ function emitOperation(
         }
       }
 
-      const pathExpr = buildPathExpression(op, resource);
-      const optParts = buildRequestOptionParts(op);
+      const pathExpr = buildPathExpression(op, resource, pythonNames);
+      const optParts = buildRequestOptionParts(op, pythonNames);
       const requestMethod = op.rawResponse ? "request_raw" : "request";
       const prefix = returnAnnotation === "None"
         ? "await" : "return await";
@@ -353,21 +389,76 @@ function emitOperationDocstring(
   cb.line('"""');
 }
 
+interface OperationPythonNames {
+  scope: string[];
+  path: string[];
+  body?: string;
+  query: string[];
+}
+
+function buildOperationPythonNames(
+  op: OperationDef,
+  resource: ResourceDef
+): OperationPythonNames {
+  const entries: Array<
+    | { kind: "scope"; index: number; name: string }
+    | { kind: "path"; index: number; name: string }
+    | { kind: "body"; name: string }
+    | { kind: "query"; index: number; name: string }
+  > = [];
+
+  resource.scopeParams.forEach((param, index) => {
+    entries.push({ kind: "scope", index, name: param.name });
+  });
+  op.pathParams.forEach((param, index) => {
+    entries.push({ kind: "path", index, name: param.name });
+  });
+  if (op.body) {
+    entries.push({ kind: "body", name: "input" });
+  }
+  op.queryParams.forEach((param, index) => {
+    entries.push({ kind: "query", index, name: param.name });
+  });
+
+  const uniqueNames = uniquePythonParameterNames(entries.map((entry) => entry.name));
+  const result: OperationPythonNames = { scope: [], path: [], query: [] };
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]!;
+    const name = uniqueNames[i]!;
+    switch (entry.kind) {
+      case "scope":
+        result.scope[entry.index] = name;
+        break;
+      case "path":
+        result.path[entry.index] = name;
+        break;
+      case "body":
+        result.body = name;
+        break;
+      case "query":
+        result.query[entry.index] = name;
+        break;
+    }
+  }
+  return result;
+}
+
 function buildParamList(
   op: OperationDef,
   resource: ResourceDef,
-  inputNameByOpId: Map<string, string>
+  inputNameByOpId: Map<string, string>,
+  pythonNames: OperationPythonNames
 ): string {
   const parts: string[] = [];
 
   // Scope params
-  for (const sp of resource.scopeParams) {
-    parts.push(`${snakeCase(sp.name)}: str`);
+  for (let i = 0; i < resource.scopeParams.length; i++) {
+    parts.push(`${pythonNames.scope[i]}: str`);
   }
 
   // Path params
-  for (const pp of op.pathParams) {
-    parts.push(`${snakeCase(pp.name)}: str`);
+  for (let i = 0; i < op.pathParams.length; i++) {
+    parts.push(`${pythonNames.path[i]}: str`);
   }
 
   // Body param — typed via:
@@ -376,27 +467,31 @@ function buildParamList(
   if (op.body) {
     const inlineName = inputNameByOpId.get(op.operationId);
     if (inlineName) {
-      parts.push(`input: ${inlineName}`);
+      parts.push(`${pythonNames.body}: ${inlineName}`);
     } else if (op.body.schema) {
-      parts.push(`input: ${op.body.schema}`);
+      parts.push(`${pythonNames.body}: ${op.body.schema}`);
     } else {
-      parts.push(`input: dict`);
+      parts.push(`${pythonNames.body}: dict`);
     }
   }
 
   // Query params split into required positional and optional keyword-only.
   // Required ones precede the `*` separator; optional ones follow with
   // `T | None = None` defaults so callers can omit any combination.
-  const required = op.queryParams.filter((p) => p.required);
-  const optional = op.queryParams.filter((p) => !p.required);
-  for (const qp of required) {
-    parts.push(`${snakeCase(qp.name)}: ${typeRefToPython(qp.type)}`);
+  const queryParams = op.queryParams.map((param, index) => ({
+    param,
+    name: pythonNames.query[index]!,
+  }));
+  const required = queryParams.filter(({ param }) => param.required);
+  const optional = queryParams.filter(({ param }) => !param.required);
+  for (const { param, name } of required) {
+    parts.push(`${name}: ${typeRefToPython(param.type)}`);
   }
   if (optional.length > 0) {
     parts.push("*");
-    for (const qp of optional) {
+    for (const { param, name } of optional) {
       parts.push(
-        `${snakeCase(qp.name)}: ${typeRefToPython(qp.type)} | None = None`
+        `${name}: ${typeRefToPython(param.type)} | None = None`
       );
     }
   }
@@ -406,17 +501,28 @@ function buildParamList(
 
 function buildPathExpression(
   op: OperationDef,
-  _resource: ResourceDef
+  resource: ResourceDef,
+  pythonNames: OperationPythonNames
 ): string {
+  const pathNames = new Map<string, string>();
+  for (let i = 0; i < resource.scopeParams.length; i++) {
+    pathNames.set(resource.scopeParams[i]!.name, pythonNames.scope[i]!);
+  }
+  for (let i = 0; i < op.pathParams.length; i++) {
+    pathNames.set(op.pathParams[i]!.name, pythonNames.path[i]!);
+  }
   let path = op.path;
   path = path.replace(/\{(\w+)\}/g, (_match, name: string) => {
-    return `{${snakeCase(name)}}`;
+    return `{${pathNames.get(name) ?? pythonParameterName(name)}}`;
   });
 
   return `f"${path}"`;
 }
 
-function buildRequestOptionParts(op: OperationDef): string[] {
+function buildRequestOptionParts(
+  op: OperationDef,
+  pythonNames: OperationPythonNames
+): string[] {
   const parts: string[] = [];
 
   if (op.method !== "GET") {
@@ -424,7 +530,7 @@ function buildRequestOptionParts(op: OperationDef): string[] {
   }
 
   if (op.body) {
-    parts.push("body=input");
+    parts.push(`body=${pythonNames.body}`);
   }
 
   if (op.queryParams.length > 0) {

@@ -1,6 +1,6 @@
 import type { SdkSpec, SchemaDef, OperationDef, FieldDef, TypeRef } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
-import { snakeCase } from "../../utils/naming.js";
+import { pythonParameterName, uniquePythonParameterNames } from "./identifiers.js";
 
 /**
  * Generate the AuthClient from auth-tagged operations in the AST.
@@ -36,7 +36,7 @@ export function emitPythonAuthFile(spec: SdkSpec): string {
       // All fields optional — API responses may omit fields at runtime
       for (const tf of tokenFields) {
         const pyType = tf.role === "token_expiry" ? "int | None" : "str | None";
-        cb.line(`${snakeCase(tf.role)}: ${pyType} = None`);
+        cb.line(`${pythonParameterName(tf.role)}: ${pyType} = None`);
       }
     });
     cb.line();
@@ -63,7 +63,7 @@ interface TokenFieldInfo {
   required: boolean;
 }
 
-interface AuthParam {
+export interface AuthParam {
   name: string;
   originalName: string;
   required: boolean;
@@ -97,23 +97,23 @@ function getResponseFields(typeRef: TypeRef, schemas: SchemaDef[]): FieldDef[] {
  *  Prefers explicit sdkName, falls back to path's last segment.
  *  If the name collides with a parameter name, prefix with the prior segment. */
 export function pyAuthMethodName(op: OperationDef): string {
-  if (op.sdkName) return snakeCase(op.sdkName);
+  if (op.sdkName) return pythonParameterName(op.sdkName);
 
   const segments = op.path.split("/").filter(Boolean);
   const lastSegment = segments[segments.length - 1] ?? op.name;
-  const name = snakeCase(lastSegment);
+  const name = pythonParameterName(lastSegment);
 
   // Check for collision with any input parameter name
   const paramNames = new Set<string>();
-  for (const p of op.queryParams) paramNames.add(snakeCase(p.name));
+  for (const p of op.queryParams) paramNames.add(pythonParameterName(p.name));
   if (op.body?.fields) {
     for (const f of op.body.fields) {
-      if (!f.sdkRole) paramNames.add(snakeCase(f.name));
+      if (!f.sdkRole) paramNames.add(pythonParameterName(f.name));
     }
   }
 
   if (paramNames.has(name) && segments.length >= 2) {
-    return snakeCase(`${segments[segments.length - 2]}_${lastSegment}`);
+    return pythonParameterName(`${segments[segments.length - 2]}_${lastSegment}`);
   }
   return name;
 }
@@ -125,8 +125,9 @@ function emitAuthMethod(
   schemas: SchemaDef[]
 ): void {
   const methodName = pyAuthMethodName(op);
-  const params = extractInputParams(op);
-  const hasTokenReturn = tokenFields.length > 0;
+  const params = extractPythonAuthInputParams(op);
+  const responseFields = getResponseFields(op.returnType, schemas);
+  const hasTokenReturn = responseFields.some((field) => Boolean(field.sdkRole));
   const returnType = hasTokenReturn ? "AuthTokens" : "dict";
 
   // Required params first, then optional
@@ -145,7 +146,8 @@ function emitAuthMethod(
     cb.line(`# ${op.description.replace(/[^\x20-\x7E]/g, " ")}`);
   }
 
-  cb.pyBlock(`async def ${methodName}(self, ${sig}) -> ${returnType}`, () => {
+  const methodParams = sig ? `self, ${sig}` : "self";
+  cb.pyBlock(`async def ${methodName}(${methodParams}) -> ${returnType}`, () => {
     // Build body, omitting None optionals
     if (sortedParams.length > 0) {
       cb.line("body: dict[str, object] = {}");
@@ -173,15 +175,14 @@ function emitAuthMethod(
 
     if (hasTokenReturn) {
       // Inline extraction using this operation's specific return type field names
-      const responseFields = getResponseFields(op.returnType, schemas);
       cb.line("return AuthTokens(");
       cb.indent();
       for (const tf of tokenFields) {
         const field = responseFields.find((f) => f.sdkRole === tf.role);
         if (field) {
-          cb.line(`${snakeCase(tf.role)}=data.get("${field.name}"),`);
+          cb.line(`${pythonParameterName(tf.role)}=data.get("${field.name}"),`);
         } else {
-          cb.line(`${snakeCase(tf.role)}=None,`);
+          cb.line(`${pythonParameterName(tf.role)}=None,`);
         }
       }
       cb.dedent();
@@ -192,12 +193,11 @@ function emitAuthMethod(
   });
 }
 
-function extractInputParams(op: OperationDef): AuthParam[] {
-  const params: AuthParam[] = [];
+export function extractPythonAuthInputParams(op: OperationDef): AuthParam[] {
+  const entries: Array<Omit<AuthParam, "name">> = [];
 
   for (const p of op.queryParams) {
-    params.push({
-      name: snakeCase(p.name),
+    entries.push({
       originalName: p.name,
       required: p.required,
     });
@@ -206,8 +206,7 @@ function extractInputParams(op: OperationDef): AuthParam[] {
   if (op.body?.fields) {
     for (const f of op.body.fields) {
       if (!f.sdkRole) {
-        params.push({
-          name: snakeCase(f.name),
+        entries.push({
           originalName: f.name,
           required: f.required,
         });
@@ -215,15 +214,18 @@ function extractInputParams(op: OperationDef): AuthParam[] {
     }
   }
 
-  if (params.length === 0) {
+  if (entries.length === 0) {
     for (const p of op.pathParams) {
-      params.push({
-        name: snakeCase(p.name),
+      entries.push({
         originalName: p.name,
         required: true,
       });
     }
   }
 
-  return params;
+  const names = uniquePythonParameterNames(entries.map((entry) => entry.originalName));
+  return entries.map((entry, index) => ({
+    ...entry,
+    name: names[index]!,
+  }));
 }
