@@ -8,6 +8,7 @@ import { generatePython } from "../../src/backends/python/index.js";
 import { emitPydanticFile } from "../../src/backends/python/pydantic-emitter.js";
 import { emitPythonResourceFile } from "../../src/backends/python/resource-emitter.js";
 import { emitPythonClientFile } from "../../src/backends/python/client-emitter.js";
+import { emitPythonAuthFile } from "../../src/backends/python/auth-emitter.js";
 import { emitPythonChannelFile } from "../../src/backends/python/channel-emitter.js";
 import {
   collectTypedDictImports,
@@ -176,6 +177,63 @@ describe("Pydantic emitter", () => {
     expect(memberOutput).toContain('"admin"');
     expect(memberOutput).toContain('"member"');
   });
+
+  it("aliases Python keyword fields while preserving the wire key", () => {
+    const out = emitPydanticFile([
+      {
+        name: "AgentTool",
+        fields: [
+          {
+            name: "async",
+            type: {
+              kind: "optional",
+              inner: { kind: "primitive", type: "boolean" },
+            },
+            required: false,
+            description: "Whether the tool executes asynchronously",
+          },
+        ],
+      },
+    ]);
+
+    expect(out).toContain("from pydantic import BaseModel, ConfigDict, Field");
+    expect(out).toContain("model_config = ConfigDict(populate_by_name=True)");
+    expect(out).toContain(
+      'async_: Optional[bool] = Field(default=None, alias="async")'
+    );
+    expect(out).not.toContain("async: Optional[bool]");
+  });
+
+  it("uniquely aliases fields when sanitized Python names collide", () => {
+    const out = emitPydanticFile([
+      {
+        name: "Collision",
+        fields: [
+          {
+            name: "async",
+            type: {
+              kind: "optional",
+              inner: { kind: "primitive", type: "boolean" },
+            },
+            required: false,
+          },
+          {
+            name: "async_",
+            type: {
+              kind: "optional",
+              inner: { kind: "primitive", type: "string" },
+            },
+            required: false,
+          },
+        ],
+      },
+    ]);
+
+    expect(out).toContain('async_: Optional[bool] = Field(default=None, alias="async")');
+    expect(out).toContain(
+      'async_2: Optional[str] = Field(default=None, alias="async_")'
+    );
+  });
 });
 
 describe("Python resource emitter", () => {
@@ -279,6 +337,184 @@ describe("Python resource emitter uses summary and description in method docstri
   });
 });
 
+describe("Python contract tests sanitize generated query kwargs", () => {
+  const keywordQueryAst = parseOpenApiSpec(
+    {
+      openapi: "3.0.0",
+      info: { title: "Keyword query API", version: "1.0.0" },
+      paths: {
+        "/api/v1/tools": {
+          get: {
+            operationId: "get_api_v1_tools",
+            parameters: [
+              {
+                name: "async",
+                in: "query",
+                required: true,
+                schema: { type: "boolean" },
+              },
+              {
+                name: "async_",
+                in: "query",
+                required: true,
+                schema: { type: "string" },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "OK",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: { id: { type: "string" } },
+                      required: ["id"],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      name: "archastro-platform",
+      version: "0.1.0",
+      baseUrl: "https://platform.archastro.ai",
+      apiBase: "/api",
+      defaultVersion: "v1",
+    }
+  );
+
+  const files = emitPythonContractTests(keywordQueryAst, {
+    outDir: "/tmp/test-python-keyword-query",
+  });
+  const content =
+    files["/tmp/test-python-keyword-query/tests/contract/v1/test_tools.py"]!;
+
+  it("uses sanitized kwargs that match the generated SDK method signature", () => {
+    expect(content).toContain(
+      'client.v1.tools.list(async_=True, async_2="test-value")'
+    );
+    expect(content).not.toContain("async=True");
+  });
+});
+
+describe("Python auth emitter", () => {
+  const output = emitPythonAuthFile({
+    authOperations: [
+      {
+        name: "login",
+        operationId: "post_auth_login",
+        method: "POST",
+        path: "/api/v1/auth/login",
+        deprecated: false,
+        pathParams: [],
+        queryParams: [],
+        body: {
+          fields: [
+            {
+              name: "email",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+            },
+          ],
+        },
+        returnType: {
+          kind: "object",
+          fields: [
+            {
+              name: "token",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+              sdkRole: "access_token",
+            },
+          ],
+        },
+        errors: [],
+      },
+      {
+        name: "allowed_auth_methods",
+        operationId: "get_allowed_auth_methods",
+        method: "GET",
+        path: "/api/v1/auth/allowed_auth_methods",
+        deprecated: false,
+        pathParams: [],
+        queryParams: [],
+        returnType: {
+          kind: "object",
+          fields: [
+            {
+              name: "methods",
+              type: {
+                kind: "array",
+                items: { kind: "primitive", type: "string" },
+              },
+              required: true,
+            },
+          ],
+        },
+        errors: [],
+      },
+    ],
+    schemas: [],
+  } as any);
+
+  it("returns AuthTokens only for operations with token-role response fields", () => {
+    expect(output).toContain("async def login(self, email: str) -> AuthTokens:");
+    expect(output).toContain("access_token=data.get(\"token\")");
+    expect(output).toContain("async def allowed_auth_methods(self) -> dict:");
+    expect(output).toMatch(
+      /async def allowed_auth_methods\(self\) -> dict:\s+data = await self\._http\.request\([\s\S]+?return data/
+    );
+    expect(output).not.toMatch(
+      /allowed_auth_methods[\s\S]+?return AuthTokens\([\s\S]+?access_token=None/
+    );
+  });
+
+  it("uniquifies sanitized auth params while preserving body wire keys", () => {
+    const out = emitPythonAuthFile({
+      authOperations: [
+        {
+          name: "login",
+          operationId: "post_auth_login",
+          method: "POST",
+          path: "/api/v1/auth/login",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          body: {
+            fields: [
+              {
+                name: "async",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+              {
+                name: "async_",
+                type: { kind: "primitive", type: "string" },
+                required: false,
+              },
+            ],
+          },
+          returnType: { kind: "object", fields: [] },
+          errors: [],
+        },
+      ],
+      schemas: [],
+    } as any);
+
+    expect(out).toContain(
+      "async def login(self, async_: str, async_2: str | None = None) -> dict:"
+    );
+    expect(out).toContain('body["async"] = async_');
+    expect(out).toContain("if async_2 is not None:");
+    expect(out).toContain('body["async_"] = async_2');
+    expect(out).not.toContain("async_: str, async_:");
+  });
+});
+
 describe("Python client emitter", () => {
   const output = emitPythonClientFile(ast);
 
@@ -303,6 +539,68 @@ describe("Python client emitter", () => {
   it("has set_access_token method", () => {
     expect(output).toContain("def set_access_token(self, token: str)");
     expect(output).toContain("self._http.set_access_token(token)");
+  });
+
+  it("uniquifies with_credentials params using the auth method mapping", () => {
+    const out = emitPythonClientFile({
+      baseUrl: "https://api.example.test",
+      versions: [],
+      defaultVersion: "v1",
+      schemas: [],
+      resources: [],
+      channels: [],
+      auth: {
+        schemes: {
+          publishable_key: { type: "apiKey", name: "x-api-key" },
+        },
+        tokenFlows: {
+          login: { operation_name: "login" },
+        },
+      },
+      authOperations: [
+        {
+          name: "login",
+          operationId: "post_auth_login",
+          method: "POST",
+          path: "/api/v1/auth/login",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          body: {
+            fields: [
+              {
+                name: "async",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+              {
+                name: "async_",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+            ],
+          },
+          returnType: {
+            kind: "object",
+            fields: [
+              {
+                name: "token",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+                sdkRole: "access_token",
+              },
+            ],
+          },
+          errors: [],
+        },
+      ],
+    } as any);
+
+    expect(out).toContain(
+      'async def with_credentials(cls, api_key: str, async_: str, async_2: str, base_url: str | None = None) -> "PlatformClient":'
+    );
+    expect(out).toContain("tokens = await client.auth.login(async_, async_2)");
+    expect(out).not.toContain("client.auth.login(async_, async_)");
   });
 });
 
@@ -457,6 +755,32 @@ describe("TypedDict emitter", () => {
       },
     ]);
     expect(out).toMatch(/id: str\s+# Resource identifier/);
+  });
+
+  it("uses functional syntax for Python keyword keys without renaming wire keys", () => {
+    const out = render("ToolInput", [
+      {
+        name: "async",
+        type: {
+          kind: "optional",
+          inner: { kind: "primitive", type: "boolean" },
+        },
+        required: false,
+        description: "Whether the tool executes asynchronously",
+      },
+      {
+        name: "kind",
+        type: { kind: "primitive", type: "string" },
+        required: true,
+      },
+    ]);
+
+    expect(out).toContain("ToolInput = TypedDict(");
+    expect(out).toContain('"ToolInput",');
+    expect(out).toContain('"async": Optional[bool]');
+    expect(out).toContain('"kind": Required[str]');
+    expect(out).not.toContain("class ToolInput");
+    expect(out).not.toContain("async: Optional[bool]");
   });
 
   describe("collectTypedDictImports", () => {
@@ -896,6 +1220,49 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).toContain("async def list(self) -> TeamListResponse:");
   });
 
+  it("imports Pydantic alias helpers for keyword fields in inline response models", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "tools",
+        className: "ToolResource",
+        path: "/tools",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "get_tools",
+            method: "GET",
+            path: "/api/v1/tools",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [],
+            returnType: {
+              kind: "object",
+              fields: [
+                {
+                  name: "async",
+                  type: {
+                    kind: "optional",
+                    inner: { kind: "primitive", type: "boolean" },
+                  },
+                  required: false,
+                },
+              ],
+            },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+
+    expect(out).toContain("from pydantic import BaseModel, ConfigDict, Field");
+    expect(out).toContain("class ToolListResponse(BaseModel):");
+    expect(out).toContain("model_config = ConfigDict(populate_by_name=True)");
+    expect(out).toContain('async_: Optional[bool] = Field(default=None, alias="async")');
+  });
+
   it("prefixes inline-response class names with the resource short name", () => {
     // Two sibling resources both have a `list` op with inline responses.
     // The emitted models must not collide.
@@ -1140,6 +1507,123 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).toMatch(/query: dict\[str, object\] = \{\}/);
     expect(out).toMatch(/if page is not None:\s+query\["page"\] = page/);
     expect(out).toContain('return await self._http.request(f"/api/v1/teams", query=query)');
+  });
+
+  it("sanitizes Python keyword query params while preserving wire keys", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "agent_tools",
+        className: "AgentToolResource",
+        path: "/agent_tools",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "list_agent_tools",
+            method: "GET",
+            path: "/api/v1/agent_tools",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [
+              {
+                name: "async",
+                type: { kind: "primitive", type: "boolean" },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+
+    expect(out).toContain("async def list(self, *, async_: bool | None = None)");
+    expect(out).toContain("if async_ is not None:");
+    expect(out).toContain('query["async"] = async_');
+    expect(out).not.toContain("async: bool | None");
+  });
+
+  it("uniquely sanitizes colliding Python query params while preserving wire keys", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "agent_tools",
+        className: "AgentToolResource",
+        path: "/agent_tools",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "list_agent_tools",
+            method: "GET",
+            path: "/api/v1/agent_tools",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [
+              {
+                name: "async",
+                type: { kind: "primitive", type: "boolean" },
+                required: false,
+              },
+              {
+                name: "async_",
+                type: { kind: "primitive", type: "string" },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+
+    expect(out).toContain(
+      "async def list(self, *, async_: bool | None = None, async_2: str | None = None)"
+    );
+    expect(out).toContain('query["async"] = async_');
+    expect(out).toContain('query["async_"] = async_2');
+  });
+
+  it("imports Literal when only query params use enum types", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "knowledge_sources",
+        className: "KnowledgeSourceResource",
+        path: "/knowledge_sources",
+        scopeParams: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "list_knowledge_sources",
+            method: "GET",
+            path: "/api/v1/knowledge_sources",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [
+              {
+                name: "ownerScope",
+                type: { kind: "enum", values: ["any", "individual", "system"] },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+
+    expect(out).toContain("from typing import Literal");
+    expect(out).toContain(
+      'owner_scope: Literal["any", "individual", "system"] | None = None'
+    );
   });
 
   it("imports `datetime` when a TypedDict body field uses it", () => {
@@ -1447,6 +1931,72 @@ describe("Python channel emitter edge cases", () => {
     expect(out).not.toContain('payload["user_id"]');
     expect(out).not.toContain('payload["after_cursor"]');
   });
+
+  it("uniquifies topic and payload params after keyword sanitization", () => {
+    const out = emitPythonChannelFile({
+      name: "KeywordJoin",
+      className: "KeywordJoinChannel",
+      joins: [
+        {
+          topicPattern: "room:{async}",
+          name: "join_async",
+          params: [
+            {
+              name: "async",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+            },
+            {
+              name: "async_",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+            },
+          ],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [],
+      pushes: [],
+    });
+
+    expect(out).toContain("def topic_async(async_: str) -> str:");
+    expect(out).toContain(
+      'async def join_async(cls, socket: "Socket", async_: str, *, async_2: str) -> "KeywordJoinChannel":'
+    );
+    expect(out).toContain("topic = cls.topic_async(async_)");
+    expect(out).toContain('payload["async_"] = async_2');
+    expect(out).not.toMatch(/payload\["async_"\] = async_\n/);
+  });
+
+  it("keeps distinct payload params when only their snake_case form matches the topic var", () => {
+    const out = emitPythonChannelFile({
+      name: "CaseCollision",
+      className: "CaseCollisionChannel",
+      joins: [
+        {
+          topicPattern: "room:{fooBar}",
+          name: "join_room",
+          params: [
+            {
+              name: "foo_bar",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+            },
+          ],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [],
+      pushes: [],
+    });
+
+    expect(out).toContain(
+      'async def join_room(cls, socket: "Socket", foo_bar: str, *, foo_bar_2: str) -> "CaseCollisionChannel":'
+    );
+    expect(out).toContain("topic = cls.topic_room(foo_bar)");
+    expect(out).toContain('payload["foo_bar"] = foo_bar_2');
+    expect(out).toContain("join_response = await channel.join(payload)");
+  });
 });
 
 describe("Full Python generation", () => {
@@ -1732,6 +2282,106 @@ describe("Python channel contract test emitter", () => {
     );
     expect(output).toContain("await channel.leave()");
   });
+
+  it("matches runtime-safe names for keyword channel methods and join kwargs", () => {
+    const out = emitPythonChannelContractTestFile(
+      {
+        name: "Keyword",
+        className: "KeywordChannel",
+        joins: [
+          {
+            topicPattern: "keyword:{async}",
+            name: "join_async",
+            params: [
+              {
+                name: "async",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+              {
+                name: "async_",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+            ],
+            returnType: { kind: "unknown" },
+          },
+        ],
+        messages: [
+          {
+            event: "async",
+            params: [
+              {
+                name: "content",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+            ],
+            returnType: { kind: "object", fields: [] },
+          },
+        ],
+        pushes: [
+          {
+            event: "async",
+            payloadType: {
+              kind: "object",
+              fields: [
+                {
+                  name: "content",
+                  type: { kind: "primitive", type: "string" },
+                  required: true,
+                },
+              ],
+            },
+          },
+        ],
+      },
+      "archastro.platform.channels.keyword"
+    );
+
+    expect(out).toContain(
+      'channel = await KeywordChannel.join_async(socket, "test-value", async_2="test-value")'
+    );
+    expect(out).toContain("reply = await channel.async_(");
+    expect(out).toContain("channel.on_async_(handler)");
+    expect(out).not.toContain("channel.async(");
+    expect(out).not.toContain("channel.on_async(handler)");
+    expect(out).not.toContain("async_=\"test-value\"");
+  });
+
+  it("does not drop payload kwargs whose snake_case matches a camelCase topic var", () => {
+    const out = emitPythonChannelContractTestFile(
+      {
+        name: "CaseCollision",
+        className: "CaseCollisionChannel",
+        joins: [
+          {
+            topicPattern: "room:{fooBar}",
+            name: "join_room",
+            params: [
+              {
+                name: "foo_bar",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+            ],
+            returnType: { kind: "unknown" },
+          },
+        ],
+        messages: [],
+        pushes: [],
+      },
+      "archastro.platform.channels.case_collision"
+    );
+
+    expect(out).toContain(
+      'channel = await CaseCollisionChannel.join_room(socket, "test-value", foo_bar_2="test-value")'
+    );
+    expect(out).toContain('await channel.join({})');
+    expect(out).not.toContain(
+      'CaseCollisionChannel.join_room(socket, "test-value")'
+    );
+  });
 });
 
 describe("Python contract-tests emitter wires channels into the conftest", () => {
@@ -1745,6 +2395,18 @@ describe("Python contract-tests emitter wires channels into the conftest", () =>
     expect(conftest).toContain('ARCHASTRO_HARNESS_CONTROL_URL');
     expect(conftest).toContain("def harness_service()");
     expect(conftest).toContain("@archastro/channel-harness/dist/bin.js");
+  });
+
+  it("uses locked local Node tooling instead of npx or ad hoc npm install guidance", () => {
+    const files = emitPythonContractTests(ast, { outDir: "/tmp/test-python-sdk" });
+    const conftest = files["/tmp/test-python-sdk/tests/contract/conftest.py"]!;
+
+    expect(conftest).toContain("PRISM_BIN = os.environ.get(");
+    expect(conftest).toContain("../../node_modules/.bin/prism");
+    expect(conftest).toContain("[PRISM_BIN,");
+    expect(conftest).toContain("npm ci --ignore-scripts");
+    expect(conftest).not.toContain('"npx"');
+    expect(conftest).not.toContain("npm install @archastro/channel-harness");
   });
 
   it("emits per-channel test files under tests/contract/channels/", () => {

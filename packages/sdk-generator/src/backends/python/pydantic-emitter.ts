@@ -1,5 +1,6 @@
 import type { SchemaDef, FieldDef, TypeRef, UnionTypeRef } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython, emitPythonImportLine } from "../../utils/codegen.js";
+import { uniquePythonPydanticFieldNames } from "./identifiers.js";
 
 /**
  * Generate a Python file containing Pydantic models.
@@ -37,10 +38,13 @@ export function emitPydanticFile(
   }
   // A discriminated union needs `pydantic.Field(discriminator=...)`; plain
   // BaseModel-only files keep the smaller import to avoid lint noise.
-  const pydanticImports = schemas.some((s) => s.unionType?.discriminator)
-    ? "BaseModel, Field"
-    : "BaseModel";
-  cb.line(`from pydantic import ${pydanticImports}`);
+  const hasAliasedFields = schemas.some((schema) => schemaHasAliasedFields(schema));
+  const needsField = schemas.some((s) => s.unionType?.discriminator) ||
+    hasAliasedFields;
+  const pydanticImports = ["BaseModel"];
+  if (hasAliasedFields) pydanticImports.push("ConfigDict");
+  if (needsField) pydanticImports.push("Field");
+  cb.line(`from pydantic import ${pydanticImports.join(", ")}`);
   if (typingImports.size > 0) {
     cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
   }
@@ -96,14 +100,20 @@ function emitModel(cb: CodeBuilder, schema: SchemaDef): void {
     return;
   }
 
+  const fieldNames = pythonFieldNamesForSchema(schema);
   cb.pyBlock(`class ${schema.name}(BaseModel)`, () => {
     if (schema.fields.length === 0) {
       cb.line("pass");
       return;
     }
 
-    for (const field of schema.fields) {
-      emitField(cb, field);
+    if (schemaHasAliasedFields(schema, fieldNames)) {
+      cb.line("model_config = ConfigDict(populate_by_name=True)");
+      cb.line();
+    }
+
+    for (let i = 0; i < schema.fields.length; i++) {
+      emitField(cb, schema.fields[i]!, fieldNames[i]!);
     }
   });
 }
@@ -116,19 +126,31 @@ function unionTypeToPython(union: UnionTypeRef): string {
   return `Union[${variants}]`;
 }
 
-function emitField(cb: CodeBuilder, field: FieldDef): void {
+function emitField(cb: CodeBuilder, field: FieldDef, fieldName: string): void {
   const pyType = typeRefToPython(field.type);
   const comment = field.description ? `  # ${field.description.replace(/\n/g, " ").trim()}` : "";
+  const needsAlias = fieldName !== field.name;
 
   let line: string;
-  if (!field.required) {
+  if (needsAlias) {
+    const args: string[] = [];
+    if (!field.required) {
+      const defaultValue =
+        field.default !== undefined ? pythonLiteral(field.default) : "None";
+      args.push(`default=${defaultValue}`);
+    } else if (field.default !== undefined) {
+      args.push(`default=${pythonLiteral(field.default)}`);
+    }
+    args.push(`alias=${pythonLiteral(field.name)}`);
+    line = `${fieldName}: ${pyType} = Field(${args.join(", ")})`;
+  } else if (!field.required) {
     const defaultVal =
       field.default !== undefined ? ` = ${pythonLiteral(field.default)}` : " = None";
-    line = `${field.name}: ${pyType}${defaultVal}`;
+    line = `${fieldName}: ${pyType}${defaultVal}`;
   } else if (field.default !== undefined) {
-    line = `${field.name}: ${pyType} = ${pythonLiteral(field.default)}`;
+    line = `${fieldName}: ${pyType} = ${pythonLiteral(field.default)}`;
   } else {
-    line = `${field.name}: ${pyType}`;
+    line = `${fieldName}: ${pyType}`;
   }
 
   // 4 = one indent level (class body), 100 = ruff line-length
@@ -137,6 +159,14 @@ function emitField(cb: CodeBuilder, field: FieldDef): void {
   } else {
     cb.line(line);
   }
+}
+
+function pythonFieldNamesForSchema(schema: SchemaDef): string[] {
+  return uniquePythonPydanticFieldNames(schema.fields.map((field) => field.name));
+}
+
+function schemaHasAliasedFields(schema: SchemaDef, fieldNames = pythonFieldNamesForSchema(schema)): boolean {
+  return !schema.unionType && schema.fields.some((field, index) => fieldNames[index] !== field.name);
 }
 
 /**

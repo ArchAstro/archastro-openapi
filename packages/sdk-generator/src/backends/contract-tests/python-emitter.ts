@@ -1,6 +1,7 @@
 import type { SdkSpec } from "../../ast/types.js";
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
 import { snakeCase } from "../../utils/naming.js";
+import { pythonParameterName, uniquePythonParameterNames } from "../python/identifiers.js";
 import {
   buildMethodCalls,
   groupByTopLevelResource,
@@ -114,6 +115,7 @@ function buildPythonArgs(call: MethodCallInfo): string {
 
   // Unpack query dict as keyword arguments
   if (queryArgs.length > 0) {
+    const queryNameMap = buildPythonQueryNameMap(call);
     // The value is already a dict like {"q": "test-value"} — extract key/value pairs
     for (const qa of queryArgs) {
       // Parse the dict literal to extract individual kwargs
@@ -124,7 +126,7 @@ function buildPythonArgs(call: MethodCallInfo): string {
         const pairs = inner.split(/,\s*/).map((pair) => {
           const [k, v] = pair.split(/:\s*/);
           const key = k!.replace(/"/g, "").trim();
-          return `${key}=${v!.trim()}`;
+          return `${queryNameMap.get(key) ?? pythonParameterName(key)}=${v!.trim()}`;
         });
         parts.push(...pairs);
       }
@@ -134,11 +136,36 @@ function buildPythonArgs(call: MethodCallInfo): string {
   return parts.join(", ");
 }
 
+function buildPythonQueryNameMap(call: MethodCallInfo): Map<string, string> {
+  const entries: Array<{ kind: "scope" | "path" | "body" | "query"; name: string }> = [];
+  for (const param of call.resource.scopeParams) {
+    entries.push({ kind: "scope", name: param.name });
+  }
+  for (const param of call.operation.pathParams) {
+    entries.push({ kind: "path", name: param.name });
+  }
+  if (call.operation.body) {
+    entries.push({ kind: "body", name: "input" });
+  }
+  for (const param of call.operation.queryParams) {
+    entries.push({ kind: "query", name: param.name });
+  }
+
+  const names = uniquePythonParameterNames(entries.map((entry) => entry.name));
+  const queryNames = new Map<string, string>();
+  for (let i = 0; i < entries.length; i++) {
+    if (entries[i]!.kind === "query") {
+      queryNames.set(entries[i]!.name, names[i]!);
+    }
+  }
+  return queryNames;
+}
+
 function emitHappyPathTest(cb: CodeBuilder, call: MethodCallInfo): void {
   const testName = buildTestName(call, "success");
   const argStr = buildPythonArgs(call);
   const chainPy = call.accessorChain.replace("client.", "");
-  const methodCall = `client.${chainPy}.${snakeCase(call.methodName)}(${argStr})`;
+  const methodCall = `client.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
   const hasDataArray = returnTypeHasDataArray(call.operation.returnType);
   const returnsNoContent = call.operation.returnType.kind === "void";
 
@@ -179,7 +206,7 @@ function emitErrorTests(cb: CodeBuilder, call: MethodCallInfo): void {
     const testName = buildTestName(call, `error_${code}`);
     const argStr = buildPythonArgs(call);
     const chainPy = call.accessorChain.replace("client.", "");
-    const methodCall = `ec.${chainPy}.${snakeCase(call.methodName)}(${argStr})`;
+    const methodCall = `ec.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
 
     cb.line();
     cb.line(`async def ${testName}():`);
@@ -236,6 +263,15 @@ function emitConftest(opts: {
     ")",
     ""
   );
+  if (includePrism) {
+    lines.push(
+      'PRISM_BIN = os.environ.get(',
+      '    "PRISM_BIN",',
+      '    os.path.join(os.path.dirname(__file__), "../../node_modules/.bin/prism"),',
+      ")",
+      ""
+    );
+  }
   if (includePrism) lines.push("_prism_process = None");
   if (includeHarness) lines.push(...harnessGlobals());
 
@@ -262,8 +298,13 @@ function emitConftest(opts: {
     if (includePrism) {
       lines.push(
         "    global _prism_process",
+        "    if not os.path.exists(PRISM_BIN):",
+        "        raise RuntimeError(",
+        "            f\"Prism bin not found at {PRISM_BIN}. Set PRISM_BIN \"",
+        "            f\"or run 'npm ci --ignore-scripts'.\"",
+        "        )",
         "    _prism_process = subprocess.Popen(",
-        '        ["npx", "@stoplight/prism-cli", "mock", SPEC_PATH,',
+        '        [PRISM_BIN, "mock", SPEC_PATH,',
         '         "--port", PRISM_PORT, "--host", "127.0.0.1", "--dynamic"],',
         "        stdout=subprocess.PIPE,",
         "        stderr=subprocess.PIPE,",
@@ -309,7 +350,7 @@ function emitConftest(opts: {
       "def _wait_for_prism(timeout=30):",
       "    deadline = time.time() + timeout",
       "    while time.time() < deadline:",
-      "        # Fast-fail if Prism process exited (bad spec path, missing npx, etc.)",
+      "        # Fast-fail if Prism process exited (bad spec path, missing Prism, etc.)",
       "        if _prism_process.poll() is not None:",
       "            stderr = _prism_process.stderr.read().decode() if _prism_process.stderr else ''",
       '            raise RuntimeError(f"Prism exited with code {_prism_process.returncode}: {stderr}")',
@@ -354,7 +395,7 @@ function harnessHelpers(): string[] {
     "    if not os.path.exists(HARNESS_BIN):",
     "        raise RuntimeError(",
     "            f\"channel-harness bin not found at {HARNESS_BIN}. Set ARCHASTRO_HARNESS_BIN \"",
-    "            f\"or run 'npm install @archastro/channel-harness' (or 'npm run build' in the archastro-openapi workspace).\"",
+    "            f\"or run 'npm ci --ignore-scripts' (or 'npm run build' in the archastro-openapi workspace).\"",
     "        )",
     "    _harness_process = subprocess.Popen(",
     "        [\"node\", HARNESS_BIN, SPEC_PATH],",

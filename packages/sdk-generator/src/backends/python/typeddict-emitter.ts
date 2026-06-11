@@ -1,5 +1,6 @@
 import type { FieldDef, ParamDef, TypeRef } from "../../ast/types.js";
 import type { CodeBuilder } from "../../utils/codegen.js";
+import { isValidPythonIdentifier } from "./identifiers.js";
 import { typeRefToPython } from "./pydantic-emitter.js";
 
 /**
@@ -34,6 +35,11 @@ export function emitTypedDictClass(
   // When every key is required, `total=True` (default) is cleaner — no
   // Required wrappers needed.
   const allRequired = fields.length > 0 && fields.every((f) => f.required);
+  if (fields.some((field) => !isValidPythonIdentifier(field.name))) {
+    emitFunctionalTypedDict(cb, className, fields, allRequired);
+    return;
+  }
+
   const header = allRequired
     ? `class ${className}(TypedDict)`
     : `class ${className}(TypedDict, total=False)`;
@@ -47,6 +53,49 @@ export function emitTypedDictClass(
       emitTypedDictField(cb, field, allRequired);
     }
   });
+}
+
+function emitFunctionalTypedDict(
+  cb: CodeBuilder,
+  className: string,
+  fields: ReadonlyArray<FieldDef | ParamDef>,
+  allRequired: boolean
+): void {
+  cb.line(`${className} = TypedDict(`);
+  cb.indent();
+  cb.line(`${JSON.stringify(className)},`);
+  cb.line("{");
+  cb.indent();
+  for (const field of fields) {
+    emitFunctionalTypedDictField(cb, field, allRequired);
+  }
+  cb.dedent();
+  cb.line("},");
+  if (!allRequired) {
+    cb.line("total=False,");
+  }
+  cb.dedent();
+  cb.line(")");
+}
+
+function emitFunctionalTypedDictField(
+  cb: CodeBuilder,
+  field: FieldDef | ParamDef,
+  classIsTotal: boolean
+): void {
+  const valueType = typeRefToPython(field.type);
+  const annotation =
+    !classIsTotal && field.required ? `Required[${valueType}]` : valueType;
+  const comment = field.description
+    ? `  # ${field.description.replace(/\n/g, " ").trim()}`
+    : "";
+
+  const line = `${JSON.stringify(field.name)}: ${annotation},`;
+  if (comment && (line + comment).length + 8 <= 100) {
+    cb.line(line + comment);
+  } else {
+    cb.line(line);
+  }
 }
 
 function emitTypedDictField(
