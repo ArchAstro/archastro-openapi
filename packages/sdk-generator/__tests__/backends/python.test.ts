@@ -243,16 +243,33 @@ describe("Python resource emitter", () => {
   it("generates resource classes", () => {
     expect(output).toContain("class TeamResource:");
     expect(output).toContain("class MemberResource:");
+    expect(output).toContain("class AsyncTeamResource:");
+    expect(output).toContain("class AsyncMemberResource:");
+  });
+
+  it("generates typed sync resource classes without a Sync prefix", () => {
+    expect(output).toContain("def __init__(self, http: SyncHttpClient):");
+    expect(output).toContain("self.members = MemberResource(http)");
+    expect(output).not.toContain("class SyncTeamResource:");
+    expect(output).not.toContain("class SyncMemberResource:");
   });
 
   it("nests child resources in __init__", () => {
     expect(output).toContain("self.members = MemberResource(http)");
+    expect(output).toContain("self.members = AsyncMemberResource(http)");
   });
 
   it("generates async methods", () => {
     expect(output).toContain("async def list(self,");
     expect(output).toContain("async def get(self,");
     expect(output).toContain("async def create(self,");
+  });
+
+  it("generates sync methods with the same public signatures", () => {
+    expect(output).toContain("def list(self,");
+    expect(output).toContain("def get(self,");
+    expect(output).toContain("def create(self,");
+    expect(output).toContain("return self._http.request(");
   });
 
   it("uses snake_case params", () => {
@@ -306,10 +323,23 @@ describe("Python contract tests include raw response operations", () => {
 
   it("emits happy-path assertions for raw content and mime type", () => {
     expect(content).toContain(
-      'result = await client.v1.configs.content("test-value")'
+      'result = client.v1.configs.content("test-value")'
     );
     expect(content).toContain('assert result["content"] is not None');
     expect(content).toContain('assert result["mime_type"]');
+  });
+
+  it("uses the sync PlatformClient in generated Python REST contract tests", () => {
+    expect(content).toContain("from archastro.platform import PlatformClient");
+    expect(content).toContain("def _client() -> PlatformClient:");
+    expect(content).toContain("return PlatformClient(");
+    expect(content).toContain("def test_configs_content_success():");
+    expect(content).toContain("result = client.v1.configs.content(");
+    expect(content).toContain("finally:");
+    expect(content).toContain("client.close()");
+    expect(content).not.toContain("from archastro.platform import AsyncPlatformClient");
+    expect(content).not.toContain("async def test_configs_content_success");
+    expect(content).not.toContain("await client.v1.configs.content");
   });
 });
 
@@ -463,8 +493,13 @@ describe("Python auth emitter", () => {
 
   it("returns AuthTokens only for operations with token-role response fields", () => {
     expect(output).toContain("async def login(self, email: str) -> AuthTokens:");
+    expect(output).toContain("class AsyncAuthClient:");
+    expect(output).toContain("class AuthClient:");
+    expect(output).toContain("def login(self, email: str) -> AuthTokens:");
+    expect(output).toContain("data = self._http.request(");
     expect(output).toContain("access_token=data.get(\"token\")");
     expect(output).toContain("async def allowed_auth_methods(self) -> dict:");
+    expect(output).toContain("def allowed_auth_methods(self) -> dict:");
     expect(output).toMatch(
       /async def allowed_auth_methods\(self\) -> dict:\s+data = await self\._http\.request\([\s\S]+?return data/
     );
@@ -518,8 +553,19 @@ describe("Python auth emitter", () => {
 describe("Python client emitter", () => {
   const output = emitPythonClientFile(ast);
 
-  it("generates PlatformClient class", () => {
+  it("generates distinct sync and async client classes", () => {
     expect(output).toContain("class PlatformClient:");
+    expect(output).toContain("class AsyncPlatformClient:");
+    expect(output).toContain("self._http = SyncHttpClient(");
+    expect(output).toContain("self.v1 = V1(self._http)");
+    expect(output).toContain("self.v1 = AsyncV1(self._http)");
+    expect(output).not.toContain("PlatformClient = AsyncPlatformClient");
+  });
+
+  it("generates a sync HTTP-backed PlatformClient", () => {
+    expect(output).toContain("from .runtime.http_client import HttpClient, SyncHttpClient");
+    expect(output).not.toContain("class _SyncRunner:");
+    expect(output).not.toContain("class _SyncResourceProxy:");
   });
 
   it("has __init__ with keyword-only params", () => {
@@ -529,8 +575,8 @@ describe("Python client emitter", () => {
   });
 
   it("has version namespace and resource aliases", () => {
-    // Version namespace
     expect(output).toContain("self.v1 = V1(self._http)");
+    expect(output).toContain("self.v1 = AsyncV1(self._http)");
     // Backward-compat aliases to default version
     expect(output).toContain("self.teams = self.v1.teams");
     expect(output).toContain("self.agents = self.v1.agents");
@@ -539,6 +585,23 @@ describe("Python client emitter", () => {
   it("has set_access_token method", () => {
     expect(output).toContain("def set_access_token(self, token: str)");
     expect(output).toContain("self._http.set_access_token(token)");
+  });
+
+  it("generates close methods for async and sync clients", () => {
+    expect(output).toContain("self._extra_http_clients: list[HttpClient] = []");
+    expect(output).toContain("self._extra_http_clients: list[SyncHttpClient] = []");
+    expect(output).toContain("async def close(self):");
+    expect(output).toContain("await self._http.close()");
+    expect(output).toContain("for http in self._extra_http_clients:");
+    expect(output).toContain("def close(self):");
+    expect(output).toContain("self._http.close()");
+  });
+
+  it("generates context managers for async and sync clients", () => {
+    expect(output).toContain("async def __aenter__(self):");
+    expect(output).toContain("async def __aexit__(self, exc_type, exc, tb):");
+    expect(output).toContain("def __enter__(self):");
+    expect(output).toContain("def __exit__(self, exc_type, exc, tb):");
   });
 
   it("uniquifies with_credentials params using the auth method mapping", () => {
@@ -597,10 +660,103 @@ describe("Python client emitter", () => {
     } as any);
 
     expect(out).toContain(
-      'async def with_credentials(cls, api_key: str, async_: str, async_2: str, base_url: str | None = None) -> "PlatformClient":'
+      'async def with_credentials(cls, api_key: str, async_: str, async_2: str, base_url: str | None = None) -> "AsyncPlatformClient":'
+    );
+    expect(out).toContain(
+      'def with_credentials(cls, api_key: str, async_: str, async_2: str, base_url: str | None = None) -> "PlatformClient":'
     );
     expect(out).toContain("tokens = await client.auth.login(async_, async_2)");
     expect(out).not.toContain("client.auth.login(async_, async_)");
+    expect(out).not.toContain("tokens.refresh_token");
+    expect(out).not.toContain("set_refresh_handler(_refresh)");
+  });
+
+  it("keeps refresh handling when auth tokens are returned through a schema ref", () => {
+    const tokenSchema = {
+      name: "AuthTokens",
+      fields: [
+        {
+          name: "token",
+          type: { kind: "primitive", type: "string" },
+          required: true,
+          sdkRole: "access_token",
+        },
+        {
+          name: "refresh_token",
+          type: { kind: "primitive", type: "string" },
+          required: false,
+          sdkRole: "refresh_token",
+        },
+      ],
+    };
+    const out = emitPythonClientFile({
+      baseUrl: "https://api.example.test",
+      versions: [],
+      defaultVersion: "v1",
+      schemas: [tokenSchema],
+      resources: [],
+      channels: [],
+      auth: {
+        schemes: {
+          publishable_key: { type: "apiKey", name: "x-api-key" },
+        },
+        tokenFlows: {
+          login: { operation_name: "login" },
+        },
+      },
+      authOperations: [
+        {
+          name: "login",
+          operationId: "post_auth_login",
+          method: "POST",
+          path: "/api/v1/auth/login",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          body: {
+            fields: [
+              {
+                name: "email",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+              {
+                name: "password",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+            ],
+          },
+          returnType: { kind: "ref", schema: "AuthTokens" },
+          errors: [],
+        },
+        {
+          name: "refresh",
+          operationId: "post_auth_refresh",
+          method: "POST",
+          path: "/api/v1/auth/refresh",
+          deprecated: false,
+          pathParams: [],
+          queryParams: [],
+          body: {
+            fields: [
+              {
+                name: "refresh_token",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+            ],
+          },
+          returnType: { kind: "ref", schema: "AuthTokens" },
+          errors: [],
+        },
+      ],
+    } as any);
+
+    expect(out).toContain("if tokens.refresh_token:");
+    expect(out).toContain("client.set_refresh_token(tokens.refresh_token)");
+    expect(out).toContain("client._http.set_refresh_handler(_refresh)");
+    expect(out).toContain("refresh_auth = AuthClient(refresh_http)");
   });
 });
 
@@ -2029,7 +2185,9 @@ describe("Full Python generation", () => {
     const client =
       files["/tmp/test-python-sdk/src/archastro/platform/client.py"]!;
     expect(client).toBeDefined();
-    expect(client).toContain("PlatformClient");
+    expect(client).toContain("class PlatformClient:");
+    expect(client).toContain("AsyncPlatformClient");
+    expect(client).not.toContain("PlatformClient = AsyncPlatformClient");
   });
 
   it("generates channel files", () => {
@@ -2038,10 +2196,10 @@ describe("Full Python generation", () => {
     ).toBeDefined();
   });
 
-  it("generates package __init__.py with PlatformClient and version from metadata", () => {
+  it("generates package __init__.py with PlatformClient, AsyncPlatformClient, and version from metadata", () => {
     const init =
       files["/tmp/test-python-sdk/src/archastro/platform/__init__.py"]!;
-    expect(init).toContain("from .client import PlatformClient");
+    expect(init).toContain("from .client import AsyncPlatformClient, PlatformClient");
     expect(init).toContain("from .v1 import V1");
     expect(init).toContain("_pkg_version");
     // The distro-name passed to importlib.metadata must match the
@@ -2086,9 +2244,11 @@ describe("Multi-version Python generation", () => {
   it("generates namespace files for both versions", () => {
     expect(files[`${pkg}/v1/__init__.py`]).toBeDefined();
     expect(files[`${pkg}/v1/__init__.py`]).toContain("class V1:");
+    expect(files[`${pkg}/v1/__init__.py`]).toContain("class AsyncV1:");
 
     expect(files[`${pkg}/v2/__init__.py`]).toBeDefined();
     expect(files[`${pkg}/v2/__init__.py`]).toContain("class V2:");
+    expect(files[`${pkg}/v2/__init__.py`]).toContain("class AsyncV2:");
   });
 
   it("v2 namespace has workflows but v1 does not", () => {
@@ -2096,12 +2256,30 @@ describe("Multi-version Python generation", () => {
     const v2Ns = files[`${pkg}/v2/__init__.py`]!;
     expect(v1Ns).not.toContain("workflows");
     expect(v2Ns).toContain("self.workflows = WorkflowResource(http)");
+    expect(v2Ns).toContain("self.workflows = AsyncWorkflowResource(http)");
+  });
+
+  it("version namespaces include sync and async resource namespaces", () => {
+    const v1Ns = files[`${pkg}/v1/__init__.py`]!;
+    expect(v1Ns).toContain("class V1:");
+    expect(v1Ns).toContain("class AsyncV1:");
+    expect(v1Ns).toContain("from .resources.teams import AsyncTeamResource, TeamResource");
+    expect(v1Ns).toContain("def __init__(self, http: SyncHttpClient):");
+    expect(v1Ns).toContain("def __init__(self, http: HttpClient):");
+    expect(v1Ns).toContain("self.teams = TeamResource(http)");
+    expect(v1Ns).toContain("self.teams = AsyncTeamResource(http)");
+    expect(v1Ns).not.toContain("SyncTeamResource");
+    expect(v1Ns).not.toContain("class SyncV1:");
   });
 
   it("client has both v1 and v2 namespaces", () => {
     const client = files[`${pkg}/client.py`]!;
+    expect(client).toContain("self.v1 = AsyncV1(self._http)");
     expect(client).toContain("self.v1 = V1(self._http)");
+    expect(client).toContain("self.v2 = AsyncV2(self._http)");
     expect(client).toContain("self.v2 = V2(self._http)");
+    expect(client).not.toContain("SyncV1");
+    expect(client).not.toContain("SyncV2");
   });
 
   it("client has backward-compat aliases to default version (v1)", () => {
@@ -2125,7 +2303,9 @@ describe("Multi-version Python generation", () => {
   it("package __init__.py exports both version namespaces", () => {
     const init = files[`${pkg}/__init__.py`]!;
     expect(init).toContain("from .v1 import V1");
+    expect(init).toContain("from .v1 import AsyncV1");
     expect(init).toContain("from .v2 import V2");
+    expect(init).toContain("from .v2 import AsyncV2");
   });
 
   it("types are shared, not duplicated per version", () => {

@@ -170,24 +170,29 @@ function emitHappyPathTest(cb: CodeBuilder, call: MethodCallInfo): void {
   const returnsNoContent = call.operation.returnType.kind === "void";
 
   cb.line();
-  cb.line(`async def ${testName}():`);
+  cb.line(`def ${testName}():`);
   cb.indent();
   cb.line("client = _client()");
+  cb.pyBlock("try", () => {
   if (returnsNoContent) {
-    cb.line(`result = await ${methodCall}`);
+    cb.line(`result = ${methodCall}`);
     cb.line("assert result is None");
   } else if (call.operation.rawResponse) {
-    cb.line(`result = await ${methodCall}`);
+    cb.line(`result = ${methodCall}`);
     cb.line('assert result["content"] is not None');
     cb.line('assert result["mime_type"]')
   } else {
-    cb.line(`result = await ${methodCall}`);
+    cb.line(`result = ${methodCall}`);
     cb.line("assert result is not None");
     if (hasDataArray) {
       cb.line('assert "data" in result');
       cb.line('assert isinstance(result["data"], list)');
     }
   }
+  });
+  cb.pyBlock("finally", () => {
+    cb.line("client.close()");
+  });
   cb.dedent();
 }
 
@@ -209,14 +214,19 @@ function emitErrorTests(cb: CodeBuilder, call: MethodCallInfo): void {
     const methodCall = `ec.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
 
     cb.line();
-    cb.line(`async def ${testName}():`);
+    cb.line(`def ${testName}():`);
     cb.indent();
     cb.line(`ec = _error_client(${code})`);
-    cb.line("with pytest.raises(ApiError) as exc_info:");
-    cb.indent();
-    cb.line(`await ${methodCall}`);
-    cb.dedent();
-    cb.line(`assert exc_info.value.status == ${code}`);
+    cb.pyBlock("try", () => {
+      cb.line("with pytest.raises(ApiError) as exc_info:");
+      cb.indent();
+      cb.line(methodCall);
+      cb.dedent();
+      cb.line(`assert exc_info.value.status == ${code}`);
+    });
+    cb.pyBlock("finally", () => {
+      cb.line("ec.close()");
+    });
     cb.dedent();
   }
 }

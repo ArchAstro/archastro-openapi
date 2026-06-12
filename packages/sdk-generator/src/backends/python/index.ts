@@ -6,7 +6,12 @@ import { emitPythonResourceFile } from "./resource-emitter.js";
 import { emitPythonClientFile } from "./client-emitter.js";
 import { emitPythonChannelFile } from "./channel-emitter.js";
 import { emitPythonAuthFile } from "./auth-emitter.js";
-import { emitPythonNamespaceFile, pyVersionClassName } from "./namespace-emitter.js";
+import {
+  emitPythonNamespaceFile,
+  pyAsyncVersionClassName,
+  pyVersionClassName,
+} from "./namespace-emitter.js";
+import { pyAsyncResourceClassName } from "./resource-emitter.js";
 import { generatedHeaderPython, addContentHash, cleanStaleFiles } from "../../utils/codegen.js";
 import { snakeCase } from "../../utils/naming.js";
 
@@ -15,14 +20,14 @@ export interface PythonBackendOptions {
 }
 
 /**
- * Generate a complete async Python SDK from the SDK AST.
+ * Generate a complete Python SDK from the SDK AST.
  *
  * Creates:
  * - archastro_platform/types/*.py              — Pydantic models (shared)
  * - archastro_platform/{version}/resources/*.py — Async resource classes per version
  * - archastro_platform/{version}.py            — Version namespace class
  * - archastro_platform/channels/*.py           — Async channel classes (shared)
- * - archastro_platform/client.py               — PlatformClient class
+ * - archastro_platform/client.py               — PlatformClient + AsyncPlatformClient classes
  * - archastro_platform/__init__.py             — Package exports
  */
 export function generatePython(
@@ -153,6 +158,9 @@ function generateVersionedResourcesInit(
     lines.push(
       `from .${resource.name} import ${resource.className}  # noqa: F401`
     );
+    lines.push(
+      `from .${resource.name} import ${pyAsyncResourceClassName(resource.className)}  # noqa: F401`
+    );
   }
   return lines.join("\n") + "\n";
 }
@@ -172,15 +180,19 @@ function generatePackageInit(spec: SdkSpec): string {
   const lines = [generatedHeaderPython().trim(), ""];
   lines.push("from importlib.metadata import version as _pkg_version");
   lines.push("");
-  lines.push("from .client import PlatformClient  # noqa: F401");
+  lines.push("from .client import AsyncPlatformClient, PlatformClient  # noqa: F401");
   for (const versionSet of spec.versions) {
     const cls = pyVersionClassName(versionSet.version);
     lines.push(
       `from .${versionSet.version} import ${cls}  # noqa: F401`
     );
+    const asyncCls = pyAsyncVersionClassName(versionSet.version);
+    lines.push(
+      `from .${versionSet.version} import ${asyncCls}  # noqa: F401`
+    );
   }
   if ((spec.authOperations ?? []).length > 0) {
-    lines.push("from .auth import AuthClient, AuthTokens  # noqa: F401");
+    lines.push("from .auth import AsyncAuthClient, AuthClient, AuthTokens  # noqa: F401");
   }
   lines.push("");
   // Use the configured package name so the importlib.metadata lookup
