@@ -181,8 +181,11 @@ export function typeRefToPython(ref: TypeRef): string {
       return `list[${typeRefToPython(ref.items)}]`;
 
     case "object":
-      if (ref.fields.length === 0) return "dict[str, object]";
-      return "dict[str, object]";
+      // Free-form objects map to Any, not the `object` builtin: a field
+      // named `object` on the same model shadows the builtin when pydantic
+      // resolves deferred annotations against the class namespace, silently
+      // turning `dict[str, object]` into `dict[str, None]`.
+      return "dict[str, Any]";
 
     case "ref":
       return ref.schema;
@@ -201,11 +204,16 @@ export function typeRefToPython(ref: TypeRef): string {
       return `dict[str, ${typeRefToPython(ref.valueType)}]`;
 
     case "unknown":
-      return "object";
+      return "Any";
 
     case "void":
       return "None";
   }
+}
+
+/** True when a primitive TypeRef falls through to `Any` (needs the typing import). */
+export function primitiveMapsToAny(type: string): boolean {
+  return !["string", "datetime", "integer", "float", "boolean"].includes(type);
 }
 
 function primitiveToPython(type: string): string {
@@ -223,7 +231,7 @@ function primitiveToPython(type: string): string {
     case "boolean":
       return "bool";
     default:
-      return "object";
+      return "Any";
   }
 }
 
@@ -295,6 +303,16 @@ function collectImportsFromType(ref: TypeRef, imports: Set<string>): void {
       break;
     case "union":
       for (const v of ref.variants) collectImportsFromType(v, imports);
+      break;
+    case "map":
+      collectImportsFromType(ref.valueType, imports);
+      break;
+    case "object":
+    case "unknown":
+      imports.add("Any");
+      break;
+    case "primitive":
+      if (primitiveMapsToAny(ref.type)) imports.add("Any");
       break;
   }
 }

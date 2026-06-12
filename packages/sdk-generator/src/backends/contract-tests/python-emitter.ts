@@ -3,6 +3,10 @@ import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
 import { snakeCase } from "../../utils/naming.js";
 import { pythonParameterName, uniquePythonParameterNames } from "../python/identifiers.js";
 import {
+  pythonInlineResponseName,
+  pythonResponseShape,
+} from "../python/response-type.js";
+import {
   buildMethodCalls,
   groupByTopLevelResource,
   type MethodCallInfo,
@@ -75,6 +79,12 @@ function emitResourceTestFile(
   cb.line("import pytest");
   cb.line("from archastro.platform import AsyncPlatformClient, PlatformClient");
   cb.line("from archastro.platform.runtime.http_client import ApiError");
+  const needsBaseModel = calls.some((call) =>
+    ["model", "model_list"].includes(pythonResponseShape(call.operation))
+  );
+  if (needsBaseModel) {
+    cb.line("from pydantic import BaseModel");
+  }
   cb.line();
   cb.line();
   cb.line('PRISM_URL = "http://127.0.0.1:4040"');
@@ -184,34 +194,78 @@ function emitHappyPathTest(cb: CodeBuilder, call: MethodCallInfo): void {
   const argStr = buildPythonArgs(call);
   const chainPy = call.accessorChain.replace("client.", "");
   const methodCall = `client.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
-  const hasDataArray = returnTypeHasDataArray(call.operation.returnType);
-  const returnsNoContent = call.operation.returnType.kind === "void";
 
   cb.line();
   cb.line(`def ${testName}():`);
   cb.indent();
   cb.line("client = _client()");
   cb.pyBlock("try", () => {
-  if (returnsNoContent) {
-    cb.line(`result = ${methodCall}`);
-    cb.line("assert result is None");
-  } else if (call.operation.rawResponse) {
-    cb.line(`result = ${methodCall}`);
-    cb.line('assert result["content"] is not None');
-    cb.line('assert result["mime_type"]')
-  } else {
-    cb.line(`result = ${methodCall}`);
-    cb.line("assert result is not None");
-    if (hasDataArray) {
-      cb.line('assert "data" in result');
-      cb.line('assert isinstance(result["data"], list)');
-    }
-  }
+    emitResultAssertions(cb, call, methodCall);
   });
   cb.pyBlock("finally", () => {
     cb.line("client.close()");
   });
   cb.dedent();
+}
+
+/**
+ * Assert the response shape the generated SDK promises: deserialized
+ * Pydantic models for typed responses, raw payloads everywhere else.
+ * The shape decision is shared with the resource emitter via
+ * pythonResponseShape so assertions and behavior cannot drift. Concrete
+ * class names are asserted via type(...).__name__ — strictly stronger than
+ * an isinstance(BaseModel) check (a miswired all-optional model would
+ * still validate) without needing cross-module imports in the test file.
+ */
+function emitResultAssertions(
+  cb: CodeBuilder,
+  call: MethodCallInfo,
+  methodCall: string
+): void {
+  cb.line(`result = ${methodCall}`);
+  switch (pythonResponseShape(call.operation)) {
+    case "void":
+      cb.line("assert result is None");
+      break;
+    case "raw":
+      cb.line('assert result["content"] is not None');
+      cb.line('assert result["mime_type"]');
+      break;
+    case "model": {
+      cb.line("assert isinstance(result, BaseModel)");
+      cb.line(`assert type(result).__name__ == "${modelClassName(call)}"`);
+      if (returnTypeHasDataArray(call.operation.returnType)) {
+        cb.line("assert isinstance(result.data, list)");
+      }
+      break;
+    }
+    case "model_list": {
+      const itemName = listItemClassName(call);
+      cb.line("assert isinstance(result, list)");
+      cb.line(
+        `assert all(type(item).__name__ == "${itemName}" for item in result)`
+      );
+      break;
+    }
+    case "untyped":
+      cb.line("assert result is not None");
+      break;
+  }
+}
+
+function modelClassName(call: MethodCallInfo): string {
+  const ret = call.operation.returnType;
+  if (ret.kind === "ref") return ret.schema;
+  return pythonInlineResponseName(call.resource.className, call.operation.name);
+}
+
+function listItemClassName(call: MethodCallInfo): string {
+  const ret = call.operation.returnType;
+  if (ret.kind === "array" && ret.items.kind === "ref") return ret.items.schema;
+  throw new Error(
+    `[sdk-generator] ${call.operation.operationId}: model_list response ` +
+      `without a $ref item type`
+  );
 }
 
 /** Check if return type is an object with a `data` field that is an array. */
@@ -254,8 +308,6 @@ function emitAsyncHappyPathTest(cb: CodeBuilder, call: MethodCallInfo): void {
   const argStr = buildPythonArgs(call);
   const chainPy = call.accessorChain.replace("client.", "");
   const methodCall = `client.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
-  const hasDataArray = returnTypeHasDataArray(call.operation.returnType);
-  const returnsNoContent = call.operation.returnType.kind === "void";
 
   cb.line();
   cb.line("@pytest.mark.asyncio");
@@ -263,21 +315,7 @@ function emitAsyncHappyPathTest(cb: CodeBuilder, call: MethodCallInfo): void {
   cb.indent();
   cb.line("client = _async_client()");
   cb.pyBlock("try", () => {
-    if (returnsNoContent) {
-      cb.line(`result = await ${methodCall}`);
-      cb.line("assert result is None");
-    } else if (call.operation.rawResponse) {
-      cb.line(`result = await ${methodCall}`);
-      cb.line('assert result["content"] is not None');
-      cb.line('assert result["mime_type"]');
-    } else {
-      cb.line(`result = await ${methodCall}`);
-      cb.line("assert result is not None");
-      if (hasDataArray) {
-        cb.line('assert "data" in result');
-        cb.line('assert isinstance(result["data"], list)');
-      }
-    }
+    emitResultAssertions(cb, call, `await ${methodCall}`);
   });
   cb.pyBlock("finally", () => {
     cb.line("await client.close()");

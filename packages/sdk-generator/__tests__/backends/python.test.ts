@@ -16,6 +16,7 @@ import {
 } from "../../src/backends/python/typeddict-emitter.js";
 import { CodeBuilder } from "../../src/utils/codegen.js";
 import { emitPythonContractTests } from "../../src/backends/contract-tests/python-emitter.js";
+import { pythonResponseShape } from "../../src/backends/python/response-type.js";
 import { emitPythonChannelContractTestFile } from "../../src/backends/contract-tests/channel-emitter-python.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -204,6 +205,34 @@ describe("Pydantic emitter", () => {
     expect(out).not.toContain("async: Optional[bool]");
   });
 
+  it("emits Any rather than the object builtin for free-form fields", () => {
+    // A field named `object` shadows the builtin when pydantic resolves
+    // deferred annotations against the class namespace; `dict[str, object]`
+    // silently becomes `dict[str, None]` and every value fails validation.
+    const out = emitPydanticFile([
+      {
+        name: "AttachmentLike",
+        fields: [
+          {
+            name: "object",
+            type: { kind: "map", valueType: { kind: "unknown" } },
+            required: true,
+          },
+          {
+            name: "payload",
+            type: { kind: "object", fields: [] },
+            required: true,
+          },
+        ],
+      },
+    ]);
+
+    expect(out).toContain("object: dict[str, Any]");
+    expect(out).toContain("payload: dict[str, Any]");
+    expect(out).not.toContain("dict[str, object]");
+    expect(out).toMatch(/from typing import .*Any/);
+  });
+
   it("uniquely aliases fields when sanitized Python names collide", () => {
     const out = emitPydanticFile([
       {
@@ -304,6 +333,230 @@ describe("Python resource emitter uses request_raw for raw responses", () => {
     expect(output).toContain(
       'return await self._http.request_raw(f"/api/v1/configs/{config}/content")'
     );
+  });
+});
+
+describe("Python resource emitter passes response_type for typed responses", () => {
+  const widgetFixture = {
+    openapi: "3.0.0",
+    info: { title: "Widget API", version: "1.0.0" },
+    paths: {
+      "/api/v1/widgets": {
+        get: {
+          operationId: "get_api_v1_widgets",
+          responses: {
+            "200": {
+              description: "All widgets",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "array",
+                    items: { $ref: "#/components/schemas/Widget" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/v1/widgets/{widget}": {
+        get: {
+          operationId: "get_api_v1_widgets_widget",
+          parameters: [
+            { name: "widget", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "One widget",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/Widget" },
+                },
+              },
+            },
+          },
+        },
+        delete: {
+          operationId: "delete_api_v1_widgets_widget",
+          parameters: [
+            { name: "widget", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: { "204": { description: "Deleted" } },
+        },
+      },
+      "/api/v1/widgets/{widget}/share": {
+        post: {
+          operationId: "post_api_v1_widgets_widget_share",
+          parameters: [
+            { name: "widget", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "Share result",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { id: { type: "string" } },
+                    required: ["id"],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/api/v1/widgets/{widget}/avatar": {
+        get: {
+          operationId: "get_api_v1_widgets_widget_avatar",
+          parameters: [
+            { name: "widget", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "Raw avatar bytes",
+              content: { "*/*": { schema: { type: "string", format: "binary" } } },
+            },
+          },
+        },
+      },
+      "/api/v1/widgets/paged": {
+        get: {
+          operationId: "get_api_v1_widgets_paged",
+          responses: {
+            "200": {
+              description: "Paged widgets",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      data: {
+                        type: "array",
+                        items: { $ref: "#/components/schemas/Widget" },
+                      },
+                    },
+                    required: ["data"],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        Widget: {
+          type: "object",
+          properties: { id: { type: "string" } },
+          required: ["id"],
+        },
+      },
+    },
+  };
+
+  const widgetAst = parseOpenApiSpec(widgetFixture, {
+    name: "archastro-platform",
+    version: "0.1.0",
+    baseUrl: "https://platform.archastro.ai",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+  const widgetsResource = widgetAst.resources.find((r) => r.name === "widgets")!;
+  const output = emitPythonResourceFile(widgetsResource, "/api/v1");
+
+  it("passes the schema class for $ref responses in both transports", () => {
+    expect(output).toContain(
+      'return await self._http.request(f"/api/v1/widgets/{widget}", response_type=Widget)'
+    );
+    expect(output).toContain(
+      'return self._http.request(f"/api/v1/widgets/{widget}", response_type=Widget)'
+    );
+  });
+
+  it("passes list[Model] for array-of-$ref responses", () => {
+    expect(output).toContain(
+      'return await self._http.request(f"/api/v1/widgets", response_type=list[Widget])'
+    );
+    expect(output).toContain(
+      'return self._http.request(f"/api/v1/widgets", response_type=list[Widget])'
+    );
+  });
+
+  it("passes the hoisted BaseModel for inline object responses", () => {
+    expect(output).toContain("class WidgetShareResponse(BaseModel):");
+    expect(output).toContain("response_type=WidgetShareResponse");
+  });
+
+  it("omits response_type for 204/void responses", () => {
+    expect(output).toContain(
+      'await self._http.request(f"/api/v1/widgets/{widget}", method="DELETE")'
+    );
+  });
+
+  it("omits response_type for raw byte responses", () => {
+    expect(output).toContain(
+      'return await self._http.request_raw(f"/api/v1/widgets/{widget}/avatar")'
+    );
+  });
+
+  describe("contract tests assert the deserialized shapes", () => {
+    const files = emitPythonContractTests(widgetAst, {
+      outDir: "/tmp/test-python-sdk",
+    });
+    const content =
+      files["/tmp/test-python-sdk/tests/contract/v1/test_widgets.py"]!;
+
+    it("imports BaseModel and asserts concrete model classes for typed responses", () => {
+      expect(content).toContain("from pydantic import BaseModel");
+      expect(content).toContain("assert isinstance(result, BaseModel)");
+      expect(content).toContain('assert type(result).__name__ == "Widget"');
+      expect(content).toContain(
+        'assert type(result).__name__ == "WidgetShareResponse"'
+      );
+    });
+
+    it("asserts lists of concrete model instances for list responses", () => {
+      expect(content).toContain("assert isinstance(result, list)");
+      expect(content).toContain(
+        'assert all(type(item).__name__ == "Widget" for item in result)'
+      );
+    });
+
+    it("asserts attribute access for data-array responses", () => {
+      expect(content).toContain("assert isinstance(result.data, list)");
+      expect(content).not.toContain('assert "data" in result');
+      expect(content).not.toContain('result["data"]');
+    });
+
+    it("keeps raw and void assertions unchanged", () => {
+      expect(content).toContain('assert result["content"] is not None');
+      expect(content).toContain('assert result["mime_type"]');
+      expect(content).toContain("assert result is None");
+    });
+  });
+
+  it("fails generation when a model is buried in an undeserialized shape", () => {
+    expect(() =>
+      pythonResponseShape({
+        name: "get",
+        operationId: "get_widget_or_gadget",
+        method: "GET",
+        path: "/api/v1/widgets/mixed",
+        deprecated: false,
+        pathParams: [],
+        queryParams: [],
+        returnType: {
+          kind: "union",
+          variants: [
+            { kind: "ref", schema: "Widget" },
+            { kind: "ref", schema: "Gadget" },
+          ],
+        },
+        errors: [],
+      })
+    ).toThrow(/not deserialized/);
   });
 });
 
@@ -1231,7 +1484,7 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).toContain("add: list[TeamCreateInputAclAddItem]");
   });
 
-  it("keeps `dict[str, object]` for empty objects (genuine freeform metadata)", () => {
+  it("maps empty objects (genuine freeform metadata) to dict[str, Any]", () => {
     const out = emitPythonResourceFile(
       {
         name: "teams",
@@ -1271,7 +1524,7 @@ describe("Python resource emitter typed bodies", () => {
       },
       "/api/v1"
     );
-    expect(out).toContain("metadata: Optional[dict[str, object]]");
+    expect(out).toContain("metadata: Optional[dict[str, Any]]");
     expect(out).not.toContain("class TeamCreateInputMetadata");
   });
 
@@ -1552,7 +1805,7 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).not.toContain("class AgentListResponse(BaseModel)");
   });
 
-  it("leaves return type as dict[str, object] for empty inline responses", () => {
+  it("types empty inline responses as dict[str, Any]", () => {
     const out = emitPythonResourceFile(
       {
         name: "ping",
@@ -1576,7 +1829,7 @@ describe("Python resource emitter typed bodies", () => {
       },
       "/api/v1"
     );
-    expect(out).toContain("-> dict[str, object]:");
+    expect(out).toContain("-> dict[str, Any]:");
     expect(out).not.toContain("(BaseModel)");
   });
 
@@ -1820,7 +2073,7 @@ describe("Python resource emitter typed bodies", () => {
       "/api/v1"
     );
 
-    expect(out).toContain("from typing import Literal");
+    expect(out).toContain("from typing import Any, Literal");
     expect(out).toContain(
       'owner_scope: Literal["any", "individual", "system"] | None = None'
     );
