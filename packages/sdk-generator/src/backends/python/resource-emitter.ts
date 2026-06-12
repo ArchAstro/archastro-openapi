@@ -13,10 +13,15 @@ import {
 } from "./identifiers.js";
 import {
   emitPydanticModel,
+  primitiveMapsToAny,
   typeRefToPython,
   typeRefsUseDatetime,
 } from "./pydantic-emitter.js";
 import { hoistInlineObjects } from "./inline-object-hoist.js";
+import {
+  pythonInlineResponseName,
+  pythonResponseTypeExpr,
+} from "./response-type.js";
 import {
   collectTypedDictImports,
   emitTypedDictClass,
@@ -214,7 +219,6 @@ interface InlineResponseGroup {
 function collectInlineResponses(resources: ResourceDef[]): InlineResponseGroup[] {
   const groups: InlineResponseGroup[] = [];
   for (const resource of resources) {
-    const shortName = resource.className.replace(/Resource$/, "");
     for (const op of resource.operations) {
       if (op.rawResponse) continue;
       if (
@@ -223,7 +227,7 @@ function collectInlineResponses(resources: ResourceDef[]): InlineResponseGroup[]
       ) {
         groups.push({
           operationId: op.operationId,
-          name: `${shortName}${pascalCase(op.name)}Response`,
+          name: pythonInlineResponseName(resource.className, op.name),
           fields: op.returnType.fields,
           description: op.summary,
         });
@@ -251,6 +255,13 @@ function collectTypingFromTypeRef(ref: TypeRef, imports: Set<string>): void {
       break;
     case "map":
       collectTypingFromTypeRef(ref.valueType, imports);
+      break;
+    case "object":
+    case "unknown":
+      imports.add("Any");
+      break;
+    case "primitive":
+      if (primitiveMapsToAny(ref.type)) imports.add("Any");
       break;
   }
 }
@@ -384,7 +395,7 @@ function emitOperation(
       }
 
       const pathExpr = buildPathExpression(op, resource, pythonNames);
-      const optParts = buildRequestOptionParts(op, pythonNames);
+      const optParts = buildRequestOptionParts(op, pythonNames, responseName);
       const requestMethod = op.rawResponse ? "request_raw" : "request";
       const prefix = returnAnnotation === "None"
         ? "await" : "return await";
@@ -442,7 +453,7 @@ function emitSyncOperation(
       }
 
       const pathExpr = buildPathExpression(op, resource, pythonNames);
-      const optParts = buildRequestOptionParts(op, pythonNames);
+      const optParts = buildRequestOptionParts(op, pythonNames, responseName);
       const requestMethod = op.rawResponse ? "request_raw" : "request";
       const prefix = returnAnnotation === "None" ? "" : "return ";
       const allArgs = [pathExpr, ...optParts];
@@ -612,7 +623,8 @@ function buildPathExpression(
 
 function buildRequestOptionParts(
   op: OperationDef,
-  pythonNames: OperationPythonNames
+  pythonNames: OperationPythonNames,
+  inlineResponseName: string | undefined
 ): string[] {
   const parts: string[] = [];
 
@@ -626,6 +638,11 @@ function buildRequestOptionParts(
 
   if (op.queryParams.length > 0) {
     parts.push("query=query");
+  }
+
+  const responseTypeExpr = pythonResponseTypeExpr(op, inlineResponseName);
+  if (responseTypeExpr) {
+    parts.push(`response_type=${responseTypeExpr}`);
   }
 
   return parts;

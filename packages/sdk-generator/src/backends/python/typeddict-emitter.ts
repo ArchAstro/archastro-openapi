@@ -1,7 +1,7 @@
 import type { FieldDef, ParamDef, TypeRef } from "../../ast/types.js";
 import type { CodeBuilder } from "../../utils/codegen.js";
 import { isValidPythonIdentifier } from "./identifiers.js";
-import { typeRefToPython } from "./pydantic-emitter.js";
+import { primitiveMapsToAny, typeRefToPython } from "./pydantic-emitter.js";
 
 /**
  * Emit a single TypedDict class for an inline JSON body / channel payload.
@@ -165,6 +165,13 @@ function collectTypingFromTypeRef(ref: TypeRef, imports: Set<string>): void {
       break;
     case "map":
       collectTypingFromTypeRef(ref.valueType, imports);
+      break;
+    case "object":
+    case "unknown":
+      imports.add("Any");
+      break;
+    case "primitive":
+      if (primitiveMapsToAny(ref.type)) imports.add("Any");
       break;
   }
 }
