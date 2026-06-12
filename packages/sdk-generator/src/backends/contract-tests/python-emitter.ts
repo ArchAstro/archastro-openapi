@@ -73,7 +73,7 @@ function emitResourceTestFile(
   }
   cb.line();
   cb.line("import pytest");
-  cb.line("from archastro.platform import PlatformClient");
+  cb.line("from archastro.platform import AsyncPlatformClient, PlatformClient");
   cb.line("from archastro.platform.runtime.http_client import ApiError");
   cb.line();
   cb.line();
@@ -95,10 +95,28 @@ function emitResourceTestFile(
   cb.line('        access_token="test-token",');
   cb.line("    )");
   cb.line();
+  cb.line();
+  cb.line("def _async_client() -> AsyncPlatformClient:");
+  cb.line("    return AsyncPlatformClient(");
+  cb.line("        base_url=PRISM_URL,");
+  cb.line('        default_headers={"x-archastro-api-key": "pk_test-key"},');
+  cb.line('        access_token="test-token",');
+  cb.line("    )");
+  cb.line();
+  cb.line();
+  cb.line("def _async_error_client(code: int) -> AsyncPlatformClient:");
+  cb.line("    return AsyncPlatformClient(");
+  cb.line("        base_url=PRISM_URL,");
+  cb.line('        default_headers={"x-archastro-api-key": "pk_test-key", "Prefer": f"code={code}"},');
+  cb.line('        access_token="test-token",');
+  cb.line("    )");
+  cb.line();
 
   for (const call of calls) {
     emitHappyPathTest(cb, call);
     emitErrorTests(cb, call);
+    emitAsyncHappyPathTest(cb, call);
+    emitAsyncErrorTests(cb, call);
   }
 
   return cb.toString();
@@ -170,24 +188,29 @@ function emitHappyPathTest(cb: CodeBuilder, call: MethodCallInfo): void {
   const returnsNoContent = call.operation.returnType.kind === "void";
 
   cb.line();
-  cb.line(`async def ${testName}():`);
+  cb.line(`def ${testName}():`);
   cb.indent();
   cb.line("client = _client()");
+  cb.pyBlock("try", () => {
   if (returnsNoContent) {
-    cb.line(`result = await ${methodCall}`);
+    cb.line(`result = ${methodCall}`);
     cb.line("assert result is None");
   } else if (call.operation.rawResponse) {
-    cb.line(`result = await ${methodCall}`);
+    cb.line(`result = ${methodCall}`);
     cb.line('assert result["content"] is not None');
     cb.line('assert result["mime_type"]')
   } else {
-    cb.line(`result = await ${methodCall}`);
+    cb.line(`result = ${methodCall}`);
     cb.line("assert result is not None");
     if (hasDataArray) {
       cb.line('assert "data" in result');
       cb.line('assert isinstance(result["data"], list)');
     }
   }
+  });
+  cb.pyBlock("finally", () => {
+    cb.line("client.close()");
+  });
   cb.dedent();
 }
 
@@ -209,14 +232,83 @@ function emitErrorTests(cb: CodeBuilder, call: MethodCallInfo): void {
     const methodCall = `ec.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
 
     cb.line();
-    cb.line(`async def ${testName}():`);
+    cb.line(`def ${testName}():`);
     cb.indent();
     cb.line(`ec = _error_client(${code})`);
-    cb.line("with pytest.raises(ApiError) as exc_info:");
-    cb.indent();
-    cb.line(`await ${methodCall}`);
+    cb.pyBlock("try", () => {
+      cb.line("with pytest.raises(ApiError) as exc_info:");
+      cb.indent();
+      cb.line(methodCall);
+      cb.dedent();
+      cb.line(`assert exc_info.value.status == ${code}`);
+    });
+    cb.pyBlock("finally", () => {
+      cb.line("ec.close()");
+    });
     cb.dedent();
-    cb.line(`assert exc_info.value.status == ${code}`);
+  }
+}
+
+function emitAsyncHappyPathTest(cb: CodeBuilder, call: MethodCallInfo): void {
+  const testName = buildAsyncTestName(call, "success");
+  const argStr = buildPythonArgs(call);
+  const chainPy = call.accessorChain.replace("client.", "");
+  const methodCall = `client.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
+  const hasDataArray = returnTypeHasDataArray(call.operation.returnType);
+  const returnsNoContent = call.operation.returnType.kind === "void";
+
+  cb.line();
+  cb.line("@pytest.mark.asyncio");
+  cb.line(`async def ${testName}():`);
+  cb.indent();
+  cb.line("client = _async_client()");
+  cb.pyBlock("try", () => {
+    if (returnsNoContent) {
+      cb.line(`result = await ${methodCall}`);
+      cb.line("assert result is None");
+    } else if (call.operation.rawResponse) {
+      cb.line(`result = await ${methodCall}`);
+      cb.line('assert result["content"] is not None');
+      cb.line('assert result["mime_type"]');
+    } else {
+      cb.line(`result = await ${methodCall}`);
+      cb.line("assert result is not None");
+      if (hasDataArray) {
+        cb.line('assert "data" in result');
+        cb.line('assert isinstance(result["data"], list)');
+      }
+    }
+  });
+  cb.pyBlock("finally", () => {
+    cb.line("await client.close()");
+  });
+  cb.dedent();
+}
+
+function emitAsyncErrorTests(cb: CodeBuilder, call: MethodCallInfo): void {
+  for (const code of call.errorCodes) {
+    if (code < 400) continue;
+
+    const testName = buildAsyncTestName(call, `error_${code}`);
+    const argStr = buildPythonArgs(call);
+    const chainPy = call.accessorChain.replace("client.", "");
+    const methodCall = `ec.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
+
+    cb.line();
+    cb.line("@pytest.mark.asyncio");
+    cb.line(`async def ${testName}():`);
+    cb.indent();
+    cb.line(`ec = _async_error_client(${code})`);
+    cb.pyBlock("try", () => {
+      cb.line("with pytest.raises(ApiError) as exc_info:");
+      cb.indent();
+      cb.line(`await ${methodCall}`);
+      cb.dedent();
+      cb.line(`assert exc_info.value.status == ${code}`);
+    });
+    cb.pyBlock("finally", () => {
+      cb.line("await ec.close()");
+    });
     cb.dedent();
   }
 }
@@ -227,6 +319,10 @@ function buildTestName(call: MethodCallInfo, suffix: string): string {
     .split(" > ")
     .map((s) => snakeCase(s));
   return `test_${parts.join("_")}_${snakeCase(call.methodName)}_${suffix}`;
+}
+
+function buildAsyncTestName(call: MethodCallInfo, suffix: string): string {
+  return buildTestName(call, suffix).replace(/^test_/, "test_async_");
 }
 
 function emitConftest(opts: {

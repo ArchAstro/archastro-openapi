@@ -110,7 +110,7 @@ export function emitPythonResourceFile(
   if (typingImports.size > 0) {
     cb.line(`from typing import ${[...typingImports].sort().join(", ")}`);
   }
-  cb.line(`from ${runtimeImport} import HttpClient`);
+  cb.line(`from ${runtimeImport} import HttpClient, SyncHttpClient`);
 
   // Add type imports for schema refs used in operations + as $ref bodies
   if (options?.schemaImports) {
@@ -154,11 +154,21 @@ export function emitPythonResourceFile(
   }
 
   for (let i = 0; i < allResources.length; i++) {
+    emitAsyncResourceClass(cb, allResources[i]!, inputNameByOpId, responseNameByOpId);
+    cb.line();
+    cb.line();
+  }
+
+  for (let i = 0; i < allResources.length; i++) {
     emitResourceClass(cb, allResources[i]!, inputNameByOpId, responseNameByOpId);
     if (i < allResources.length - 1) { cb.line(); cb.line(); }
   }
 
   return cb.toString();
+}
+
+export function pyAsyncResourceClassName(className: string): string {
+  return `Async${className}`;
 }
 
 function flattenResourcesBottomUp(resource: ResourceDef): ResourceDef[] {
@@ -287,18 +297,20 @@ function collectInlineInputs(resources: ResourceDef[]): InlineInputGroup[] {
   return groups;
 }
 
-function emitResourceClass(
+function emitAsyncResourceClass(
   cb: CodeBuilder,
   resource: ResourceDef,
   inputNameByOpId: Map<string, string>,
   responseNameByOpId: Map<string, string>
 ): void {
-  cb.pyBlock(`class ${resource.className}`, () => {
+  cb.pyBlock(`class ${pyAsyncResourceClassName(resource.className)}`, () => {
     // __init__
     cb.pyBlock("def __init__(self, http: HttpClient)", () => {
       cb.line("self._http = http");
       for (const child of resource.children) {
-        cb.line(`self.${pythonParameterName(child.name)} = ${child.className}(http)`);
+        cb.line(
+          `self.${pythonParameterName(child.name)} = ${pyAsyncResourceClassName(child.className)}(http)`
+        );
       }
     });
 
@@ -306,6 +318,29 @@ function emitResourceClass(
     for (const op of resource.operations) {
       cb.line();
       emitOperation(cb, op, resource, inputNameByOpId, responseNameByOpId);
+    }
+  });
+}
+
+function emitResourceClass(
+  cb: CodeBuilder,
+  resource: ResourceDef,
+  inputNameByOpId: Map<string, string>,
+  responseNameByOpId: Map<string, string>
+): void {
+  cb.pyBlock(`class ${resource.className}`, () => {
+    cb.pyBlock("def __init__(self, http: SyncHttpClient)", () => {
+      cb.line("self._http = http");
+      for (const child of resource.children) {
+        cb.line(
+          `self.${pythonParameterName(child.name)} = ${child.className}(http)`
+        );
+      }
+    });
+
+    for (const op of resource.operations) {
+      cb.line();
+      emitSyncOperation(cb, op, resource, inputNameByOpId, responseNameByOpId);
     }
   });
 }
@@ -361,6 +396,62 @@ function emitOperation(
         cb.line(oneLiner);
       } else {
         cb.line(`${prefix} self._http.${requestMethod}(`);
+        for (const arg of allArgs) {
+          cb.line(`    ${arg},`);
+        }
+        cb.line(")");
+      }
+    }
+  );
+}
+
+function emitSyncOperation(
+  cb: CodeBuilder,
+  op: OperationDef,
+  resource: ResourceDef,
+  inputNameByOpId: Map<string, string>,
+  responseNameByOpId: Map<string, string>
+): void {
+  const pythonNames = buildOperationPythonNames(op, resource);
+  const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
+  const responseName = responseNameByOpId.get(op.operationId);
+  const returnType = op.rawResponse
+    ? "dict[str, str]"
+    : (responseName ?? typeRefToPython(op.returnType));
+  const methodName = pythonParameterName(op.name);
+  const returnAnnotation = returnType;
+
+  cb.pyBlock(
+    `def ${methodName}(self${params ? ", " + params : ""}) -> ${returnType}`,
+    () => {
+      emitOperationDocstring(cb, op.summary, op.description);
+
+      if (op.queryParams.length > 0) {
+        cb.line("query: dict[str, object] = {}");
+        for (let i = 0; i < op.queryParams.length; i++) {
+          const qp = op.queryParams[i]!;
+          const py = pythonNames.query[i]!;
+          const wireKey = JSON.stringify(qp.name);
+          if (qp.required) {
+            cb.line(`query[${wireKey}] = ${py}`);
+          } else {
+            cb.line(`if ${py} is not None:`);
+            cb.line(`    query[${wireKey}] = ${py}`);
+          }
+        }
+      }
+
+      const pathExpr = buildPathExpression(op, resource, pythonNames);
+      const optParts = buildRequestOptionParts(op, pythonNames);
+      const requestMethod = op.rawResponse ? "request_raw" : "request";
+      const prefix = returnAnnotation === "None" ? "" : "return ";
+      const allArgs = [pathExpr, ...optParts];
+      const oneLiner = `${prefix}self._http.${requestMethod}(${allArgs.join(", ")})`;
+
+      if (oneLiner.length + 8 <= 100) {
+        cb.line(oneLiner);
+      } else {
+        cb.line(`${prefix}self._http.${requestMethod}(`);
         for (const arg of allArgs) {
           cb.line(`    ${arg},`);
         }

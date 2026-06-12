@@ -25,7 +25,7 @@ export function emitPythonAuthFile(spec: SdkSpec): string {
   cb.line();
   cb.line("from dataclasses import dataclass");
   cb.line();
-  cb.line("from .runtime.http_client import HttpClient");
+  cb.line("from .runtime.http_client import HttpClient, SyncHttpClient");
   cb.line();
   cb.line();
 
@@ -43,8 +43,7 @@ export function emitPythonAuthFile(spec: SdkSpec): string {
     cb.line();
   }
 
-  // AuthClient
-  cb.pyBlock("class AuthClient", () => {
+  cb.pyBlock("class AsyncAuthClient", () => {
     cb.pyBlock("def __init__(self, http: HttpClient)", () => {
       cb.line("self._http = http");
     });
@@ -52,6 +51,19 @@ export function emitPythonAuthFile(spec: SdkSpec): string {
     for (const op of authOps) {
       cb.line();
       emitAuthMethod(cb, op, tokenFields, spec.schemas);
+    }
+  });
+  cb.line();
+  cb.line();
+
+  cb.pyBlock("class AuthClient", () => {
+    cb.pyBlock("def __init__(self, http: SyncHttpClient)", () => {
+      cb.line("self._http = http");
+    });
+
+    for (const op of authOps) {
+      cb.line();
+      emitSyncAuthMethod(cb, op, tokenFields, spec.schemas);
     }
   });
 
@@ -175,6 +187,72 @@ function emitAuthMethod(
 
     if (hasTokenReturn) {
       // Inline extraction using this operation's specific return type field names
+      cb.line("return AuthTokens(");
+      cb.indent();
+      for (const tf of tokenFields) {
+        const field = responseFields.find((f) => f.sdkRole === tf.role);
+        if (field) {
+          cb.line(`${pythonParameterName(tf.role)}=data.get("${field.name}"),`);
+        } else {
+          cb.line(`${pythonParameterName(tf.role)}=None,`);
+        }
+      }
+      cb.dedent();
+      cb.line(")");
+    } else {
+      cb.line("return data");
+    }
+  });
+}
+
+function emitSyncAuthMethod(
+  cb: CodeBuilder,
+  op: OperationDef,
+  tokenFields: TokenFieldInfo[],
+  schemas: SchemaDef[]
+): void {
+  const methodName = pyAuthMethodName(op);
+  const params = extractPythonAuthInputParams(op);
+  const responseFields = getResponseFields(op.returnType, schemas);
+  const hasTokenReturn = responseFields.some((field) => Boolean(field.sdkRole));
+  const returnType = hasTokenReturn ? "AuthTokens" : "dict";
+  const requiredParams = params.filter((p) => p.required);
+  const optionalParams = params.filter((p) => !p.required);
+  const sortedParams = [...requiredParams, ...optionalParams];
+  const sig = sortedParams
+    .map((p) => {
+      if (p.required) return `${p.name}: str`;
+      return `${p.name}: str | None = None`;
+    })
+    .join(", ");
+  const methodParams = sig ? `self, ${sig}` : "self";
+
+  cb.pyBlock(`def ${methodName}(${methodParams}) -> ${returnType}`, () => {
+    if (sortedParams.length > 0) {
+      cb.line("body: dict[str, object] = {}");
+      for (const p of sortedParams) {
+        if (p.required) {
+          cb.line(`body["${p.originalName}"] = ${p.name}`);
+        } else {
+          cb.pyBlock(`if ${p.name} is not None`, () => {
+            cb.line(`body["${p.originalName}"] = ${p.name}`);
+          });
+        }
+      }
+      cb.line();
+    }
+
+    cb.line("data = self._http.request(");
+    cb.indent();
+    cb.line(`"${op.path}",`);
+    cb.line(`method="${op.method}",`);
+    if (sortedParams.length > 0) {
+      cb.line("body=body,");
+    }
+    cb.dedent();
+    cb.line(")");
+
+    if (hasTokenReturn) {
       cb.line("return AuthTokens(");
       cb.indent();
       for (const tf of tokenFields) {
