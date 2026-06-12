@@ -9,10 +9,20 @@ export function emitPythonClientFile(spec: SdkSpec): string {
 
   const authOps = spec.authOperations ?? [];
   const hasAuth = authOps.length > 0;
+  const hasChannels = spec.channels.length > 0;
+  const socketApiKeyHeader =
+    spec.auth?.schemes?.publishable_key?.name ??
+    spec.auth?.schemes?.secret_key?.name ??
+    "x-archastro-api-key";
 
   for (const line of generatedHeaderPython().trim().split("\n")) { cb.line(line); }
   cb.line();
 
+  if (hasChannels) {
+    cb.line("from urllib.parse import urlparse, urlunparse");
+    cb.line();
+    cb.line("from archastro.phx_channel import Socket");
+  }
   if (hasAuth) {
     cb.line("from .auth import AsyncAuthClient, AuthClient");
   }
@@ -49,6 +59,10 @@ export function emitPythonClientFile(spec: SdkSpec): string {
     ];
 
     cb.pyBlock(`def __init__(${initParams.join(", ")})`, () => {
+      cb.line("self._base_url = base_url");
+      cb.line("self._access_token = access_token");
+      cb.line("self._get_access_token = get_access_token");
+      cb.line("self._default_headers = default_headers or {}");
       cb.line("self._http = HttpClient(");
       cb.indent();
       cb.line("base_url=base_url,");
@@ -80,6 +94,9 @@ export function emitPythonClientFile(spec: SdkSpec): string {
 
       cb.line("self._refresh_token: str | None = None");
       cb.line("self._extra_http_clients: list[HttpClient] = []");
+      if (hasChannels) {
+        cb.line("self._sockets: list[Socket] = []");
+      }
     });
 
     cb.line();
@@ -92,6 +109,7 @@ export function emitPythonClientFile(spec: SdkSpec): string {
     cb.line();
 
     cb.pyBlock("def set_access_token(self, token: str)", () => {
+      cb.line("self._access_token = token");
       cb.line("self._http.set_access_token(token)");
     });
 
@@ -114,6 +132,16 @@ export function emitPythonClientFile(spec: SdkSpec): string {
     cb.line();
     cb.pyBlock("async def close(self)", () => {
       cb.pyBlock("try", () => {
+        if (hasChannels) {
+          cb.pyBlock("try", () => {
+            cb.pyBlock("for socket in self._sockets", () => {
+              cb.line("await socket.disconnect()");
+            });
+          });
+          cb.pyBlock("finally", () => {
+            cb.line("self._sockets.clear()");
+          });
+        }
         cb.line("await self._http.close()");
       });
       cb.pyBlock("finally", () => {
@@ -123,6 +151,91 @@ export function emitPythonClientFile(spec: SdkSpec): string {
         cb.line("self._extra_http_clients.clear()");
       });
     });
+
+    if (hasChannels) {
+      cb.line();
+      cb.pyBlock("def _current_access_token(self) -> str | None", () => {
+        cb.pyBlock("if self._get_access_token", () => {
+          cb.line("return self._get_access_token()");
+        });
+        cb.line("return self._access_token");
+      });
+
+      cb.line();
+      cb.pyBlock("def _api_key(self) -> str | None", () => {
+        cb.pyBlock("for key, value in self._default_headers.items()", () => {
+          cb.pyBlock(`if key.lower() == "${socketApiKeyHeader}".lower()`, () => {
+            cb.line("return value");
+          });
+        });
+        cb.line("return None");
+      });
+
+      cb.line();
+      cb.pyBlock("def _socket_params(self, params: dict[str, str] | None = None) -> dict[str, str]", () => {
+        cb.line("socket_params: dict[str, str] = {}");
+        cb.line("api_key = self._api_key()");
+        cb.pyBlock("if api_key", () => {
+          cb.line('socket_params["api_key"] = api_key');
+        });
+        cb.line("token = self._current_access_token()");
+        cb.pyBlock("if token", () => {
+          cb.line('socket_params["token"] = token');
+        });
+        cb.pyBlock("if params", () => {
+          cb.line("socket_params.update(params)");
+        });
+        cb.line("return socket_params");
+      });
+
+      cb.line();
+      cb.pyBlock("def _default_websocket_url(self) -> str", () => {
+        cb.line("parsed = urlparse(self._base_url)");
+        cb.line('scheme = "wss" if parsed.scheme == "https" else "ws" if parsed.scheme == "http" else parsed.scheme');
+        cb.line('path = parsed.path.rstrip("/") + "/socket/api/websocket"');
+        cb.line('return urlunparse(parsed._replace(scheme=scheme, path=path, params="", query="", fragment=""))');
+      });
+
+      cb.line();
+      cb.pyBlock(
+        [
+          "async def open_socket(",
+          "self,",
+          "*,",
+          "url: str | None = None,",
+          "params: dict[str, str] | None = None,",
+          "connect: bool = True,",
+          "heartbeat_interval: float = 30,",
+          "timeout: float = 10,",
+          "reconnect_backoff_ms: list[int] | None = None,",
+          "auto_reconnect: bool = True,",
+          ") -> Socket",
+        ].join(" "),
+        () => {
+          cb.line("socket_params = self._socket_params(params)");
+          cb.pyBlock('if connect and not socket_params.get("token")', () => {
+            cb.line('raise ValueError("AsyncPlatformClient.open_socket requires an access token")');
+          });
+          cb.line("socket = Socket(url or self._default_websocket_url(),");
+          cb.indent();
+          cb.line("params=socket_params,");
+          cb.line("heartbeat_interval=heartbeat_interval,");
+          cb.line("timeout=timeout,");
+          cb.line("reconnect_backoff_ms=reconnect_backoff_ms,");
+          cb.line("auto_reconnect=auto_reconnect,");
+          cb.dedent();
+          cb.line(")");
+          cb.pyBlock("if connect", () => {
+            cb.line("await socket.connect()");
+            cb.pyBlock("if not socket.is_connected", () => {
+              cb.line('raise ConnectionError("WebSocket connection failed")');
+            });
+          });
+          cb.line("self._sockets.append(socket)");
+          cb.line("return socket");
+        }
+      );
+    }
 
     const schemes = spec.auth?.schemes ?? {};
     const flows = spec.auth?.tokenFlows ?? {};

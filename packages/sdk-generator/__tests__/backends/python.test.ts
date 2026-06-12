@@ -330,16 +330,32 @@ describe("Python contract tests include raw response operations", () => {
   });
 
   it("uses the sync PlatformClient in generated Python REST contract tests", () => {
-    expect(content).toContain("from archastro.platform import PlatformClient");
+    expect(content).toContain("from archastro.platform import AsyncPlatformClient, PlatformClient");
     expect(content).toContain("def _client() -> PlatformClient:");
     expect(content).toContain("return PlatformClient(");
     expect(content).toContain("def test_configs_content_success():");
     expect(content).toContain("result = client.v1.configs.content(");
     expect(content).toContain("finally:");
     expect(content).toContain("client.close()");
-    expect(content).not.toContain("from archastro.platform import AsyncPlatformClient");
-    expect(content).not.toContain("async def test_configs_content_success");
-    expect(content).not.toContain("await client.v1.configs.content");
+  });
+
+  it("also emits async REST contract tests for AsyncPlatformClient", () => {
+    expect(content).toContain("def _async_client() -> AsyncPlatformClient:");
+    expect(content).toContain("return AsyncPlatformClient(");
+    expect(content).toContain("@pytest.mark.asyncio");
+    expect(content).toContain("async def test_async_configs_content_success():");
+    expect(content).toContain("result = await client.v1.configs.content(");
+    expect(content).toContain("await client.close()");
+  });
+
+  it("emits async REST contract error cases when the operation declares 4xx responses", () => {
+    const files = emitPythonContractTests(ast, { outDir: "/tmp/test-python-sdk" });
+    const teams = files["/tmp/test-python-sdk/tests/contract/v1/test_teams.py"]!;
+
+    expect(teams).toContain("async def test_async_teams_get_error_404():");
+    expect(teams).toContain("with pytest.raises(ApiError) as exc_info:");
+    expect(teams).toContain("await ec.v1.teams.get(");
+    expect(teams).toContain("assert exc_info.value.status == 404");
   });
 });
 
@@ -602,6 +618,34 @@ describe("Python client emitter", () => {
     expect(output).toContain("async def __aexit__(self, exc_type, exc, tb):");
     expect(output).toContain("def __enter__(self):");
     expect(output).toContain("def __exit__(self, exc_type, exc, tb):");
+  });
+
+  it("generates an authenticated socket convenience on AsyncPlatformClient only", () => {
+    const asyncClass = output.slice(
+      output.indexOf("class AsyncPlatformClient:"),
+      output.indexOf("class PlatformClient:")
+    );
+    const syncClass = output.slice(output.indexOf("class PlatformClient:"));
+
+    expect(output).toContain("from urllib.parse import urlparse, urlunparse");
+    expect(output).toContain("from archastro.phx_channel import Socket");
+    expect(asyncClass).toContain("self._base_url = base_url");
+    expect(asyncClass).toContain("self._default_headers = default_headers or {}");
+    expect(asyncClass).toContain("self._sockets: list[Socket] = []");
+    expect(asyncClass).toContain("async def open_socket(");
+    expect(asyncClass).toContain("url: str | None = None");
+    expect(asyncClass).toContain("params: dict[str, str] | None = None");
+    expect(asyncClass).toContain("connect: bool = True");
+    expect(asyncClass).toContain('socket = Socket(url or self._default_websocket_url()');
+    expect(asyncClass).toContain("await socket.connect()");
+    expect(asyncClass).toContain("if not socket.is_connected:");
+    expect(asyncClass).toContain('raise ConnectionError("WebSocket connection failed")');
+    expect(asyncClass).toContain("return socket");
+    expect(asyncClass).toContain('socket_params["api_key"] = api_key');
+    expect(asyncClass).toContain('socket_params["token"] = token');
+    expect(asyncClass).toContain("await socket.disconnect()");
+    expect(syncClass).not.toContain("open_socket");
+    expect(syncClass).not.toContain("self._sockets");
   });
 
   it("uniquifies with_credentials params using the auth method mapping", () => {
