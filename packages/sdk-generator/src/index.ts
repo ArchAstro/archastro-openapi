@@ -7,6 +7,7 @@
  *   npx @archastro/sdk-generator --spec openapi.json --lang typescript --out ./sdk
  *   sdk-generator --spec openapi.json --lang python --out ./sdk
  *   sdk-generator --spec openapi.json --ast-only --out ./sdk-ast.json
+ *   sdk-generator --spec openapi.json --lang typescript --mode samples --out ./samples.json
  *
  * Installable as a global bin (`npm install -g @archastro/sdk-generator`) — the
  * bin is named `sdk-generator` so `npx @archastro/sdk-generator` resolves
@@ -20,6 +21,13 @@ import type { FrontendConfig } from "./frontend/config.js";
 import { generateTypeScript, writeGeneratedFiles } from "./backends/typescript/index.js";
 import { generatePython, writePythonFiles } from "./backends/python/index.js";
 import { generateContractTests } from "./backends/contract-tests/index.js";
+import { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.js";
+import { generatePythonSamples } from "./backends/python/sample-emitter.js";
+import {
+  mergeSampleBundles,
+  type SdkSampleAggregateOptions,
+  type SdkSampleBundle,
+} from "./backends/samples.js";
 
 // Re-export everything for programmatic use
 export { parseOpenApiSpec } from "./frontend/index.js";
@@ -28,12 +36,33 @@ export type * from "./ast/types.js";
 export { generateTypeScript, writeGeneratedFiles } from "./backends/typescript/index.js";
 export { generatePython, writePythonFiles } from "./backends/python/index.js";
 export { generateContractTests } from "./backends/contract-tests/index.js";
+export { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.js";
+export { generatePythonSamples } from "./backends/python/sample-emitter.js";
+export type * from "./backends/samples.js";
 export { emitChannelFile } from "./backends/typescript/channel-emitter.js";
 export {
   channelTestFileStem,
   emitChannelContractTestFile,
 } from "./backends/contract-tests/channel-emitter.js";
 export { snakeCase, camelCase, pascalCase } from "./utils/naming.js";
+
+export function generateSdkSamples(
+  ast: ReturnType<typeof parseOpenApiSpec>,
+  options: SdkSampleAggregateOptions = {}
+): SdkSampleBundle {
+  const languages = options.languages ?? ["typescript", "python"];
+  const bundles: SdkSampleBundle[] = [];
+
+  if (languages.includes("typescript")) {
+    bundles.push(generateTypeScriptSamples(ast, options));
+  }
+
+  if (languages.includes("python")) {
+    bundles.push(generatePythonSamples(ast, options));
+  }
+
+  return mergeSampleBundles(bundles);
+}
 
 function main() {
   const args = process.argv.slice(2);
@@ -42,10 +71,11 @@ function main() {
   const lang = getArg(args, "--lang");
   const outDir = getArg(args, "--out");
   const configPath = getArg(args, "--config");
+  const mode = getArg(args, "--mode") ?? "sdk";
   const astOnly = args.includes("--ast-only");
 
   if (!specPath) {
-    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|contract-tests-ts|contract-tests-py] [--out <dir>] [--config <config.json>] [--ast-only]");
+    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|contract-tests-ts|contract-tests-py] [--out <dir>] [--config <config.json>] [--mode sdk|samples] [--ast-only]");
     process.exit(1);
   }
 
@@ -72,6 +102,28 @@ function main() {
       console.log(output);
     }
     return;
+  }
+
+  if (mode === "samples") {
+    if (!lang) {
+      console.error("--lang is required when using --mode samples");
+      process.exit(1);
+    }
+
+    const samples = samplesForLanguage(ast, lang);
+    const output = `${JSON.stringify(samples, null, 2)}\n`;
+    if (outDir) {
+      writeFileSync(resolve(outDir), output, "utf-8");
+      console.log(`SDK samples written to ${outDir}`);
+    } else {
+      console.log(output);
+    }
+    return;
+  }
+
+  if (mode !== "sdk") {
+    console.error(`Unknown mode: ${mode}. Supported: sdk, samples`);
+    process.exit(1);
   }
 
   if (!lang || !outDir) {
@@ -124,6 +176,21 @@ function main() {
     }
     default:
       console.error(`Unknown language: ${lang}. Supported: typescript, python, contract-tests-ts, contract-tests-py`);
+      process.exit(1);
+  }
+}
+
+function samplesForLanguage(
+  ast: ReturnType<typeof parseOpenApiSpec>,
+  lang: string
+): SdkSampleBundle {
+  switch (lang) {
+    case "typescript":
+      return generateTypeScriptSamples(ast);
+    case "python":
+      return generatePythonSamples(ast);
+    default:
+      console.error(`Unknown sample language: ${lang}. Supported: typescript, python`);
       process.exit(1);
   }
 }

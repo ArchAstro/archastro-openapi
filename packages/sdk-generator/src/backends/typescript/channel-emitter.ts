@@ -52,17 +52,13 @@ export function emitChannelFile(channel: ChannelDef): string {
     // Static topic builder + join method for each join pattern
     for (let i = 0; i < channel.joins.length; i++) {
       const join = channel.joins[i]!;
-      const suffix = channel.joins.length > 1 ? String(i + 1) : "";
-      const topicName = join.name
-        ? camelCase(join.name.replace(/^join_/, "topic_"))
-        : undefined;
-      const joinName = join.name ? camelCase(join.name) : undefined;
+      const topicName = tsChannelTopicMethodName(join, i, channel.joins.length);
+      const joinName = tsChannelJoinMethodName(join, i, channel.joins.length);
       cb.line();
       emitTopicBuilder(
         cb,
         join.topicPattern,
         join.description,
-        suffix,
         topicName
       );
       cb.line();
@@ -72,7 +68,6 @@ export function emitChannelFile(channel: ChannelDef): string {
         join.topicPattern,
         join.params,
         join.description,
-        suffix,
         joinName,
         topicName
       );
@@ -105,12 +100,10 @@ function emitTopicBuilder(
   cb: CodeBuilder,
   pattern: string,
   description?: string,
-  suffix = "",
-  explicitName?: string
+  methodName = "topic"
 ): void {
   // Extract param names from pattern: "api:chat:team:{team_id}:thread:{thread_id}"
-  const paramMatches = [...pattern.matchAll(/\{(\w+)\}/g)];
-  const params = paramMatches.map(([, name]) => camelCase(name!));
+  const params = tsChannelTopicParamNames(pattern);
   const sig = params.map((p) => `${p}: string`).join(", ");
 
   // Build template literal: `api:chat:team:${teamId}:thread:${threadId}`
@@ -121,8 +114,6 @@ function emitTopicBuilder(
   if (description) {
     cb.line(`/** ${description} */`);
   }
-
-  const methodName = explicitName ?? (suffix ? `topic${suffix}` : "topic");
 
   cb.block(`static ${methodName}(${sig}): string`, () => {
     cb.line(`return \`${template}\`;`);
@@ -135,20 +126,15 @@ function emitJoinMethod(
   pattern: string,
   joinParams: ParamDef[],
   description?: string,
-  suffix = "",
-  explicitName?: string,
-  explicitTopicName?: string
+  methodName = "join",
+  topicMethod = "topic"
 ): void {
-  const paramMatches = [...pattern.matchAll(/\{(\w+)\}/g)];
-  const topicParams = paramMatches.map(([, name]) => camelCase(name!));
+  const topicParams = tsChannelTopicParamNames(pattern);
   // Topic vars in the pattern are written as they appear in the URL
   // (typically snake_case). Param names preserve the spec's casing. Compare
   // both in a case-normalized form so `{team_id}` matches a param named
   // `team_id` whether the spec used snake or camel for the topic var.
-  const topicSet = new Set(topicParams);
-  const payloadParams = joinParams.filter(
-    (p) => !topicSet.has(camelCase(p.name))
-  );
+  const payloadParams = tsChannelJoinPayloadParams(pattern, joinParams);
   const hasRequiredPayload = payloadParams.some((p) => p.required);
 
   const sigParts = [
@@ -166,10 +152,7 @@ function emitJoinMethod(
     sigParts.push(`payload${hasRequiredPayload ? "" : "?"}: { ${fields} }`);
   }
   const sig = sigParts.join(", ");
-  const topicMethod =
-    explicitTopicName ?? (suffix ? `topic${suffix}` : "topic");
   const topicArgs = topicParams.join(", ");
-  const methodName = explicitName ?? (suffix ? `join${suffix}` : "join");
 
   if (description) {
     cb.line(`/** ${description} */`);
@@ -192,7 +175,7 @@ function emitMessageMethod(
   event: string,
   description?: string
 ): void {
-  const methodName = camelCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const methodName = tsChannelMessageMethodName(event);
 
   if (description) {
     cb.line(`/** ${description} */`);
@@ -211,7 +194,7 @@ function emitPushHandler(
   event: string,
   description?: string
 ): void {
-  const handlerName = "on" + pascalCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const handlerName = tsChannelPushHandlerName(event);
 
   if (description) {
     cb.line(`/** ${description} */`);
@@ -223,4 +206,42 @@ function emitPushHandler(
       cb.line(`return this.channel.on("${event}", callback);`);
     }
   );
+}
+
+export function tsChannelTopicMethodName(
+  join: { name?: string },
+  index: number,
+  total: number
+): string {
+  if (join.name) return camelCase(join.name.replace(/^join_/, "topic_"));
+  return total > 1 ? `topic${index + 1}` : "topic";
+}
+
+export function tsChannelJoinMethodName(
+  join: { name?: string },
+  index: number,
+  total: number
+): string {
+  if (join.name) return camelCase(join.name);
+  return total > 1 ? `join${index + 1}` : "join";
+}
+
+export function tsChannelMessageMethodName(event: string): string {
+  return camelCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+}
+
+export function tsChannelPushHandlerName(event: string): string {
+  return "on" + pascalCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+}
+
+export function tsChannelTopicParamNames(pattern: string): string[] {
+  return [...pattern.matchAll(/\{(\w+)\}/g)].map(([, name]) => camelCase(name!));
+}
+
+export function tsChannelJoinPayloadParams(
+  pattern: string,
+  joinParams: ParamDef[]
+): ParamDef[] {
+  const topicSet = new Set(tsChannelTopicParamNames(pattern));
+  return joinParams.filter((param) => !topicSet.has(camelCase(param.name)));
 }

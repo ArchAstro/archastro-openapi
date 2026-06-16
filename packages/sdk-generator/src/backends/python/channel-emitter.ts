@@ -108,17 +108,13 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
     // Static topic builder + join method for each join pattern
     for (let i = 0; i < channel.joins.length; i++) {
       const join = channel.joins[i]!;
-      const suffix = channel.joins.length > 1 ? `_${i + 1}` : "";
-      const topicName = join.name
-        ? pythonParameterName(join.name.replace(/^join_/, "topic_"))
-        : undefined;
-      const joinName = join.name ? pythonParameterName(join.name) : undefined;
+      const topicName = pyChannelTopicMethodName(join, i, channel.joins.length);
+      const joinName = pyChannelJoinMethodName(join, i, channel.joins.length);
       cb.line();
       emitTopicBuilder(
         cb,
         join.topicPattern,
         join.description,
-        suffix,
         topicName
       );
       cb.line();
@@ -128,7 +124,6 @@ export function emitPythonChannelFile(channel: ChannelDef): string {
         join.topicPattern,
         join.params,
         join.description,
-        suffix,
         joinName,
         topicName
       );
@@ -207,10 +202,9 @@ function emitTopicBuilder(
   cb: CodeBuilder,
   pattern: string,
   description?: string,
-  suffix = "",
-  explicitName?: string
+  methodName = "topic"
 ): void {
-  const params = topicPythonParams(pattern);
+  const params = pyChannelTopicParams(pattern);
   const sig = params.map((p) => `${p.pyName}: str`).join(", ");
 
   let paramIndex = 0;
@@ -221,8 +215,6 @@ function emitTopicBuilder(
   if (description) {
     cb.line(`# ${description}`);
   }
-  const methodName = explicitName ?? (suffix ? `topic${suffix}` : "topic");
-
   cb.line("@staticmethod");
   cb.pyBlock(`def ${methodName}(${sig}) -> str`, () => {
     cb.line(`return f"${template}"`);
@@ -235,11 +227,10 @@ function emitJoinMethod(
   pattern: string,
   joinParams: ParamDef[],
   description?: string,
-  suffix = "",
-  explicitName?: string,
-  explicitTopicName?: string
+  methodName = "join",
+  topicMethod = "topic"
 ): void {
-  const { topicParams, payloadParams } = joinPythonParams(pattern, joinParams);
+  const { topicParams, payloadParams } = pyChannelJoinParams(pattern, joinParams);
 
   const sigParts = [
     "cls",
@@ -258,10 +249,7 @@ function emitJoinMethod(
     }
   }
   const sig = sigParts.join(", ");
-  const topicMethod =
-    explicitTopicName ?? (suffix ? `topic${suffix}` : "topic");
   const topicArgs = topicParams.map((p) => p.pyName).join(", ");
-  const methodName = explicitName ?? (suffix ? `join${suffix}` : "join");
 
   if (description) {
     cb.line(`# ${description}`);
@@ -294,17 +282,17 @@ function emitJoinMethod(
   });
 }
 
-interface TopicParamName {
+export interface PythonTopicParamName {
   rawName: string;
   pyName: string;
 }
 
-interface PayloadParamName {
+export interface PythonPayloadParamName {
   param: ParamDef;
   pyName: string;
 }
 
-function topicPythonParams(pattern: string): TopicParamName[] {
+export function pyChannelTopicParams(pattern: string): PythonTopicParamName[] {
   const rawNames = topicRawNames(pattern);
   const pyNames = uniquePythonParameterNames(rawNames);
   return rawNames.map((rawName, index) => ({
@@ -313,10 +301,10 @@ function topicPythonParams(pattern: string): TopicParamName[] {
   }));
 }
 
-function joinPythonParams(
+export function pyChannelJoinParams(
   pattern: string,
   joinParams: ParamDef[]
-): { topicParams: TopicParamName[]; payloadParams: PayloadParamName[] } {
+): { topicParams: PythonTopicParamName[]; payloadParams: PythonPayloadParamName[] } {
   const rawTopicNames = topicRawNames(pattern);
   const topicMatcher = topicParamMatcher(rawTopicNames, joinParams);
   const payloadParams = joinParams.filter(
@@ -364,7 +352,7 @@ function emitMessageMethod(
   msg: ChannelMessageDef,
   inputClassName: string | undefined
 ): void {
-  const methodName = pythonParameterName(msg.event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const methodName = pyChannelMessageMethodName(msg.event);
   const payloadType = inputClassName ?? "dict";
   const returnType = typeRefToPython(msg.returnType);
 
@@ -385,8 +373,7 @@ function emitPushHandler(
   push: ChannelPushDef,
   payloadClassName: string | undefined
 ): void {
-  const event = push.event.replace(/[^a-zA-Z0-9_]/g, "_");
-  const handlerName = "on_" + pythonParameterName(event);
+  const handlerName = pyChannelPushHandlerName(push.event);
   const payloadType = payloadClassName ?? typeRefForPushPayload(push.payloadType);
   // Phoenix channel handlers receive a single payload arg. Returning is
   // unobserved in the runtime, but `None` is the right contract for users.
@@ -404,6 +391,32 @@ function emitPushHandler(
       cb.line(`return self._channel.on("${push.event}", callback)`);
     }
   );
+}
+
+export function pyChannelTopicMethodName(
+  join: { name?: string },
+  index: number,
+  total: number
+): string {
+  if (join.name) return pythonParameterName(join.name.replace(/^join_/, "topic_"));
+  return total > 1 ? `topic_${index + 1}` : "topic";
+}
+
+export function pyChannelJoinMethodName(
+  join: { name?: string },
+  index: number,
+  total: number
+): string {
+  if (join.name) return pythonParameterName(join.name);
+  return total > 1 ? `join_${index + 1}` : "join";
+}
+
+export function pyChannelMessageMethodName(event: string): string {
+  return pythonParameterName(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+}
+
+export function pyChannelPushHandlerName(event: string): string {
+  return "on_" + pythonParameterName(event.replace(/[^a-zA-Z0-9_]/g, "_"));
 }
 
 function typeRefForPushPayload(ref: TypeRef): string {
