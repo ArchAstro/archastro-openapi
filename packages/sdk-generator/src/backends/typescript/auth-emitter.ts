@@ -53,7 +53,7 @@ interface TokenFieldInfo {
   required: boolean;
 }
 
-interface AuthParam {
+export interface AuthParam {
   name: string;       // camelCase param name for the method signature
   originalName: string; // original snake_case name for the JSON body
   type: string;       // TypeScript type
@@ -119,7 +119,7 @@ function emitAuthMethod(
   schemas: SchemaDef[]
 ): void {
   const methodName = authMethodName(op);
-  const params = extractInputParams(op);
+  const params = extractAuthInputParams(op);
   const hasTokenReturn = tokenFields.length > 0;
   const returnType = hasTokenReturn ? "AuthTokens" : "Record<string, unknown>";
 
@@ -182,7 +182,7 @@ function emitAuthMethod(
   });
 }
 
-function extractInputParams(op: OperationDef): AuthParam[] {
+export function extractAuthInputParams(op: OperationDef): AuthParam[] {
   const params: AuthParam[] = [];
 
   // Query params
