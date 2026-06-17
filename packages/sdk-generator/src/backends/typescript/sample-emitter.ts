@@ -42,7 +42,10 @@ export function generateTypeScriptSamples(
 
 function emitOperationSamples(spec: SdkSpec): SdkOperationSamples[] {
   const resourceSamples: SdkOperationSamples[] = spec.versions.flatMap((versionSet) =>
-    buildMethodCalls(spec, versionSet, "typescript").map((call) => ({
+    buildMethodCalls(spec, versionSet, "typescript", {
+      useExamples: true,
+      includeOptional: true,
+    }).map((call) => ({
       operationId: call.operation.operationId,
       method: call.httpMethod,
       path: call.httpPath,
@@ -242,7 +245,7 @@ function objectLiteral(params: ParamDef[], lang: "typescript"): string {
 
   const entries = params.map(
     (param) =>
-      `${propertyKey(param.name)}: ${generateDummyValue(param.type, param.name, lang)}`
+      `${propertyKey(param.name)}: ${generateDummyValue(param.type, param.name, lang, param.example)}`
   );
   return `{ ${entries.join(", ")} }`;
 }

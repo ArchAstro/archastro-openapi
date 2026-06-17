@@ -165,6 +165,8 @@ export interface FieldDef {
   description?: string;
   /** SDK role annotation (e.g., "access_token", "refresh_token", "token_expiry") */
   sdkRole?: string;
+  /** Example value from the OpenAPI spec (`example`), used to populate samples. */
+  example?: unknown;
 }
 
 // ─── Custom Scalar Types ─────────────────────────────────────────
@@ -235,6 +237,8 @@ export interface ParamDef {
   required: boolean;
   default?: unknown;
   description?: string;
+  /** Example value from the OpenAPI spec (`example`), used to populate samples. */
+  example?: unknown;
 }
 
 export interface BodyDef {

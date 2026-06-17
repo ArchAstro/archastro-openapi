@@ -23,6 +23,7 @@ interface JsonSchema {
   description?: string;
   default?: unknown;
   additionalProperties?: boolean | JsonSchema;
+  example?: unknown;
   examples?: unknown[];
   pattern?: string;
   nullable?: boolean;
@@ -293,6 +294,7 @@ function parseFields(schema: JsonSchema): FieldDef[] {
       default: fieldSchema.default,
       description: fieldSchema.description,
       sdkRole: fieldSchema["x-sdk"] as string | undefined,
+      example: fieldSchema.example,
     });
   }
 
