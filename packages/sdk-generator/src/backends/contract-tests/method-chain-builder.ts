@@ -5,7 +5,11 @@ import type {
   OperationDef,
   HttpMethod,
 } from "../../ast/types.js";
-import { generateDummyValue, generateBodyLiteral } from "./value-generator.js";
+import {
+  generateDummyValue,
+  generateBodyLiteral,
+  type ValueOptions,
+} from "./value-generator.js";
 
 export interface MethodArg {
   name: string;
@@ -48,10 +52,12 @@ function isTestableOperation(op: OperationDef): boolean {
 export function buildMethodCalls(
   spec: SdkSpec,
   versionSet: VersionedResourceSet,
-  lang: "typescript" | "python"
+  lang: "typescript" | "python",
+  opts: ValueOptions = {}
 ): MethodCallInfo[] {
   const results: MethodCallInfo[] = [];
   const clientPrefix = `client.${versionSet.version}`;
+  const argExample = (example: unknown) => (opts.useExamples ? example : undefined);
 
   function walk(
     resources: ResourceDef[],
@@ -73,7 +79,7 @@ export function buildMethodCalls(
         for (const sp of resource.scopeParams) {
           args.push({
             name: sp.name,
-            value: generateDummyValue(sp.type, sp.name, lang),
+            value: generateDummyValue(sp.type, sp.name, lang, argExample(sp.example)),
             kind: "scope",
           });
         }
@@ -82,29 +88,31 @@ export function buildMethodCalls(
         for (const pp of op.pathParams) {
           args.push({
             name: pp.name,
-            value: generateDummyValue(pp.type, pp.name, lang),
+            value: generateDummyValue(pp.type, pp.name, lang, argExample(pp.example)),
             kind: "path",
           });
         }
 
-        // 3. Request body (required fields only)
+        // 3. Request body. Defaults to required fields with placeholders;
+        // docs samples opt into all fields with spec example values.
         if (op.body) {
           args.push({
             name: "input",
-            value: generateBodyLiteral(op.body, spec.schemas, lang),
+            value: generateBodyLiteral(op.body, spec.schemas, lang, opts),
             kind: "body",
           });
         }
 
-        // 4. Required query params (passed as params object)
-        const requiredQuery = op.queryParams.filter((p) => p.required);
-        if (requiredQuery.length > 0) {
-          const entries = requiredQuery.map(
-            (p) =>
-              lang === "python"
-                ? `"${p.name}": ${generateDummyValue(p.type, p.name, lang)}`
-                : `${p.name}: ${generateDummyValue(p.type, p.name, lang)}`
-          );
+        // 4. Query params (passed as a params object). Required-only by
+        // default; all params when `includeOptional` is set.
+        const queryParams = opts.includeOptional
+          ? op.queryParams
+          : op.queryParams.filter((p) => p.required);
+        if (queryParams.length > 0) {
+          const entries = queryParams.map((p) => {
+            const value = generateDummyValue(p.type, p.name, lang, argExample(p.example));
+            return lang === "python" ? `"${p.name}": ${value}` : `${p.name}: ${value}`;
+          });
           const value =
             lang === "python"
               ? `{${entries.join(", ")}}`

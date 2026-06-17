@@ -119,11 +119,12 @@ describe("SDK sample emitters", () => {
     expect(listTeams?.samples[0]?.code).toContain(
       'import { PlatformClient } from "@archastro/sdk";'
     );
+    // Samples show the full param set, including optional query/body params.
     expect(listTeams?.samples[0]?.code).toContain(
-      'const result = await client.v1.apps.teams.list("test-id");'
+      'const result = await client.v1.apps.teams.list("test-id", { page: 1, pageSize: 1, search: "test-value" });'
     );
     expect(createTeam?.samples[0]?.code).toContain(
-      'const result = await client.v1.apps.teams.create("test-id", { name: "test-name" });'
+      'const result = await client.v1.apps.teams.create("test-id", { name: "test-name", description: "test description" });'
     );
   });
 
@@ -192,11 +193,12 @@ describe("SDK sample emitters", () => {
     expect(listTeams?.samples[0]?.code).toContain(
       "from archastro.platform import AsyncPlatformClient"
     );
+    // Samples show the full param set, including optional query/body params.
     expect(listTeams?.samples[0]?.code).toContain(
-      'result = await client.v1.apps.teams.list("test-id")'
+      'result = await client.v1.apps.teams.list("test-id", page=1, page_size=1, search="test-value")'
     );
     expect(createTeam?.samples[0]?.code).toContain(
-      'result = await client.v1.apps.teams.create("test-id", {"name": "test-name"})'
+      'result = await client.v1.apps.teams.create("test-id", {"name": "test-name", "description": "test description"})'
     );
   });
 

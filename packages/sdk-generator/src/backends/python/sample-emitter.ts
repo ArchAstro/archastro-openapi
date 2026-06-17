@@ -41,7 +41,10 @@ export function generatePythonSamples(
 
 function emitOperationSamples(spec: SdkSpec): SdkOperationSamples[] {
   const resourceSamples: SdkOperationSamples[] = spec.versions.flatMap((versionSet) =>
-    buildMethodCalls(spec, versionSet, "python").map((call) => ({
+    buildMethodCalls(spec, versionSet, "python", {
+      useExamples: true,
+      includeOptional: true,
+    }).map((call) => ({
       operationId: call.operation.operationId,
       method: call.httpMethod,
       path: call.httpPath,
@@ -257,7 +260,7 @@ function emitJoinSample(spec: SdkSpec, channel: ChannelDef, index: number): stri
     ),
     ...payloadParams.map(
       ({ param, pyName }) =>
-        `${pyName}=${generateDummyValue(param.type, param.name, "python")}`
+        `${pyName}=${generateDummyValue(param.type, param.name, "python", param.example)}`
     ),
   ];
 
@@ -323,6 +326,6 @@ function pythonDictLines(params: ParamDef[], indent: number): string[] {
   const prefix = " ".repeat(indent);
   return params.map(
     (param) =>
-      `${prefix}${JSON.stringify(param.name)}: ${generateDummyValue(param.type, param.name, "python")},`
+      `${prefix}${JSON.stringify(param.name)}: ${generateDummyValue(param.type, param.name, "python", param.example)},`
   );
 }

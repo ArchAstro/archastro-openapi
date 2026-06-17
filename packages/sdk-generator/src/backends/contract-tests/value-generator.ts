@@ -1,15 +1,64 @@
 import type { TypeRef, FieldDef, BodyDef, SchemaDef } from "../../ast/types.js";
 
 /**
- * Generate a dummy value literal for a TypeRef.
+ * Render a JSON value (e.g. an OpenAPI `example`) as a language literal.
  *
- * Used to synthesize valid request bodies and path params for contract tests.
+ * Handles strings, numbers, booleans, null, arrays, and nested objects so a
+ * spec example like `{"name": "Acme", "tags": ["a"]}` becomes idiomatic TS or
+ * Python source.
+ */
+export function renderLiteral(
+  value: unknown,
+  lang: "typescript" | "python"
+): string {
+  if (value === null) return lang === "python" ? "None" : "null";
+  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "number") return String(value);
+  if (typeof value === "boolean") {
+    if (lang === "python") return value ? "True" : "False";
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((v) => renderLiteral(v, lang)).join(", ")}]`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).map(
+      ([k, v]) => {
+        const rendered = renderLiteral(v, lang);
+        if (lang === "python") return `"${k}": ${rendered}`;
+        const key = isValidIdentifier(k) ? k : JSON.stringify(k);
+        return `${key}: ${rendered}`;
+      }
+    );
+    if (entries.length === 0) return lang === "python" ? "{}" : "{}";
+    return lang === "python"
+      ? `{${entries.join(", ")}}`
+      : `{ ${entries.join(", ")} }`;
+  }
+  return lang === "python" ? "None" : "undefined";
+}
+
+function isValidIdentifier(s: string): boolean {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(s);
+}
+
+/**
+ * Generate a value literal for a TypeRef.
+ *
+ * When an `example` is supplied (from the OpenAPI spec) it is rendered verbatim
+ * — this is how docs samples use the same example values that appear in the
+ * spec's JSON examples. Otherwise a name/type heuristic placeholder is used
+ * (the behavior contract tests rely on).
  */
 export function generateDummyValue(
   typeRef: TypeRef,
   fieldName?: string,
-  lang: "typescript" | "python" = "typescript"
+  lang: "typescript" | "python" = "typescript",
+  example?: unknown
 ): string {
+  if (example !== undefined) {
+    return renderLiteral(example, lang);
+  }
   switch (typeRef.kind) {
     case "primitive":
       return generatePrimitiveValue(typeRef.type, fieldName, lang);
@@ -115,35 +164,44 @@ function stringValueForField(fieldName?: string): string {
   return '"test-value"';
 }
 
+/** Options controlling how request-body / param literals are populated. */
+export interface ValueOptions {
+  /** Render the spec's `example` value for each field when available. */
+  useExamples?: boolean;
+  /** Include optional fields, not just required ones (docs samples want all). */
+  includeOptional?: boolean;
+}
+
 /**
  * Generate a request body literal from a BodyDef.
  *
- * Only includes required fields. If the body is a schema ref,
- * resolves it from the schemas list.
+ * By default includes only required fields with heuristic placeholders (the
+ * contract-test behavior). With `includeOptional` it emits every field, and
+ * with `useExamples` it renders each field's spec `example` value.
  */
 export function generateBodyLiteral(
   body: BodyDef,
   schemas: SchemaDef[],
-  lang: "typescript" | "python"
+  lang: "typescript" | "python",
+  opts: ValueOptions = {}
 ): string {
   const fields = resolveBodyFields(body, schemas);
   if (fields.length === 0) return lang === "python" ? "{}" : "{}";
 
-  // Only include required fields
-  const requiredFields = fields.filter((f) => f.required);
-  if (requiredFields.length === 0) return lang === "python" ? "{}" : "{}";
+  const selected = opts.includeOptional ? fields : fields.filter((f) => f.required);
+  if (selected.length === 0) return lang === "python" ? "{}" : "{}";
 
-  if (lang === "python") {
-    const entries = requiredFields.map(
-      (f) => `"${f.name}": ${generateDummyValue(f.type, f.name, "python")}`
+  const entries = selected.map((f) => {
+    const value = generateDummyValue(
+      f.type,
+      f.name,
+      lang,
+      opts.useExamples ? f.example : undefined
     );
-    return `{${entries.join(", ")}}`;
-  } else {
-    const entries = requiredFields.map(
-      (f) => `${f.name}: ${generateDummyValue(f.type, f.name, "typescript")}`
-    );
-    return `{ ${entries.join(", ")} }`;
-  }
+    return lang === "python" ? `"${f.name}": ${value}` : `${f.name}: ${value}`;
+  });
+
+  return lang === "python" ? `{${entries.join(", ")}}` : `{ ${entries.join(", ")} }`;
 }
 
 function resolveBodyFields(

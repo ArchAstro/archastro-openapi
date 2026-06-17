@@ -38,6 +38,7 @@ interface ParameterObject {
   required?: boolean;
   description?: string;
   schema?: JsonSchema;
+  example?: unknown;
 }
 
 interface RequestBodyObject {
@@ -65,6 +66,7 @@ interface JsonSchema {
   default?: unknown;
   additionalProperties?: boolean | JsonSchema;
   nullable?: boolean;
+  example?: unknown;
 }
 
 // ─── Parsed operation (flat, before resource grouping) ───────────
@@ -156,6 +158,7 @@ function extractParams(
       type: p.schema ? jsonSchemaToTypeRef(p.schema) : primitiveString(),
       required: location === "path" ? true : (p.required ?? false),
       description: p.description,
+      example: p.example ?? p.schema?.example,
     }));
 }
 
@@ -190,6 +193,7 @@ function extractBody(
           required: isRequired,
           default: fieldSchema.default,
           description: fieldSchema.description,
+          example: fieldSchema.example,
         };
       }
     );
