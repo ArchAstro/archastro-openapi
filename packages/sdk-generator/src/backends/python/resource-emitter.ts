@@ -97,7 +97,7 @@ export function emitPythonResourceFile(
       collectTypingFromTypeRef(field.type, typingImports);
     }
   }
-  collectOperationTypingImports(allResources, typingImports);
+  collectOperationTypingImports(allResources, typingImports, responseNameByOpId);
   const allFieldTypes = [
     ...inputEmitOrder.flatMap((g) => g.fields.map((f) => f.type)),
     ...responseEmitOrder.flatMap((g) => g.fields.map((f) => f.type)),
@@ -109,6 +109,8 @@ export function emitPythonResourceFile(
     const pydanticImports = ["BaseModel"];
     if (responseEmitOrder.some((group) => groupHasAliasedPydanticFields(group.fields))) {
       pydanticImports.push("ConfigDict", "Field");
+    } else if (responseEmitOrder.some((group) => group.fields.some((field) => field.description))) {
+      pydanticImports.push("Field");
     }
     cb.line(`from pydantic import ${pydanticImports.join(", ")}`);
   }
@@ -229,7 +231,7 @@ function collectInlineResponses(resources: ResourceDef[]): InlineResponseGroup[]
           operationId: op.operationId,
           name: pythonInlineResponseName(resource.className, op.name),
           fields: op.returnType.fields,
-          description: op.summary,
+          description: op.returnDescription ?? op.summary,
         });
       }
     }
@@ -268,20 +270,61 @@ function collectTypingFromTypeRef(ref: TypeRef, imports: Set<string>): void {
 
 function collectOperationTypingImports(
   resources: ResourceDef[],
-  imports: Set<string>
+  imports: Set<string>,
+  responseNameByOpId: Map<string, string>
 ): void {
   for (const resource of resources) {
     for (const op of resource.operations) {
-      collectTypingFromTypeRef(op.returnType, imports);
+      if (op.rawResponse) {
+        imports.add("Dict");
+      } else if (!responseNameByOpId.has(op.operationId)) {
+        collectTypingFromResourceAnnotation(op.returnType, imports);
+      }
       if (op.body?.fields) {
         for (const field of op.body.fields) {
           collectTypingFromTypeRef(field.type, imports);
         }
+      } else if (op.body && !op.body.schema) {
+        imports.add("Any");
+        imports.add("Dict");
       }
       for (const param of op.queryParams) {
-        collectTypingFromTypeRef(param.type, imports);
+        collectTypingFromResourceAnnotation(param.type, imports);
       }
     }
+  }
+}
+
+function collectTypingFromResourceAnnotation(ref: TypeRef, imports: Set<string>): void {
+  switch (ref.kind) {
+    case "optional":
+      imports.add("Optional");
+      collectTypingFromResourceAnnotation(ref.inner, imports);
+      break;
+    case "enum":
+      if (ref.values.length > 0) imports.add("Literal");
+      break;
+    case "array":
+      imports.add("List");
+      collectTypingFromResourceAnnotation(ref.items, imports);
+      break;
+    case "union":
+      for (const v of ref.variants) collectTypingFromResourceAnnotation(v, imports);
+      break;
+    case "map":
+      imports.add("Dict");
+      collectTypingFromResourceAnnotation(ref.valueType, imports);
+      break;
+    case "object":
+      imports.add("Any");
+      imports.add("Dict");
+      break;
+    case "unknown":
+      imports.add("Any");
+      break;
+    case "primitive":
+      if (primitiveMapsToAny(ref.type)) imports.add("Any");
+      break;
   }
 }
 
@@ -367,14 +410,14 @@ function emitOperation(
   const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
   const responseName = responseNameByOpId.get(op.operationId);
   const returnType = op.rawResponse
-    ? "dict[str, str]"
-    : (responseName ?? typeRefToPython(op.returnType));
+    ? "Dict[str, str]"
+    : (responseName ?? typeRefToPythonResourceAnnotation(op.returnType));
   const returnAnnotation = returnType;
 
   cb.pyBlock(
     `async def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> ${returnAnnotation}`,
     () => {
-      emitOperationDocstring(cb, op.summary, op.description);
+      emitOperationDocstring(cb, op, resource, pythonNames);
 
       // Build the query dict ahead of the request call so optional params can
       // be omitted entirely (vs. sending `?key=null`). Required params land
@@ -427,15 +470,15 @@ function emitSyncOperation(
   const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
   const responseName = responseNameByOpId.get(op.operationId);
   const returnType = op.rawResponse
-    ? "dict[str, str]"
-    : (responseName ?? typeRefToPython(op.returnType));
+    ? "Dict[str, str]"
+    : (responseName ?? typeRefToPythonResourceAnnotation(op.returnType));
   const methodName = pythonParameterName(op.name);
   const returnAnnotation = returnType;
 
   cb.pyBlock(
     `def ${methodName}(self${params ? ", " + params : ""}) -> ${returnType}`,
     () => {
-      emitOperationDocstring(cb, op.summary, op.description);
+      emitOperationDocstring(cb, op, resource, pythonNames);
 
       if (op.queryParams.length > 0) {
         cb.line("query: dict[str, object] = {}");
@@ -474,21 +517,63 @@ function emitSyncOperation(
 
 function emitOperationDocstring(
   cb: CodeBuilder,
-  summary?: string,
-  description?: string
+  op: OperationDef,
+  resource: ResourceDef,
+  pythonNames: OperationPythonNames
 ): void {
-  const lines = [summary, description]
-    .flatMap((text) => (text ?? "").split("\n"))
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const lines = [op.summary, op.description]
+    .flatMap(docLines);
+
+  const args: Array<[string, string]> = [];
+  for (let i = 0; i < resource.scopeParams.length; i++) {
+    const param = resource.scopeParams[i]!;
+    if (param.description) args.push([pythonNames.scope[i]!, param.description]);
+  }
+  for (let i = 0; i < op.pathParams.length; i++) {
+    const param = op.pathParams[i]!;
+    if (param.description) args.push([pythonNames.path[i]!, param.description]);
+  }
+  if (op.body) {
+    args.push([pythonNames.body ?? "input", "Request body."]);
+    for (const field of op.body.fields ?? []) {
+      if (field.description) {
+        args.push([`${pythonNames.body ?? "input"}.${field.name}`, field.description]);
+      }
+    }
+  }
+  for (let i = 0; i < op.queryParams.length; i++) {
+    const param = op.queryParams[i]!;
+    if (param.description) args.push([pythonNames.query[i]!, param.description]);
+  }
+
+  if (args.length > 0) {
+    if (lines.length > 0) lines.push("");
+    lines.push("Args:");
+    for (const [name, description] of args) {
+      lines.push(`    ${name}: ${sanitizeComment(description)}`);
+    }
+  }
+
+  if (op.returnDescription) {
+    if (lines.length > 0) lines.push("");
+    lines.push("Returns:");
+    lines.push(`    ${sanitizeComment(op.returnDescription)}`);
+  }
 
   if (lines.length === 0) return;
 
   cb.line('"""');
   for (const line of lines) {
-    cb.line(sanitizeComment(line));
+    cb.line(line === "" ? "" : sanitizeDocstringLine(line));
   }
   cb.line('"""');
+}
+
+function docLines(text: string | undefined): string[] {
+  return (text ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 interface OperationPythonNames {
@@ -573,7 +658,7 @@ function buildParamList(
     } else if (op.body.schema) {
       parts.push(`${pythonNames.body}: ${op.body.schema}`);
     } else {
-      parts.push(`${pythonNames.body}: dict`);
+      parts.push(`${pythonNames.body}: Dict[str, Any]`);
     }
   }
 
@@ -587,13 +672,13 @@ function buildParamList(
   const required = queryParams.filter(({ param }) => param.required);
   const optional = queryParams.filter(({ param }) => !param.required);
   for (const { param, name } of required) {
-    parts.push(`${name}: ${typeRefToPython(param.type)}`);
+    parts.push(`${name}: ${typeRefToPythonResourceAnnotation(param.type)}`);
   }
   if (optional.length > 0) {
     parts.push("*");
     for (const { param, name } of optional) {
       parts.push(
-        `${name}: ${typeRefToPython(param.type)} | None = None`
+        `${name}: ${typeRefToPythonResourceAnnotation(param.type)} | None = None`
       );
     }
   }
@@ -648,9 +733,40 @@ function buildRequestOptionParts(
   return parts;
 }
 
+function typeRefToPythonResourceAnnotation(ref: TypeRef): string {
+  switch (ref.kind) {
+    case "primitive":
+      return typeRefToPython(ref);
+    case "array":
+      return `List[${typeRefToPythonResourceAnnotation(ref.items)}]`;
+    case "object":
+      return "Dict[str, Any]";
+    case "ref":
+      return ref.schema;
+    case "enum":
+      return typeRefToPython(ref);
+    case "union":
+      return ref.variants.map(typeRefToPythonResourceAnnotation).join(" | ");
+    case "optional":
+      return `Optional[${typeRefToPythonResourceAnnotation(ref.inner)}]`;
+    case "map":
+      return `Dict[str, ${typeRefToPythonResourceAnnotation(ref.valueType)}]`;
+    case "unknown":
+      return "Any";
+    case "void":
+      return "None";
+  }
+}
+
 /** Replace non-ASCII characters in comments to avoid Python SyntaxError. */
 function sanitizeComment(s: string): string {
   return s.replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function sanitizeDocstringLine(line: string): string {
+  const leading = line.match(/^ */)?.[0] ?? "";
+  const body = line.slice(leading.length);
+  return `${leading}${sanitizeComment(body)}`;
 }
 
 /** Collect all schema ref names used in return types or $ref bodies. */

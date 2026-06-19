@@ -115,8 +115,9 @@ export function inferResourceTree(
     // Collect path params that appear in the resource path itself (between segments)
     const resourcePathParams = extractParamsFromPattern(resourcePath);
 
-    const allScopeParams = [...scopeParams, ...resourcePathParams].filter(
-      (p, i, arr) => i === arr.findIndex((q) => q.name === p.name)
+    const allScopeParams = enrichScopeParams(
+      [...scopeParams, ...resourcePathParams],
+      ops
     );
 
     const operationDefs = ops.map((op) =>
@@ -434,6 +435,30 @@ function extractParamsFromPattern(pattern: string): ParamDef[] {
   }));
 }
 
+function enrichScopeParams(
+  params: ParamDef[],
+  ops: OperationWithRelPath[]
+): ParamDef[] {
+  const pathParams = ops.flatMap((op) => op.pathParams);
+  const merged: ParamDef[] = [];
+
+  for (const param of params) {
+    if (merged.some((existing) => existing.name === param.name)) continue;
+
+    const source = pathParams.find((candidate) =>
+      camelCase(candidate.name) === param.name
+    );
+    merged.push({
+      ...param,
+      type: source?.type ?? param.type,
+      required: source?.required ?? param.required,
+      description: source?.description ?? param.description,
+    });
+  }
+
+  return merged;
+}
+
 /**
  * Map HTTP method + path shape to a conventional operation name.
  *
@@ -541,6 +566,7 @@ function toOperationDef(
     })),
     body,
     returnType: op.returnType,
+    returnDescription: op.returnDescription,
     errors: op.errors,
     pagination,
     streaming,

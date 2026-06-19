@@ -120,10 +120,7 @@ function emitOperation(
     ? "Promise<void>"
     : `Promise<${returnType}>`;
 
-  emitOperationComment(cb, op.summary, op.description);
-  if (op.deprecated) {
-    cb.line(`/** @deprecated */`);
-  }
+  emitOperationComment(cb, op, resource);
 
   const awaitPrefix = op.returnType.kind === "void" && !op.rawResponse ? "await " : "return ";
   const methodSig = `async ${op.name}(${params}): ${returnTypeStr}`;
@@ -144,26 +141,82 @@ function emitOperation(
 
 function emitOperationComment(
   cb: CodeBuilder,
-  summary?: string,
-  description?: string
+  op: OperationDef,
+  resource: ResourceDef
 ): void {
-  const parts = [summary, description]
-    .flatMap((text) => (text ?? "").split("\n"))
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const parts: string[] = [];
+  parts.push(...docLines(op.summary));
+  parts.push(...docLines(op.description));
+
+  for (const param of resource.scopeParams) {
+    if (param.description) {
+      parts.push(`@param ${param.name} - ${cleanDoc(param.description)}`);
+    }
+  }
+
+  for (const param of op.pathParams) {
+    if (param.description) {
+      parts.push(`@param ${param.name} - ${cleanDoc(param.description)}`);
+    }
+  }
+
+  if (op.body) {
+    if (op.body.fields && op.body.fields.length > 0) {
+      parts.push("@param input - Request body.");
+      for (const field of op.body.fields) {
+        if (field.description) {
+          parts.push(`@param input.${field.name} - ${cleanDoc(field.description)}`);
+        }
+      }
+    } else if (op.body.schema && op.body.schema !== "inline") {
+      parts.push(`@param input - ${op.body.schema} request body.`);
+    }
+  }
+
+  if (op.queryParams.length > 0) {
+    parts.push("@param params - Query parameters.");
+    for (const param of op.queryParams) {
+      if (param.description) {
+        parts.push(`@param params.${param.name} - ${cleanDoc(param.description)}`);
+      }
+    }
+  }
+
+  if (op.returnDescription) {
+    parts.push(`@returns ${cleanDoc(op.returnDescription)}`);
+  }
+
+  if (op.deprecated) {
+    parts.push("@deprecated");
+  }
 
   if (parts.length === 0) return;
 
   if (parts.length === 1) {
-    cb.line(`/** ${parts[0]} */`);
+    cb.line(`/** ${escapeTsDoc(parts[0]!)} */`);
     return;
   }
 
   cb.line("/**");
   for (const line of parts) {
-    cb.line(` * ${line}`);
+    cb.line(` * ${escapeTsDoc(line)}`);
   }
   cb.line(" */");
+}
+
+function docLines(text: string | undefined): string[] {
+  return (text ?? "")
+    .split("\n")
+    .map(cleanDoc)
+    .filter(Boolean);
+}
+
+function cleanDoc(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function escapeTsDoc(text: string): string {
+  return text.replace(/\*\//g, "*\\/");
 }
 
 function buildParamList(op: OperationDef, resource: ResourceDef): string {
@@ -197,7 +250,7 @@ function buildParamList(op: OperationDef, resource: ResourceDef): string {
 function buildQueryParamsType(params: ParamDef[]): string {
   const fields = params.map((p) => {
     const tsType = typeRefToTS(p.type);
-    return `${p.name}?: ${tsType}`;
+    return `${tsPropertyName(p.name)}?: ${tsType}`;
   });
   return `{ ${fields.join("; ")} }`;
 }
@@ -210,7 +263,7 @@ function bodyTypeString(body: NonNullable<OperationDef["body"]>): string {
     const shape = body.fields
       .map((f) => {
         const opt = f.required ? "" : "?";
-        return `${f.name}${opt}: ${typeRefToTS(f.type)}`;
+        return `${tsPropertyName(f.name)}${opt}: ${typeRefToTS(f.type)}`;
       })
       .join("; ");
     return `{ ${shape} }`;
@@ -290,7 +343,7 @@ export function typeRefToTS(ref: TypeRef): string {
       const fields = ref.fields
         .map((f) => {
           const opt = f.required ? "" : "?";
-          return `${f.name}${opt}: ${typeRefToTS(f.type)}`;
+          return `${tsPropertyName(f.name)}${opt}: ${typeRefToTS(f.type)}`;
         })
         .join("; ");
       return `{ ${fields} }`;
@@ -317,6 +370,10 @@ export function typeRefToTS(ref: TypeRef): string {
     case "void":
       return "void";
   }
+}
+
+function tsPropertyName(name: string): string {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) ? name : JSON.stringify(name);
 }
 
 /** Collect all schema ref names used in return types and request bodies. */

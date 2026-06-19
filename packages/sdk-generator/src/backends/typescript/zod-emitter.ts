@@ -46,6 +46,11 @@ export function emitZodSchemaFile(
         .join(", ");
       cb.line(`import { ${imports} } from "./${file}.js";`);
     }
+
+    for (const [file, names] of [...externalByFile.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      const imports = [...names].sort().join(", ");
+      cb.line(`import type { ${imports} } from "./${file}.js";`);
+    }
   }
 
   cb.line();
@@ -66,16 +71,21 @@ function emitSchema(cb: CodeBuilder, schema: SchemaDef): void {
   const schemaVar = camelCase(schema.name) + "Schema";
   const typeName = schema.name;
 
-  if (schema.description) {
-    cb.line(`/** ${schema.description} */`);
-  }
-
   if (schema.unionType) {
+    emitTsDoc(cb, [schema.description].filter(isDefined));
     cb.line(`export const ${schemaVar} = ${unionTypeToZod(schema.unionType)};`);
+    emitTsDoc(cb, [schema.description].filter(isDefined));
     cb.line(`export type ${typeName} = z.infer<typeof ${schemaVar}>;`);
     return;
   }
 
+  emitInterface(cb, schema);
+  cb.line();
+
+  emitTsDoc(cb, [`Runtime validator for {@link ${typeName}}.`]);
+  const schemaExprSuffix = schema.description
+    ? `.describe(${JSON.stringify(cleanDoc(schema.description))})`
+    : "";
   cb.line(`export const ${schemaVar} = z.object({`);
   cb.indent();
 
@@ -84,8 +94,24 @@ function emitSchema(cb: CodeBuilder, schema: SchemaDef): void {
   }
 
   cb.dedent();
-  cb.line(`});`);
-  cb.line(`export type ${typeName} = z.infer<typeof ${schemaVar}>;`);
+  cb.line(`})${schemaExprSuffix} satisfies z.ZodType<${typeName}>;`);
+}
+
+function emitInterface(cb: CodeBuilder, schema: SchemaDef): void {
+  emitTsDoc(cb, [schema.description].filter(isDefined));
+  cb.line(`export interface ${schema.name} {`);
+  cb.indent();
+  if (schema.fields.length === 0) {
+    cb.line("[key: string]: never;");
+  } else {
+    for (const field of schema.fields) {
+      emitTsDoc(cb, [field.description].filter(isDefined));
+      const optional = field.required ? "" : "?";
+      cb.line(`${tsPropertyName(field.name)}${optional}: ${typeRefToTS(field.type)};`);
+    }
+  }
+  cb.dedent();
+  cb.line("}");
 }
 
 /**
@@ -106,9 +132,9 @@ function unionTypeToZod(union: import("../../ast/types.js").UnionTypeRef): strin
  * Emit a single field inside a z.object().
  */
 function emitField(cb: CodeBuilder, field: FieldDef): void {
-  const zodType = typeRefToZod(field.type);
-  const comment = field.description ? ` // ${field.description}` : "";
-  cb.line(`${field.name}: ${zodType},${comment}`);
+  const zodType = withZodDescription(typeRefToZod(field.type), field.description);
+  emitTsDoc(cb, [field.description].filter(isDefined));
+  cb.line(`${tsPropertyName(field.name)}: ${zodType},`);
 }
 
 /**
@@ -156,6 +182,89 @@ export function typeRefToZod(ref: TypeRef): string {
     case "void":
       return "z.void()";
   }
+}
+
+function typeRefToTS(ref: TypeRef): string {
+  switch (ref.kind) {
+    case "primitive":
+      switch (ref.type) {
+        case "string":
+        case "datetime":
+          return "string";
+        case "integer":
+        case "float":
+          return "number";
+        case "boolean":
+          return "boolean";
+      }
+      break;
+    case "array":
+      return `${typeRefToTS(ref.items)}[]`;
+    case "object": {
+      if (ref.fields.length === 0) return "Record<string, unknown>";
+      const fields = ref.fields
+        .map((f) => {
+          const opt = f.required ? "" : "?";
+          return `${tsPropertyName(f.name)}${opt}: ${typeRefToTS(f.type)}`;
+        })
+        .join("; ");
+      return `{ ${fields} }`;
+    }
+    case "ref":
+      return ref.schema;
+    case "enum":
+      return ref.values.map((v) => JSON.stringify(v)).join(" | ");
+    case "union":
+      return ref.variants.map(typeRefToTS).join(" | ");
+    case "optional":
+      return `${typeRefToTS(ref.inner)} | undefined`;
+    case "map":
+      return `Record<string, ${typeRefToTS(ref.valueType)}>`;
+    case "unknown":
+      return "unknown";
+    case "void":
+      return "void";
+  }
+}
+
+function withZodDescription(expr: string, description: string | undefined): string {
+  if (!description) return expr;
+  return `${expr}.describe(${JSON.stringify(cleanDoc(description))})`;
+}
+
+function emitTsDoc(cb: CodeBuilder, lines: string[]): void {
+  const cleaned = lines
+    .flatMap((text) => text.split("\n"))
+    .map(cleanDoc)
+    .filter(Boolean);
+
+  if (cleaned.length === 0) return;
+  if (cleaned.length === 1) {
+    cb.line(`/** ${escapeTsDoc(cleaned[0]!)} */`);
+    return;
+  }
+
+  cb.line("/**");
+  for (const line of cleaned) {
+    cb.line(` * ${escapeTsDoc(line)}`);
+  }
+  cb.line(" */");
+}
+
+function cleanDoc(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function escapeTsDoc(text: string): string {
+  return text.replace(/\*\//g, "*\\/");
+}
+
+function isDefined<T>(value: T | undefined): value is T {
+  return value !== undefined;
+}
+
+function tsPropertyName(name: string): string {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name) ? name : JSON.stringify(name);
 }
 
 function primitiveToZod(type: string): string {

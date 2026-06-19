@@ -26,17 +26,31 @@ const docFixture = {
             "application/json": {
               schema: {
                 type: "object",
-                properties: { join_code: { type: "string" } },
+                properties: {
+                  join_code: {
+                    type: "string",
+                    description: "Invite or join code.",
+                  },
+                },
               },
             },
           },
         },
         responses: {
           "200": {
-            description: "Successful response",
+            description: "The joined team payload.",
             content: {
               "application/json": {
-                schema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "Joined team ID.",
+                    },
+                  },
+                  required: ["id"],
+                },
               },
             },
           },
@@ -288,6 +302,7 @@ describe("parseOpenApiSpec preserves summary and description separately", () => 
 
     expect(joinByCode.summary).toBe("Join a team using an invite code");
     expect(joinByCode.description).toContain("Accepts either");
+    expect(joinByCode.returnDescription).toBe("The joined team payload.");
   });
 });
 
@@ -304,6 +319,46 @@ describe("parseOpenApiSpec detects raw responses", () => {
     const configs = ast.resources.find((r) => r.name === "configs")!;
     const content = configs.operations.find((o) => o.name === "content")!;
     expect(content.rawResponse).toBe(true);
+  });
+});
+
+describe("parseOpenApiSpec preserves no-content response descriptions", () => {
+  const ast = parseOpenApiSpec(
+    {
+      openapi: "3.0.0",
+      info: { title: "Void API", version: "1.0.0" },
+      paths: {
+        "/api/v1/widgets/{widget}": {
+          delete: {
+            operationId: "delete_api_v1_widgets_widget",
+            parameters: [
+              {
+                name: "widget",
+                in: "path",
+                required: true,
+                schema: { type: "string" },
+              },
+            ],
+            responses: { "204": { description: "Deleted widget." } },
+          },
+        },
+      },
+    },
+    {
+      name: "archastro-platform",
+      version: "0.1.0",
+      baseUrl: "https://platform.archastro.ai",
+      apiBase: "/api",
+      defaultVersion: "v1",
+    }
+  );
+
+  it("keeps 204 descriptions as returnDescription on void operations", () => {
+    const widgets = ast.resources.find((r) => r.name === "widgets")!;
+    const deleteOp = widgets.operations.find((o) => o.name === "delete")!;
+
+    expect(deleteOp.returnType).toEqual({ kind: "void" });
+    expect(deleteOp.returnDescription).toBe("Deleted widget.");
   });
 });
 

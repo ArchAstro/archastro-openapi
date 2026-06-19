@@ -58,6 +58,7 @@ export interface AuthParam {
   originalName: string; // original snake_case name for the JSON body
   type: string;       // TypeScript type
   required: boolean;
+  description?: string;
 }
 
 function discoverTokenFields(ops: OperationDef[], schemas: SchemaDef[]): TokenFieldInfo[] {
@@ -120,7 +121,8 @@ function emitAuthMethod(
 ): void {
   const methodName = authMethodName(op);
   const params = extractAuthInputParams(op);
-  const hasTokenReturn = tokenFields.length > 0;
+  const responseFields = getResponseFields(op.returnType, schemas);
+  const hasTokenReturn = responseFields.some((field) => Boolean(field.sdkRole));
   const returnType = hasTokenReturn ? "AuthTokens" : "Record<string, unknown>";
 
   // Build signature — required params first, then optional
@@ -135,9 +137,7 @@ function emitAuthMethod(
     })
     .join(", ");
 
-  if (op.description) {
-    cb.line(`/** ${op.description} */`);
-  }
+  emitAuthMethodDoc(cb, op, sortedParams);
 
   cb.block(`async ${methodName}(${sig}): Promise<${returnType}>`, () => {
     // Build body object from params
@@ -164,7 +164,6 @@ function emitAuthMethod(
 
     if (hasTokenReturn) {
       // Inline extraction using this operation's specific return type field names
-      const responseFields = getResponseFields(op.returnType, schemas);
       cb.block("return", () => {
         for (const tf of tokenFields) {
           const field = responseFields.find((f) => f.sdkRole === tf.role);
@@ -192,6 +191,7 @@ export function extractAuthInputParams(op: OperationDef): AuthParam[] {
       originalName: p.name,
       type: typeRefToTSSimple(p.type),
       required: p.required,
+      description: p.description,
     });
   }
 
@@ -204,6 +204,7 @@ export function extractAuthInputParams(op: OperationDef): AuthParam[] {
           originalName: f.name,
           type: typeRefToTSSimple(f.type),
           required: f.required,
+          description: f.description,
         });
       }
     }
@@ -217,11 +218,53 @@ export function extractAuthInputParams(op: OperationDef): AuthParam[] {
         originalName: p.name,
         type: "string",
         required: true,
+        description: p.description,
       });
     }
   }
 
   return params;
+}
+
+function emitAuthMethodDoc(
+  cb: CodeBuilder,
+  op: OperationDef,
+  params: AuthParam[]
+): void {
+  const lines = [op.summary, op.description].flatMap(docLines);
+  const paramDocs = params.filter((param) => param.description);
+
+  for (const param of paramDocs) {
+    if (lines.length > 0 && !lines.includes("")) lines.push("");
+    lines.push(`@param ${param.name} - ${cleanDoc(param.description!)}`);
+  }
+
+  if (op.returnDescription) {
+    if (lines.length > 0 && !lines.includes("")) lines.push("");
+    lines.push(`@returns ${cleanDoc(op.returnDescription)}`);
+  }
+
+  if (lines.length === 0) return;
+  cb.line("/**");
+  for (const line of lines) {
+    cb.line(line === "" ? " *" : ` * ${escapeTsDoc(cleanDoc(line))}`);
+  }
+  cb.line(" */");
+}
+
+function docLines(text: string | undefined): string[] {
+  return (text ?? "")
+    .split("\n")
+    .map((line) => cleanDoc(line))
+    .filter(Boolean);
+}
+
+function cleanDoc(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function escapeTsDoc(text: string): string {
+  return text.replace(/\*\//g, "*\\/");
 }
 
 function typeRefToTSSimple(ref: TypeRef): string {

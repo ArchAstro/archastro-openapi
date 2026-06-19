@@ -79,6 +79,7 @@ export interface AuthParam {
   name: string;
   originalName: string;
   required: boolean;
+  description?: string;
 }
 
 function discoverTokenFields(ops: OperationDef[], schemas: SchemaDef[]): TokenFieldInfo[] {
@@ -154,12 +155,10 @@ function emitAuthMethod(
     })
     .join(", ");
 
-  if (op.description) {
-    cb.line(`# ${op.description.replace(/[^\x20-\x7E]/g, " ")}`);
-  }
-
   const methodParams = sig ? `self, ${sig}` : "self";
   cb.pyBlock(`async def ${methodName}(${methodParams}) -> ${returnType}`, () => {
+    emitAuthDocstring(cb, op, sortedParams);
+
     // Build body, omitting None optionals
     if (sortedParams.length > 0) {
       cb.line("body: dict[str, object] = {}");
@@ -228,6 +227,8 @@ function emitSyncAuthMethod(
   const methodParams = sig ? `self, ${sig}` : "self";
 
   cb.pyBlock(`def ${methodName}(${methodParams}) -> ${returnType}`, () => {
+    emitAuthDocstring(cb, op, sortedParams);
+
     if (sortedParams.length > 0) {
       cb.line("body: dict[str, object] = {}");
       for (const p of sortedParams) {
@@ -278,6 +279,7 @@ export function extractPythonAuthInputParams(op: OperationDef): AuthParam[] {
     entries.push({
       originalName: p.name,
       required: p.required,
+      description: p.description,
     });
   }
 
@@ -287,6 +289,7 @@ export function extractPythonAuthInputParams(op: OperationDef): AuthParam[] {
         entries.push({
           originalName: f.name,
           required: f.required,
+          description: f.description,
         });
       }
     }
@@ -297,6 +300,7 @@ export function extractPythonAuthInputParams(op: OperationDef): AuthParam[] {
       entries.push({
         originalName: p.name,
         required: true,
+        description: p.description,
       });
     }
   }
@@ -306,4 +310,52 @@ export function extractPythonAuthInputParams(op: OperationDef): AuthParam[] {
     ...entry,
     name: names[index]!,
   }));
+}
+
+function emitAuthDocstring(
+  cb: CodeBuilder,
+  op: OperationDef,
+  params: AuthParam[]
+): void {
+  const lines = [op.summary, op.description].flatMap(docLines);
+  const args = params.filter((param) => param.description);
+
+  if (args.length > 0) {
+    if (lines.length > 0) lines.push("");
+    lines.push("Args:");
+    for (const arg of args) {
+      lines.push(`    ${arg.name}: ${sanitizeComment(arg.description!)}`);
+    }
+  }
+
+  if (op.returnDescription) {
+    if (lines.length > 0) lines.push("");
+    lines.push("Returns:");
+    lines.push(`    ${sanitizeComment(op.returnDescription)}`);
+  }
+
+  if (lines.length === 0) return;
+
+  cb.line('"""');
+  for (const line of lines) {
+    cb.line(line === "" ? "" : sanitizeDocstringLine(line));
+  }
+  cb.line('"""');
+}
+
+function docLines(text: string | undefined): string[] {
+  return (text ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function sanitizeComment(s: string): string {
+  return s.replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function sanitizeDocstringLine(line: string): string {
+  const leading = line.match(/^ */)?.[0] ?? "";
+  const body = line.slice(leading.length);
+  return `${leading}${sanitizeComment(body)}`;
 }
