@@ -325,14 +325,49 @@ function emitQueryBuilder(cb: CodeBuilder, params: ParamDef[]): void {
   for (const param of params) {
     const wireName = JSON.stringify(param.wireName ?? param.name);
     const access = queryParamAccess(param.name);
+    const value = queryValueExpression(param, access);
 
     if (param.required) {
-      cb.line(`query[${wireName}] = ${access};`);
+      cb.line(`query[${wireName}] = ${value};`);
     } else {
       cb.block(`if (${access} !== undefined)`, () => {
-        cb.line(`query[${wireName}] = ${access};`);
+        cb.line(`query[${wireName}] = ${value};`);
       });
     }
+  }
+}
+
+function queryValueExpression(param: ParamDef, access: string): string {
+  return isRawQueryValueType(param.type) ? access : `JSON.stringify(${access})`;
+}
+
+function isRawQueryValueType(ref: TypeRef): boolean {
+  switch (ref.kind) {
+    case "primitive":
+    case "enum":
+      return true;
+    case "optional":
+      return isRawQueryValueType(ref.inner);
+    case "array":
+      return isRawQueryArrayItemType(ref.items);
+    case "union":
+      return ref.variants.every(isRawQueryValueType);
+    default:
+      return false;
+  }
+}
+
+function isRawQueryArrayItemType(ref: TypeRef): boolean {
+  switch (ref.kind) {
+    case "primitive":
+    case "enum":
+      return true;
+    case "optional":
+      return isRawQueryArrayItemType(ref.inner);
+    case "union":
+      return ref.variants.every(isRawQueryArrayItemType);
+    default:
+      return false;
   }
 }
 
