@@ -427,7 +427,7 @@ function emitOperation(
         for (let i = 0; i < op.queryParams.length; i++) {
           const qp = op.queryParams[i]!;
           const py = pythonNames.query[i]!;
-          const wireKey = JSON.stringify(qp.name);
+          const wireKey = JSON.stringify(qp.wireName ?? qp.name);
           if (qp.required) {
             cb.line(`query[${wireKey}] = ${py}`);
           } else {
@@ -485,7 +485,7 @@ function emitSyncOperation(
         for (let i = 0; i < op.queryParams.length; i++) {
           const qp = op.queryParams[i]!;
           const py = pythonNames.query[i]!;
-          const wireKey = JSON.stringify(qp.name);
+          const wireKey = JSON.stringify(qp.wireName ?? qp.name);
           if (qp.required) {
             cb.line(`query[${wireKey}] = ${py}`);
           } else {

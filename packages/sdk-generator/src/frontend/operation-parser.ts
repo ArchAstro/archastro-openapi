@@ -156,6 +156,7 @@ function extractParams(
     .filter((p) => p.in === location)
     .map((p) => ({
       name: p.name,
+      wireName: p.name,
       type: p.schema ? jsonSchemaToTypeRef(p.schema) : primitiveString(),
       required: location === "path" ? true : (p.required ?? false),
       description: p.description,

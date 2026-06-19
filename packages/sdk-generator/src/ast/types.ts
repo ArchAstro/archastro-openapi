@@ -233,7 +233,10 @@ export interface OperationDef {
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface ParamDef {
+  /** SDK-facing parameter name after language/resource naming conventions. */
   name: string;
+  /** Original OpenAPI wire name for path/query serialization. */
+  wireName?: string;
   type: TypeRef;
   required: boolean;
   default?: unknown;

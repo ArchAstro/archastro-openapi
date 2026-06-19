@@ -453,6 +453,7 @@ function enrichScopeParams(
       type: source?.type ?? param.type,
       required: source?.required ?? param.required,
       description: source?.description ?? param.description,
+      wireName: source?.wireName ?? param.wireName,
     });
   }
 
@@ -562,6 +563,7 @@ function toOperationDef(
     pathParams: pathParams.map((p) => ({ ...p, name: camelCase(p.name) })),
     queryParams: op.queryParams.map((p) => ({
       ...p,
+      wireName: p.wireName ?? p.name,
       name: camelCase(p.name),
     })),
     body,
