@@ -1,6 +1,6 @@
 {
   "name": "@archastro/channel-harness",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Runtime contract-testing harness for Phoenix channels declared in an OpenAPI spec (via x-channels).",
   "keywords": [
     "openapi",
