@@ -219,6 +219,7 @@ export interface OperationDef {
   queryParams: ParamDef[];
   body?: BodyDef;
   returnType: TypeRef;
+  returnDescription?: string;
   errors: ErrorDef[];
   pagination?: PaginationConfig;
   streaming?: StreamingConfig;

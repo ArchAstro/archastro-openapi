@@ -83,6 +83,7 @@ export interface ParsedOperation {
   bodyFields?: FieldDef[];
   bodySchemaRef?: string;
   returnType: TypeRef;
+  returnDescription?: string;
   errors: ErrorDef[];
   paginationHint?: { type: "offset" | "cursor" };
   streamingHint?: { type: "sse" };
@@ -205,26 +206,44 @@ function extractBody(
 
 function extractSuccessResponse(
   responses: Record<string, ResponseObject> | undefined
-): { returnType: TypeRef; rawResponse?: boolean } {
+): { returnType: TypeRef; returnDescription?: string; rawResponse?: boolean } {
   if (!responses) return { returnType: { kind: "void" } };
 
-  // Look for 200 or 201 response
-  const successResponse = responses["200"] ?? responses["201"];
-  if (!successResponse?.content) return { returnType: { kind: "void" } };
+  const successResponse = findSuccessResponse(responses);
+  const returnDescription = successResponse?.description;
+  if (!successResponse?.content) {
+    return { returnType: { kind: "void" }, returnDescription };
+  }
 
   const jsonContent = successResponse.content["application/json"];
   if (jsonContent?.schema) {
-    return { returnType: jsonSchemaToTypeRef(jsonContent.schema) };
+    return {
+      returnType: jsonSchemaToTypeRef(jsonContent.schema),
+      returnDescription,
+    };
   }
 
   if (Object.keys(successResponse.content).length > 0) {
     return {
       returnType: primitiveString(),
+      returnDescription,
       rawResponse: true,
     };
   }
 
-  return { returnType: { kind: "void" } };
+  return { returnType: { kind: "void" }, returnDescription };
+}
+
+function findSuccessResponse(
+  responses: Record<string, ResponseObject>
+): ResponseObject | undefined {
+  const preferred = responses["200"] ?? responses["201"] ?? responses["204"];
+  if (preferred) return preferred;
+
+  const successStatus = Object.keys(responses)
+    .filter((status) => /^2\d\d$/.test(status))
+    .sort()[0];
+  return successStatus ? responses[successStatus] : undefined;
 }
 
 function extractErrors(

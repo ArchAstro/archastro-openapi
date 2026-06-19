@@ -83,6 +83,26 @@ proprietary `x-*` extensions. The generator and the harness both consume
 these — if you're authoring a spec from scratch or hand-editing a generated
 one, here's what each extension does.
 
+### Standard documentation fields
+
+The SDK generator treats OpenAPI's built-in documentation fields as the source
+of truth for generated SDK docs. Prefer standard fields before adding a custom
+extension:
+
+| OpenAPI location | Field | Generated SDK output |
+| --- | --- | --- |
+| Operation | `summary` / `description` | TypeScript JSDoc and Python method docstrings |
+| Operation parameter | `description` | Method parameter documentation |
+| Request body schema / inline fields | `description` | Input object docs in TS and Python |
+| Success response | `responses.<status>.description` | Return-value docs in resource methods |
+| `components.schemas.<Name>` | `description` | TS interface/schema docs and Python model docstrings |
+| Schema property | `description` | TS field docs, Zod `.describe(...)`, and Pydantic `Field(description=...)` |
+
+Generated TypeScript packages should publish TypeDoc output, and generated
+Python packages should publish pdoc output. In both cases, wire a GitHub Pages
+workflow to build docs from the generated source after SDK regeneration so the
+hosted docs always match the shipped SDK package.
+
 ### Root-level extensions
 
 | Key | Shape | Purpose |

@@ -22,21 +22,12 @@ export function emitTypedDictClass(
   fields: ReadonlyArray<FieldDef | ParamDef>,
   description?: string
 ): void {
-  if (description) {
-    for (const line of description.split("\n")) {
-      const trimmed = line.trim();
-      if (trimmed) {
-        cb.line(`# ${trimmed.replace(/[^\x20-\x7E]/g, " ")}`);
-      }
-    }
-  }
-
   // total=False so unmentioned keys are allowed; required keys use Required[].
   // When every key is required, `total=True` (default) is cleaner — no
   // Required wrappers needed.
   const allRequired = fields.length > 0 && fields.every((f) => f.required);
   if (fields.some((field) => !isValidPythonIdentifier(field.name))) {
-    emitFunctionalTypedDict(cb, className, fields, allRequired);
+    emitFunctionalTypedDict(cb, className, fields, allRequired, description);
     return;
   }
 
@@ -45,6 +36,8 @@ export function emitTypedDictClass(
     : `class ${className}(TypedDict, total=False)`;
 
   cb.pyBlock(header, () => {
+    emitPythonDocstring(cb, description);
+
     if (fields.length === 0) {
       cb.line("pass");
       return;
@@ -59,7 +52,8 @@ function emitFunctionalTypedDict(
   cb: CodeBuilder,
   className: string,
   fields: ReadonlyArray<FieldDef | ParamDef>,
-  allRequired: boolean
+  allRequired: boolean,
+  description?: string
 ): void {
   cb.line(`${className} = TypedDict(`);
   cb.indent();
@@ -76,6 +70,7 @@ function emitFunctionalTypedDict(
   }
   cb.dedent();
   cb.line(")");
+  emitFunctionalTypedDictDocstring(cb, fields, description);
 }
 
 function emitFunctionalTypedDictField(
@@ -107,16 +102,55 @@ function emitTypedDictField(
   const annotation =
     !classIsTotal && field.required ? `Required[${valueType}]` : valueType;
 
-  const comment = field.description
-    ? `  # ${field.description.replace(/\n/g, " ").trim()}`
-    : "";
-
   const line = `${field.name}: ${annotation}`;
-  if (comment && (line + comment).length + 4 <= 100) {
-    cb.line(line + comment);
-  } else {
+  cb.line(line);
+  emitPythonDocstring(cb, field.description);
+}
+
+function emitPythonDocstring(cb: CodeBuilder, text: string | undefined): void {
+  const lines = docLines(text);
+  emitPythonDocstringLines(cb, lines);
+}
+
+function emitFunctionalTypedDictDocstring(
+  cb: CodeBuilder,
+  fields: ReadonlyArray<FieldDef | ParamDef>,
+  description: string | undefined
+): void {
+  const lines = docLines(description);
+  const describedFields = fields.filter((field) => field.description);
+  if (describedFields.length > 0) {
+    if (lines.length > 0) lines.push("");
+    lines.push("Attributes:");
+    for (const field of describedFields) {
+      lines.push(`    ${field.name}: ${cleanDoc(field.description!)}`);
+    }
+  }
+  emitPythonDocstringLines(cb, lines);
+}
+
+function emitPythonDocstringLines(cb: CodeBuilder, lines: string[]): void {
+  if (lines.length === 0) return;
+  if (lines.length === 1) {
+    cb.line(`${JSON.stringify(lines[0])}`);
+    return;
+  }
+  cb.line('"""');
+  for (const line of lines) {
     cb.line(line);
   }
+  cb.line('"""');
+}
+
+function docLines(text: string | undefined): string[] {
+  return (text ?? "")
+    .split("\n")
+    .map(cleanDoc)
+    .filter(Boolean);
+}
+
+function cleanDoc(text: string): string {
+  return text.replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
 }
 
 /**

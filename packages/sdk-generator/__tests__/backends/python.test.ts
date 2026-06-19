@@ -41,19 +41,29 @@ const docFixture = {
             "application/json": {
               schema: {
                 type: "object",
-                properties: { join_code: { type: "string" } },
+                properties: {
+                  join_code: {
+                    type: "string",
+                    description: "Invite or join code.",
+                  },
+                },
               },
             },
           },
         },
         responses: {
           "200": {
-            description: "Successful response",
+            description: "The joined team payload.",
             content: {
               "application/json": {
                 schema: {
                   type: "object",
-                  properties: { id: { type: "string" } },
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "Joined team ID.",
+                    },
+                  },
                   required: ["id"],
                 },
               },
@@ -64,6 +74,48 @@ const docFixture = {
     },
   },
 };
+
+const scopedDocFixture = {
+  openapi: "3.0.0",
+  info: { title: "Scoped Docs API", version: "1.0.0" },
+  paths: {
+    "/api/v1/agents/{agent}/tools": {
+      get: {
+        operationId: "get_api_v1_agent_tools",
+        summary: "List agent tools",
+        parameters: [
+          {
+            name: "agent",
+            in: "path",
+            required: true,
+            description: "Agent ID that owns the tools.",
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Agent tool list.",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: { type: "string" },
+                    },
+                  },
+                  required: ["data"],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 
 const rawFixture = {
   openapi: "3.0.0",
@@ -200,9 +252,32 @@ describe("Pydantic emitter", () => {
     expect(out).toContain("from pydantic import BaseModel, ConfigDict, Field");
     expect(out).toContain("model_config = ConfigDict(populate_by_name=True)");
     expect(out).toContain(
-      'async_: Optional[bool] = Field(default=None, alias="async")'
+      'async_: Optional[bool] = Field(default=None, alias="async", description="Whether the tool executes asynchronously")'
     );
     expect(out).not.toContain("async: Optional[bool]");
+  });
+
+  it("emits model docstrings and Field descriptions from schema docs", () => {
+    const out = emitPydanticFile([
+      {
+        name: "DocumentedThing",
+        description: "A documented thing.",
+        fields: [
+          {
+            name: "id",
+            type: { kind: "primitive", type: "string" },
+            required: true,
+            description: "Stable thing ID.",
+          },
+        ],
+      },
+    ]);
+
+    expect(out).toContain('"""');
+    expect(out).toContain("A documented thing.");
+    expect(out).toContain(
+      'id: str = Field(..., description="Stable thing ID.")'
+    );
   });
 
   it("emits Any rather than the object builtin for free-form fields", () => {
@@ -328,7 +403,7 @@ describe("Python resource emitter uses request_raw for raw responses", () => {
 
   it("emits request_raw and dict return type", () => {
     expect(output).toContain(
-      "async def content(self, config: str) -> dict[str, str]:"
+      "async def content(self, config: str) -> Dict[str, str]:"
     );
     expect(output).toContain(
       'return await self._http.request_raw(f"/api/v1/configs/{config}/content")'
@@ -493,6 +568,8 @@ describe("Python resource emitter passes response_type for typed responses", () 
     expect(output).toContain(
       'await self._http.request(f"/api/v1/widgets/{widget}", method="DELETE")'
     );
+    expect(output).toContain("Returns:");
+    expect(output).toContain("Deleted");
   });
 
   it("omits response_type for raw byte responses", () => {
@@ -633,6 +710,33 @@ describe("Python resource emitter uses summary and description in method docstri
     expect(output).toContain(
       "async def join_by_code(self, input: TeamJoinByCodeInput) -> TeamJoinByCodeResponse:"
     );
+    expect(output).toContain("Args:");
+    expect(output).toContain("    input.join_code: Invite or join code.");
+    expect(output).toContain("Returns:");
+    expect(output).toContain("    The joined team payload.");
+    expect(output).toContain(
+      'id: str = Field(..., description="Joined team ID.")'
+    );
+  });
+});
+
+describe("Python resource emitter preserves scoped path parameter docs", () => {
+  const scopedAst = parseOpenApiSpec(scopedDocFixture, {
+    name: "archastro-platform",
+    version: "0.1.0",
+    baseUrl: "https://platform.archastro.ai",
+    apiPrefix: "/api/v1",
+    scopePrefix: "/agents/{agent}",
+  });
+  const toolsResource = scopedAst.resources.find((r) => r.name === "tools")!;
+  const output = emitPythonResourceFile(toolsResource, "/api/v1");
+
+  it("renders docs for resource-level scope params", () => {
+    expect(output).toContain("async def list(self, agent: str)");
+    expect(output).toContain("Args:");
+    expect(output).toContain("    agent: Agent ID that owns the tools.");
+    expect(output).toContain("Returns:");
+    expect(output).toContain("    Agent tool list.");
   });
 });
 
@@ -708,6 +812,8 @@ describe("Python auth emitter", () => {
         operationId: "post_auth_login",
         method: "POST",
         path: "/api/v1/auth/login",
+        summary: "Log in",
+        description: "Authenticates a user.",
         deprecated: false,
         pathParams: [],
         queryParams: [],
@@ -717,6 +823,7 @@ describe("Python auth emitter", () => {
               name: "email",
               type: { kind: "primitive", type: "string" },
               required: true,
+              description: "Email address.",
             },
           ],
         },
@@ -731,6 +838,7 @@ describe("Python auth emitter", () => {
             },
           ],
         },
+        returnDescription: "Credential bundle.",
         errors: [],
       },
       {
@@ -738,6 +846,7 @@ describe("Python auth emitter", () => {
         operationId: "get_allowed_auth_methods",
         method: "GET",
         path: "/api/v1/auth/allowed_auth_methods",
+        summary: "List auth methods",
         deprecated: false,
         pathParams: [],
         queryParams: [],
@@ -754,6 +863,7 @@ describe("Python auth emitter", () => {
             },
           ],
         },
+        returnDescription: "Authentication method catalogue.",
         errors: [],
       },
     ],
@@ -770,11 +880,21 @@ describe("Python auth emitter", () => {
     expect(output).toContain("async def allowed_auth_methods(self) -> dict:");
     expect(output).toContain("def allowed_auth_methods(self) -> dict:");
     expect(output).toMatch(
-      /async def allowed_auth_methods\(self\) -> dict:\s+data = await self\._http\.request\([\s\S]+?return data/
+      /async def allowed_auth_methods\(self\) -> dict:[\s\S]+?data = await self\._http\.request\([\s\S]+?return data/
     );
     expect(output).not.toMatch(
       /allowed_auth_methods[\s\S]+?return AuthTokens\([\s\S]+?access_token=None/
     );
+  });
+
+  it("emits pdoc-visible auth method docstrings", () => {
+    expect(output).toContain("Log in");
+    expect(output).toContain("Authenticates a user.");
+    expect(output).toContain("Args:");
+    expect(output).toContain("    email: Email address.");
+    expect(output).toContain("Returns:");
+    expect(output).toContain("    Credential bundle.");
+    expect(output).toContain("    Authentication method catalogue.");
   });
 
   it("uniquifies sanitized auth params while preserving body wire keys", () => {
@@ -1187,18 +1307,19 @@ describe("TypedDict emitter", () => {
     expect(out).toContain("pass");
   });
 
-  it("renders class-level descriptions as `# ...` comments above the class", () => {
+  it("renders class-level descriptions as TypedDict class docstrings", () => {
     const out = render(
       "DocumentedInput",
       [{ name: "id", type: { kind: "primitive", type: "string" }, required: true }],
       "Multi-line\ndescription text"
     );
-    expect(out).toContain("# Multi-line");
-    expect(out).toContain("# description text");
     expect(out).toContain("class DocumentedInput(TypedDict):");
+    expect(out).toContain('"""');
+    expect(out).toContain("Multi-line");
+    expect(out).toContain("description text");
   });
 
-  it("renders field descriptions as inline comments when they fit", () => {
+  it("renders field descriptions as TypedDict attribute docstrings", () => {
     const out = render("FieldDocsInput", [
       {
         name: "id",
@@ -1207,31 +1328,42 @@ describe("TypedDict emitter", () => {
         description: "Resource identifier",
       },
     ]);
-    expect(out).toMatch(/id: str\s+# Resource identifier/);
+    expect(out).toContain("id: str");
+    expect(out).toContain('"Resource identifier"');
   });
 
   it("uses functional syntax for Python keyword keys without renaming wire keys", () => {
-    const out = render("ToolInput", [
-      {
-        name: "async",
-        type: {
-          kind: "optional",
-          inner: { kind: "primitive", type: "boolean" },
+    const out = render(
+      "ToolInput",
+      [
+        {
+          name: "async",
+          type: {
+            kind: "optional",
+            inner: { kind: "primitive", type: "boolean" },
+          },
+          required: false,
+          description: "Whether the tool executes asynchronously",
         },
-        required: false,
-        description: "Whether the tool executes asynchronously",
-      },
-      {
-        name: "kind",
-        type: { kind: "primitive", type: "string" },
-        required: true,
-      },
-    ]);
+        {
+          name: "kind",
+          type: { kind: "primitive", type: "string" },
+          required: true,
+          description: "Tool kind.",
+        },
+      ],
+      "Input for creating a tool."
+    );
 
     expect(out).toContain("ToolInput = TypedDict(");
     expect(out).toContain('"ToolInput",');
     expect(out).toContain('"async": Optional[bool]');
     expect(out).toContain('"kind": Required[str]');
+    expect(out).toContain('"""');
+    expect(out).toContain("Input for creating a tool.");
+    expect(out).toContain("Attributes:");
+    expect(out).toContain("    async: Whether the tool executes asynchronously");
+    expect(out).toContain("    kind: Tool kind.");
     expect(out).not.toContain("class ToolInput");
     expect(out).not.toContain("async: Optional[bool]");
   });
@@ -1406,7 +1538,7 @@ describe("Python resource emitter typed bodies", () => {
       ]),
       "/api/v1"
     );
-    expect(out).toContain("input: dict");
+    expect(out).toContain("input: Dict[str, Any]");
     expect(out).not.toContain("(TypedDict");
   });
 
@@ -1829,7 +1961,7 @@ describe("Python resource emitter typed bodies", () => {
       },
       "/api/v1"
     );
-    expect(out).toContain("-> dict[str, Any]:");
+    expect(out).toContain("-> Dict[str, Any]:");
     expect(out).not.toContain("(BaseModel)");
   });
 

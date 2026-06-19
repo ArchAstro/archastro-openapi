@@ -165,6 +165,7 @@ export function parseOpenApiSpec(
         ? { schema: "inline", contentType: "application/json", fields: op.bodyFields }
         : undefined,
     returnType: op.returnType,
+    returnDescription: op.returnDescription,
     errors: op.errors,
     rawResponse: op.rawResponse,
     auth: op.auth,

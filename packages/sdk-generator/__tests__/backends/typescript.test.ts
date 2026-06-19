@@ -7,6 +7,7 @@ import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generateTypeScript } from "../../src/backends/typescript/index.js";
 import { emitZodSchemaFile } from "../../src/backends/typescript/zod-emitter.js";
 import { emitResourceFile } from "../../src/backends/typescript/resource-emitter.js";
+import { emitAuthFile } from "../../src/backends/typescript/auth-emitter.js";
 import { emitChannelFile } from "../../src/backends/typescript/channel-emitter.js";
 import { emitClientFile } from "../../src/backends/typescript/client-emitter.js";
 import { emitTypeScriptContractTests } from "../../src/backends/contract-tests/typescript-emitter.js";
@@ -34,19 +35,29 @@ const docFixture = {
             "application/json": {
               schema: {
                 type: "object",
-                properties: { join_code: { type: "string" } },
+                properties: {
+                  join_code: {
+                    type: "string",
+                    description: "Invite or join code.",
+                  },
+                },
               },
             },
           },
         },
         responses: {
           "200": {
-            description: "Successful response",
+            description: "The joined team payload.",
             content: {
               "application/json": {
                 schema: {
                   type: "object",
-                  properties: { id: { type: "string" } },
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "Joined team ID.",
+                    },
+                  },
                   required: ["id"],
                 },
               },
@@ -57,6 +68,48 @@ const docFixture = {
     },
   },
 };
+
+const scopedDocFixture = {
+  openapi: "3.0.0",
+  info: { title: "Scoped Docs API", version: "1.0.0" },
+  paths: {
+    "/api/v1/agents/{agent}/tools": {
+      get: {
+        operationId: "get_api_v1_agent_tools",
+        summary: "List agent tools",
+        parameters: [
+          {
+            name: "agent",
+            in: "path",
+            required: true,
+            description: "Agent ID that owns the tools.",
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Agent tool list.",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: { type: "string" },
+                    },
+                  },
+                  required: ["data"],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
 
 const rawFixture = {
   openapi: "3.0.0",
@@ -109,13 +162,17 @@ describe("Zod emitter", () => {
 
   it("generates schema variable with Schema suffix", () => {
     expect(output).toContain("export const teamSchema = z.object(");
-    expect(output).toContain("export const createTeamInputSchema = z.object(");
+    expect(output).toContain(
+      "export const createTeamInputSchema = z.object("
+    );
   });
 
-  it("generates inferred type exports", () => {
-    expect(output).toContain("export type Team = z.infer<typeof teamSchema>");
+  it("generates interface exports and typed runtime validators", () => {
+    expect(output).toContain("export interface Team");
+    expect(output).toContain("export interface CreateTeamInput");
+    expect(output).toContain("satisfies z.ZodType<Team>");
     expect(output).toContain(
-      "export type CreateTeamInput = z.infer<typeof createTeamInputSchema>"
+      "satisfies z.ZodType<CreateTeamInput>"
     );
   });
 
@@ -132,6 +189,120 @@ describe("Zod emitter", () => {
     );
     const memberOutput = emitZodSchemaFile(memberSchemas);
     expect(memberOutput).toContain('z.enum(["admin", "member", "viewer"])');
+  });
+});
+
+describe("Zod emitter includes schema and field documentation", () => {
+  const output = emitZodSchemaFile([
+    {
+      name: "DocumentedThing",
+      description: "A documented thing.",
+      fields: [
+        {
+          name: "id",
+          type: { kind: "primitive", type: "string" },
+          required: true,
+          description: "Stable thing ID.",
+        },
+      ],
+    },
+  ]);
+
+  it("emits TSDoc, TypeScript fields, and Zod descriptions from schema docs", () => {
+    expect(output).toContain("/** A documented thing. */");
+    expect(output).toContain("/** Stable thing ID. */");
+    expect(output).toContain("id: string;");
+    expect(output).toContain('id: z.string().describe("Stable thing ID.")');
+    expect(output).toContain('}).describe("A documented thing.")');
+  });
+});
+
+describe("TypeScript auth emitter", () => {
+  const output = emitAuthFile({
+    authOperations: [
+      {
+        name: "login",
+        operationId: "post_auth_login",
+        method: "POST",
+        path: "/api/v1/auth/login",
+        summary: "Log in",
+        description: "Authenticates a user.",
+        deprecated: false,
+        pathParams: [],
+        queryParams: [],
+        body: {
+          fields: [
+            {
+              name: "email",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+              description: "Email address.",
+            },
+          ],
+        },
+        returnType: {
+          kind: "object",
+          fields: [
+            {
+              name: "token",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+              sdkRole: "access_token",
+            },
+          ],
+        },
+        returnDescription: "Credential bundle.",
+        errors: [],
+      },
+      {
+        name: "allowed_auth_methods",
+        operationId: "get_allowed_auth_methods",
+        method: "GET",
+        path: "/api/v1/auth/allowed_auth_methods",
+        summary: "List auth methods",
+        deprecated: false,
+        pathParams: [],
+        queryParams: [],
+        returnType: {
+          kind: "object",
+          fields: [
+            {
+              name: "methods",
+              type: {
+                kind: "array",
+                items: { kind: "primitive", type: "string" },
+              },
+              required: true,
+            },
+          ],
+        },
+        returnDescription: "Authentication method catalogue.",
+        errors: [],
+      },
+    ],
+    schemas: [],
+  } as any);
+
+  it("returns AuthTokens only for operations with token-role response fields", () => {
+    expect(output).toContain("async login(email: string): Promise<AuthTokens>");
+    expect(output).toContain("accessToken: data.token as string | undefined");
+    expect(output).toContain(
+      "async allowedAuthMethods(): Promise<Record<string, unknown>>"
+    );
+    expect(output).toMatch(
+      /async allowedAuthMethods\(\): Promise<Record<string, unknown>>[\s\S]+?return data;/
+    );
+    expect(output).not.toMatch(
+      /allowedAuthMethods[\s\S]+?return \{[\s\S]+?accessToken: undefined/
+    );
+  });
+
+  it("emits auth JSDoc for params and returns", () => {
+    expect(output).toContain("Log in");
+    expect(output).toContain("Authenticates a user.");
+    expect(output).toContain("@param email - Email address.");
+    expect(output).toContain("@returns Credential bundle.");
+    expect(output).toContain("@returns Authentication method catalogue.");
   });
 });
 
@@ -311,6 +482,47 @@ describe("Resource emitter uses requestRaw for raw responses", () => {
     expect(output).toContain(
       "return this.http.requestRaw(`/api/v1/configs/${config}/content`);"
     );
+  });
+});
+
+describe("Resource emitter documents no-content responses", () => {
+  const voidAst = parseOpenApiSpec(
+    {
+      openapi: "3.0.0",
+      info: { title: "Void API", version: "1.0.0" },
+      paths: {
+        "/api/v1/widgets/{widget}": {
+          delete: {
+            operationId: "delete_api_v1_widgets_widget",
+            parameters: [
+              {
+                name: "widget",
+                in: "path",
+                required: true,
+                description: "Widget ID.",
+                schema: { type: "string" },
+              },
+            ],
+            responses: { "204": { description: "Deleted widget." } },
+          },
+        },
+      },
+    },
+    {
+      name: "archastro-platform",
+      version: "0.1.0",
+      baseUrl: "https://platform.archastro.ai",
+      apiBase: "/api",
+      defaultVersion: "v1",
+    }
+  );
+  const resource = voidAst.resources.find((r) => r.name === "widgets")!;
+  const output = emitResourceFile(resource, "/api/v1");
+
+  it("emits @returns docs for 204 responses", () => {
+    expect(output).toContain("@param widget - Widget ID.");
+    expect(output).toContain("@returns Deleted widget.");
+    expect(output).toContain("async delete(widget: string): Promise<void>");
   });
 });
 
@@ -536,6 +748,26 @@ describe("Resource emitter uses summary and description in method docs", () => {
     expect(output).toContain(
       "Adds the caller or provided principal to the team."
     );
+    expect(output).toContain("@param input.join_code - Invite or join code.");
+    expect(output).toContain("@returns The joined team payload.");
+  });
+});
+
+describe("Resource emitter preserves scoped path parameter docs", () => {
+  const scopedAst = parseOpenApiSpec(scopedDocFixture, {
+    name: "archastro-platform",
+    version: "0.1.0",
+    baseUrl: "https://platform.archastro.ai",
+    apiPrefix: "/api/v1",
+    scopePrefix: "/agents/{agent}",
+  });
+  const toolsResource = scopedAst.resources.find((r) => r.name === "tools")!;
+  const output = emitResourceFile(toolsResource, "/api/v1");
+
+  it("renders docs for resource-level scope params", () => {
+    expect(output).toContain("async list(agent: string)");
+    expect(output).toContain("@param agent - Agent ID that owns the tools.");
+    expect(output).toContain("@returns Agent tool list.");
   });
 });
 
@@ -923,8 +1155,12 @@ describe("Zod emitter — discriminated unions", () => {
   const output = emitZodSchemaFile([echoVariant, delayVariant, builtinConfig]);
 
   it("emits variants as plain z.object with z.literal discriminator fields", () => {
-    expect(output).toContain("export const echoVariantSchema = z.object({");
-    expect(output).toContain("export const delayVariantSchema = z.object({");
+    expect(output).toContain(
+      "export const echoVariantSchema = z.object({"
+    );
+    expect(output).toContain(
+      "export const delayVariantSchema = z.object({"
+    );
     expect(output).toMatch(/type: z\.literal\("echo"\)/);
     expect(output).toMatch(/type: z\.literal\("delay"\)/);
   });

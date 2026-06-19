@@ -33,6 +33,30 @@ Targets:
 | `contract-tests-ts` | TS contract tests that drive `@archastro/channel-harness` |
 | `contract-tests-py` | Python contract tests (pytest + Prism mock server) |
 
+## Generated SDK documentation
+
+The generator preserves OpenAPI documentation as idiomatic source docs in each
+language. Use standard OpenAPI fields as the source of truth:
+
+- Operation `summary` and `description` become TypeScript JSDoc and Python
+  method docstrings.
+- Parameter and request-body field `description` values become parameter docs
+  and input object field docs.
+- Success response descriptions become return-value docs.
+- Schema `description` values become TypeScript interface/schema docs and
+  Python model docstrings.
+- Schema property `description` values become TypeScript field docs, Zod
+  `.describe(...)` metadata, and Pydantic `Field(description=...)` metadata.
+
+For consuming SDK repos, keep docs generation next to the generated package:
+
+- TypeScript: add TypeDoc, point `entryPoints` at the public generated entry
+  points, and publish the generated `docs/` directory with GitHub Pages.
+- Python: add pdoc, point it at the generated package, and publish the rendered
+  HTML with GitHub Pages.
+- Run the docs build in CI after SDK regeneration so broken doc comments fail
+  before release.
+
 ### `--config`
 
 Shared codegen metadata consumed by both backends:

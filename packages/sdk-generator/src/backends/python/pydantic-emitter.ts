@@ -39,8 +39,12 @@ export function emitPydanticFile(
   // A discriminated union needs `pydantic.Field(discriminator=...)`; plain
   // BaseModel-only files keep the smaller import to avoid lint noise.
   const hasAliasedFields = schemas.some((schema) => schemaHasAliasedFields(schema));
+  const hasFieldDescriptions = schemas.some((schema) =>
+    schema.fields.some((field) => field.description)
+  );
   const needsField = schemas.some((s) => s.unionType?.discriminator) ||
-    hasAliasedFields;
+    hasAliasedFields ||
+    hasFieldDescriptions;
   const pydanticImports = ["BaseModel"];
   if (hasAliasedFields) pydanticImports.push("ConfigDict");
   if (needsField) pydanticImports.push("Field");
@@ -83,25 +87,19 @@ export function emitPydanticModel(cb: CodeBuilder, schema: SchemaDef): void {
 }
 
 function emitModel(cb: CodeBuilder, schema: SchemaDef): void {
-  if (schema.description) {
-    for (const line of schema.description.split("\n")) {
-      const trimmed = line.trim();
-      if (trimmed) {
-        cb.line(`# ${trimmed.replace(/[^\x20-\x7E]/g, " ")}`);
-      }
-    }
-  }
-
   // Top-level unions become a typing alias (not a BaseModel subclass).
   // Discriminated unions get Pydantic's discriminator metadata for
   // tagged-union deserialization.
   if (schema.unionType) {
+    emitPythonComment(cb, schema.description);
     cb.line(`${schema.name} = ${unionTypeToPython(schema.unionType)}`);
     return;
   }
 
   const fieldNames = pythonFieldNamesForSchema(schema);
   cb.pyBlock(`class ${schema.name}(BaseModel)`, () => {
+    emitPythonDocstring(cb, schema.description);
+
     if (schema.fields.length === 0) {
       cb.line("pass");
       return;
@@ -128,21 +126,31 @@ function unionTypeToPython(union: UnionTypeRef): string {
 
 function emitField(cb: CodeBuilder, field: FieldDef, fieldName: string): void {
   const pyType = typeRefToPython(field.type);
-  const comment = field.description ? `  # ${field.description.replace(/\n/g, " ").trim()}` : "";
   const needsAlias = fieldName !== field.name;
+  const needsFieldMetadata = needsAlias || Boolean(field.description);
 
   let line: string;
-  if (needsAlias) {
-    const args: string[] = [];
+  if (needsFieldMetadata) {
+    const fieldArgs: string[] = [];
     if (!field.required) {
       const defaultValue =
         field.default !== undefined ? pythonLiteral(field.default) : "None";
-      args.push(`default=${defaultValue}`);
+      fieldArgs.push(`default=${defaultValue}`);
     } else if (field.default !== undefined) {
-      args.push(`default=${pythonLiteral(field.default)}`);
+      fieldArgs.push(`default=${pythonLiteral(field.default)}`);
+    } else {
+      fieldArgs.push("...");
     }
-    args.push(`alias=${pythonLiteral(field.name)}`);
-    line = `${fieldName}: ${pyType} = Field(${args.join(", ")})`;
+
+    if (needsAlias) {
+      fieldArgs.push(`alias=${pythonLiteral(field.name)}`);
+    }
+
+    if (field.description) {
+      fieldArgs.push(`description=${pythonLiteral(cleanDoc(field.description))}`);
+    }
+
+    line = `${fieldName}: ${pyType} = Field(${fieldArgs.join(", ")})`;
   } else if (!field.required) {
     const defaultVal =
       field.default !== undefined ? ` = ${pythonLiteral(field.default)}` : " = None";
@@ -153,12 +161,7 @@ function emitField(cb: CodeBuilder, field: FieldDef, fieldName: string): void {
     line = `${fieldName}: ${pyType}`;
   }
 
-  // 4 = one indent level (class body), 100 = ruff line-length
-  if (comment && (line + comment).length + 4 <= 100) {
-    cb.line(line + comment);
-  } else {
-    cb.line(line);
-  }
+  cb.line(line);
 }
 
 function pythonFieldNamesForSchema(schema: SchemaDef): string[] {
@@ -263,8 +266,36 @@ function typeRefUsesDatetime(ref: TypeRef): boolean {
 function pythonLiteral(value: unknown): string {
   if (value === null || value === undefined) return "None";
   if (typeof value === "boolean") return value ? "True" : "False";
-  if (typeof value === "string") return `"${value}"`;
+  if (typeof value === "string") return JSON.stringify(value);
   return String(value);
+}
+
+function cleanDoc(text: string): string {
+  return text.replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function emitPythonDocstring(cb: CodeBuilder, text: string | undefined): void {
+  const lines = docLines(text);
+  if (lines.length === 0) return;
+  cb.line('"""');
+  for (const line of lines) {
+    cb.line(line);
+  }
+  cb.line('"""');
+  cb.line();
+}
+
+function emitPythonComment(cb: CodeBuilder, text: string | undefined): void {
+  for (const line of docLines(text)) {
+    cb.line(`# ${line}`);
+  }
+}
+
+function docLines(text: string | undefined): string[] {
+  return (text ?? "")
+    .split("\n")
+    .map(cleanDoc)
+    .filter(Boolean);
 }
 
 function collectTypingImports(schemas: SchemaDef[]): Set<string> {
