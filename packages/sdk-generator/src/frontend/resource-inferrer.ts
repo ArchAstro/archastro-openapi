@@ -453,6 +453,7 @@ function enrichScopeParams(
       type: source?.type ?? param.type,
       required: source?.required ?? param.required,
       description: source?.description ?? param.description,
+      example: source?.example ?? param.example,
       wireName: source?.wireName ?? param.wireName,
     });
   }

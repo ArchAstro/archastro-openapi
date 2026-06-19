@@ -173,3 +173,38 @@ describe("inferResourceTree – class name disambiguation", () => {
     expect(unique.size).toBe(names.length);
   });
 });
+
+describe("inferResourceTree – scope parameter metadata", () => {
+  it("preserves examples when enriching scope params from operation path params", () => {
+    const operations: ParsedOperation[] = [
+      {
+        ...op("GET", "/api/v1/apps/{app_id}/teams", "list_app_teams"),
+        pathParams: [
+          {
+            name: "app_id",
+            type: { kind: "primitive", type: "string" },
+            required: true,
+            description: "Application ID.",
+            example: "app_123",
+            wireName: "app_id",
+          },
+        ],
+      },
+    ];
+
+    const { resources } = inferResourceTree(operations, {
+      apiPrefix: "/api/v1",
+      scopePrefix: "/apps/{app_id}",
+    });
+
+    const teams = resources.find((resource) => resource.name === "teams");
+    expect(teams?.scopeParams).toContainEqual(
+      expect.objectContaining({
+        name: "appId",
+        description: "Application ID.",
+        example: "app_123",
+        wireName: "app_id",
+      })
+    );
+  });
+});
