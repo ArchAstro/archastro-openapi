@@ -2131,6 +2131,59 @@ describe("Python resource emitter typed bodies", () => {
     expect(out).not.toContain("async: bool | None");
   });
 
+  it("uses OpenAPI wire names for SDK-renamed query params", () => {
+    const out = emitPythonResourceFile(
+      {
+        name: "slack_channel_bindings",
+        className: "SlackChannelBindingResource",
+        path: "/slack_channel_bindings",
+        scopeParams: [],
+        operations: [
+          {
+            name: "get",
+            operationId: "get_slack_channel_binding",
+            method: "GET",
+            path: "/api/v1/slack_channel_bindings/{channel}",
+            deprecated: false,
+            pathParams: [
+              {
+                name: "channel",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+            ],
+            queryParams: [
+              {
+                name: "slackTeamId",
+                wireName: "slack_team_id",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+              {
+                name: "perPage",
+                wireName: "per_page",
+                type: { kind: "primitive", type: "integer" },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+        children: [],
+      },
+      "/api/v1"
+    );
+
+    expect(out).toContain(
+      "async def get(self, channel: str, slack_team_id: str, *, per_page: int | None = None)"
+    );
+    expect(out).toContain('query["slack_team_id"] = slack_team_id');
+    expect(out).toContain('query["per_page"] = per_page');
+    expect(out).not.toContain('query["slackTeamId"]');
+    expect(out).not.toContain('query["perPage"]');
+  });
+
   it("uniquely sanitizes colliding Python query params while preserving wire keys", () => {
     const out = emitPythonResourceFile(
       {

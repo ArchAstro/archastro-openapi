@@ -127,6 +127,11 @@ function emitOperation(
 
   cb.block(methodSig, () => {
     const pathExpr = buildPathExpression(op, resource);
+    if (op.queryParams.length > 0) {
+      emitQueryBuilder(cb, op.queryParams);
+      cb.line();
+    }
+
     const options = buildRequestOptions(op);
 
     const requestMethod = op.rawResponse ? "requestRaw" : "request";
@@ -304,17 +309,37 @@ function buildRequestOptions(op: OperationDef): string | null {
   }
 
   if (op.queryParams.length > 0) {
-    // Cast must match HttpClient.request's `query` type
-    // (Record<string, QueryValue>, where QueryValue allows primitive arrays).
-    // A scalars-only cast would silently drop array-typed filters like
-    // `kind?: string[]` at the boundary.
-    parts.push(
-      "query: params as Record<string, string | number | boolean | Array<string | number | boolean> | undefined>"
-    );
+    parts.push("query");
   }
 
   if (parts.length === 0) return null;
   return `{ ${parts.join(", ")} }`;
+}
+
+const queryRecordType =
+  "Record<string, string | number | boolean | Array<string | number | boolean> | undefined>";
+
+function emitQueryBuilder(cb: CodeBuilder, params: ParamDef[]): void {
+  cb.line(`const query: ${queryRecordType} = {};`);
+
+  for (const param of params) {
+    const wireName = JSON.stringify(param.wireName ?? param.name);
+    const access = queryParamAccess(param.name);
+
+    if (param.required) {
+      cb.line(`query[${wireName}] = ${access};`);
+    } else {
+      cb.block(`if (${access} !== undefined)`, () => {
+        cb.line(`query[${wireName}] = ${access};`);
+      });
+    }
+  }
+}
+
+function queryParamAccess(name: string): string {
+  return /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(name)
+    ? `params?.${name}`
+    : `params?.[${JSON.stringify(name)}]`;
 }
 
 /**

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { SchemaDef } from "../../src/ast/types.js";
+import type { ResourceDef, SchemaDef } from "../../src/ast/types.js";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generateTypeScript } from "../../src/backends/typescript/index.js";
 import { emitZodSchemaFile } from "../../src/backends/typescript/zod-emitter.js";
@@ -420,6 +420,11 @@ describe("Resource emitter preserves array query params", () => {
               in: "query",
               schema: { type: "integer" },
             },
+            {
+              name: "per_page",
+              in: "query",
+              schema: { type: "integer" },
+            },
           ],
           responses: {
             "200": {
@@ -452,15 +457,63 @@ describe("Resource emitter preserves array query params", () => {
 
   it("types array query params as arrays in the method signature", () => {
     expect(output).toMatch(/kind\?: string\[\]/);
+    expect(output).toMatch(/perPage\?: number/);
   });
 
-  it("casts params to a type that permits primitive arrays", () => {
+  it("serializes query params with OpenAPI wire names", () => {
     expect(output).toContain(
-      "query: params as Record<string, string | number | boolean | Array<string | number | boolean> | undefined>"
+      "const query: Record<string, string | number | boolean | Array<string | number | boolean> | undefined> = {};"
     );
+    expect(output).toContain('query["kind"] = params?.kind;');
+    expect(output).toContain('query["per_page"] = params?.perPage;');
+    expect(output).toContain("{ query }");
+    expect(output).not.toContain('query["perPage"]');
     expect(output).not.toContain(
       "query: params as Record<string, string | number | boolean | undefined>"
     );
+  });
+});
+
+describe("Resource emitter preserves required query wire names", () => {
+  const slackResource: ResourceDef = {
+    name: "slack_channel_bindings",
+    className: "SlackChannelBindingResource",
+    path: "/slack_channel_bindings",
+    scopeParams: [],
+    operations: [
+      {
+        name: "get",
+        operationId: "get_slack_channel_binding",
+        method: "GET",
+        path: "/api/v1/slack_channel_bindings/{channel}",
+        deprecated: false,
+        pathParams: [
+          {
+            name: "channel",
+            type: { kind: "primitive", type: "string" },
+            required: true,
+          },
+        ],
+        queryParams: [
+          {
+            name: "slackTeamId",
+            wireName: "slack_team_id",
+            type: { kind: "primitive", type: "string" },
+            required: true,
+          },
+        ],
+        returnType: { kind: "unknown" },
+        errors: [],
+      },
+    ],
+    children: [],
+  };
+  const output = emitResourceFile(slackResource, "/api/v1");
+
+  it("serializes required SDK-renamed query params with OpenAPI wire names", () => {
+    expect(output).toContain('query["slack_team_id"] = params?.slackTeamId;');
+    expect(output).not.toContain('query["slackTeamId"]');
+    expect(output).not.toContain("if (params?.slackTeamId !== undefined)");
   });
 });
 
