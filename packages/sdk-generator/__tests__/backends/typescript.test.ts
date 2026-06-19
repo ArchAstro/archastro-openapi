@@ -425,6 +425,34 @@ describe("Resource emitter preserves array query params", () => {
               in: "query",
               schema: { type: "integer" },
             },
+            {
+              name: "metadata",
+              in: "query",
+              schema: {
+                type: "object",
+                properties: {
+                  operator: { type: "string", enum: ["eq", "contains"] },
+                  path: { type: "array", items: { type: "string" } },
+                  value: {},
+                },
+              },
+            },
+            {
+              name: "filter",
+              in: "query",
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    key: { type: "string" },
+                    type: { type: "string" },
+                    value: { type: "string" },
+                  },
+                  required: ["key", "type", "value"],
+                },
+              },
+            },
           ],
           responses: {
             "200": {
@@ -471,6 +499,13 @@ describe("Resource emitter preserves array query params", () => {
     expect(output).not.toContain(
       "query: params as Record<string, string | number | boolean | undefined>"
     );
+  });
+
+  it("JSON-encodes object query params before assigning to the runtime query", () => {
+    expect(output).toContain('query["metadata"] = JSON.stringify(params?.metadata);');
+    expect(output).toContain('query["filter"] = JSON.stringify(params?.filter);');
+    expect(output).not.toContain('query["metadata"] = params?.metadata;');
+    expect(output).not.toContain('query["filter"] = params?.filter;');
   });
 });
 
