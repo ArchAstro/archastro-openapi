@@ -2,10 +2,10 @@ name: Release
 
 # Manually trigger from the Actions tab to:
 #   1. Bump the selected package's version on a release branch
-#   2. Push a tag (sdk-generator-vX.Y.Z or channel-harness-vX.Y.Z)
-#   3. Dispatch publish.yml with that tag (tag pushes by GITHUB_TOKEN
+#   2. Open a PR back to main and rebase-merge so main tracks the bump
+#   3. Push a tag from the merged main commit
+#   4. Dispatch publish.yml with that tag (tag pushes by GITHUB_TOKEN
 #      don't themselves trigger workflows)
-#   4. Open a PR back to main and squash-merge so main tracks the bump
 #
 # Publishing uses npm Trusted Publishing (OIDC) — no NPM_TOKEN needed.
 # Configure a trusted publisher on npmjs.com for each package pointing
@@ -68,6 +68,7 @@ jobs:
         env:
           PKG: ${{ inputs.package }}
           BUMP: ${{ inputs.bump }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
 
@@ -97,7 +98,14 @@ jobs:
             title_str="$title_str + $p"
           done
 
-          branch="release/${tags_str// /-}"
+          for tag in "${tags[@]}"; do
+            if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+              echo "::error title=Release tag already exists::$tag already exists. Bump main's package version or choose a larger bump."
+              exit 1
+            fi
+          done
+
+          branch="release/${tags_str// /-}-$RUN_ID"
           title="release: $title_str"
 
           {
@@ -115,7 +123,35 @@ jobs:
           git checkout -b "$BRANCH"
           git add packages/*/package.json package-lock.json
           git commit -m "$TITLE"
-          git push origin "$BRANCH"
+          git push --set-upstream origin "$BRANCH"
+
+      - name: Open PR + rebase merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.bump.outputs.branch }}
+          TITLE: ${{ steps.bump.outputs.title }}
+          TAGS: ${{ steps.bump.outputs.tags }}
+        run: |
+          set -euo pipefail
+          body_file="$(mktemp)"
+          {
+            echo "Automated release version bump opened by \`release.yml\`."
+            echo
+            echo "**Tags to publish after merge:**"
+            for tag in $TAGS; do
+              echo "- \`$tag\`"
+            done
+          } > "$body_file"
+          pr_url=$(gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "$TITLE" \
+            --body-file "$body_file")
+          # Tests already ran above; the bump is the only change in this PR.
+          gh pr merge "$pr_url" --rebase --delete-branch
+          git fetch origin main
+          git checkout --detach origin/main
+          echo "Merged $pr_url"
 
       - name: Create + push tags
         env:
@@ -124,8 +160,8 @@ jobs:
           set -euo pipefail
           for tag in $TAGS; do
             git tag -a "$tag" -m "$tag"
+            git push origin "refs/tags/$tag"
           done
-          git push origin --tags
 
       - name: Dispatch publish.yml for each tag
         env:
@@ -137,27 +173,3 @@ jobs:
             echo "Dispatching publish.yml --ref $tag"
             gh workflow run publish.yml --ref "$tag"
           done
-
-      - name: Open PR + squash merge
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: ${{ steps.bump.outputs.branch }}
-          TITLE: ${{ steps.bump.outputs.title }}
-          TAGS: ${{ steps.bump.outputs.tags }}
-        run: |
-          set -euo pipefail
-          body=$(cat <<EOF
-          Automated release — version bump opened by \`release.yml\`.
-
-          **Tags pushed** (publish.yml is publishing these right now):
-          $(for t in $TAGS; do echo "- \`$t\`"; done)
-          EOF
-          )
-          pr_url=$(gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "$TITLE" \
-            --body "$body")
-          # Tests already ran above; the bump is the only change in this PR.
-          gh pr merge "$pr_url" --squash --delete-branch
-          echo "Merged $pr_url"
