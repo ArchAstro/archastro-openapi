@@ -550,7 +550,7 @@ function toOperationDef(
   // Detect streaming
   let streaming: StreamingConfig | undefined;
   if (op.streamingHint) {
-    streaming = { style: "sse", events: [] };
+    streaming = { style: "sse", events: op.streamingHint.events ?? [] };
   }
 
   return {

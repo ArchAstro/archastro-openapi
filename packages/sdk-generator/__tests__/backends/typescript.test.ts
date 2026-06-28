@@ -1319,3 +1319,81 @@ describe("Zod emitter — plain oneOf (no discriminator)", () => {
     );
   });
 });
+
+describe("Resource emitter streams SSE operations", () => {
+  const sseFixture = {
+    openapi: "3.0.0",
+    info: { title: "SSE API", version: "1.0.0" },
+    paths: {
+      "/api/v1/ai/chat/completions/stream": {
+        post: {
+          operationId: "post_api_v1_ai_chat_completions_stream",
+          summary: "Stream a chat completion",
+          "x-sdk-streaming": {
+            type: "sse",
+            events: {
+              message_delta: {
+                type: "object",
+                properties: { delta: { type: "string" } },
+              },
+              done: {
+                type: "object",
+                properties: { finish_reason: { type: "string" } },
+              },
+            },
+          },
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { model: { type: "string" } },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "SSE stream",
+              content: { "text/event-stream": { schema: { type: "object" } } },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const ast = parseOpenApiSpec(sseFixture, {
+    name: "archastro-platform",
+    version: "0.1.0",
+    baseUrl: "https://platform.archastro.ai",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+  // The streaming op may live in a nested child resource; emit the whole tree.
+  const output = ast.resources
+    .map((r) => emitResourceFile(r, "/api/v1"))
+    .join("\n");
+
+  it("emits an async generator returning an AsyncIterable", () => {
+    expect(output).toMatch(/async \*\w+\(/);
+    expect(output).toContain("AsyncIterable<");
+  });
+
+  it("calls the runtime streamSSE primitive with the POST body", () => {
+    expect(output).toContain("this.http.streamSSE(");
+    expect(output).toContain("yield*");
+    expect(output).toContain('method: "POST"');
+    expect(output).toContain("body: input");
+  });
+
+  it("types the yielded events as a discriminated union from x-sdk-streaming.events", () => {
+    expect(output).toContain('event: "message_delta"');
+    expect(output).toContain('event: "done"');
+  });
+
+  it("does not emit a normal request() call for the stream", () => {
+    expect(output).not.toContain("this.http.request(");
+    expect(output).not.toContain("this.http.requestRaw(");
+  });
+});

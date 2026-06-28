@@ -119,7 +119,7 @@ Placed on a path+verb object (e.g. `paths."/v1/teams".get`).
 | Key | Shape | Purpose |
 | --- | --- | --- |
 | `x-sdk-pagination` | `{ type: "offset" \| "cursor" }` | Marks an endpoint as paginated. Backends emit a matching pagination helper (auto-iterating or cursor-based) instead of a bare list return. |
-| `x-sdk-streaming` | `{ type: "sse" }` | Marks an endpoint as Server-Sent Events. Backends emit an async iterator that yields parsed event payloads. |
+| `x-sdk-streaming` | `{ type: "sse", events?: { <name>: Schema } }` | Marks an endpoint as Server-Sent Events. Backends emit a streaming method — TS `async *` returning `AsyncIterable<…>`, Python async + sync generators — over the runtime SSE primitive (`streamSSE` / `stream_sse` / `stream_sse_sync`), which opens the request (any method + body) and yields `{ event, data }`. The optional `events` map (SSE event name → payload schema) types the yielded events as a discriminated union; omit it for an untyped `{ event, data }`. Requires the SDK runtime to provide the SSE primitive (POST-with-body + `text/event-stream` parsing). |
 | `x-sdk-name` | `string` | Explicit SDK method name override. Useful when `operationId` is awkward or collides — e.g. an HTTP handler called `listTeamsV1` becomes `.teams.list()` in the SDK. |
 | `x-auth` | `string[]` | Auth schemes required for the operation (names from `x-auth-schemes`). The generator wires these into request headers / token resolution. |
 

@@ -4,6 +4,7 @@ import type {
   ErrorDef,
   TypeRef,
   FieldDef,
+  StreamingEvent,
 } from "../ast/types.js";
 import { jsonSchemaToTypeRef } from "./schema-parser.js";
 
@@ -26,7 +27,7 @@ interface OperationObject {
   requestBody?: RequestBodyObject;
   responses?: Record<string, ResponseObject>;
   "x-sdk-pagination"?: { type: "offset" | "cursor" };
-  "x-sdk-streaming"?: { type: "sse" };
+  "x-sdk-streaming"?: { type: "sse"; events?: Record<string, JsonSchema> };
   "x-auth"?: string[];
   "x-sdk-name"?: string;
   tags?: string[];
@@ -86,7 +87,7 @@ export interface ParsedOperation {
   returnDescription?: string;
   errors: ErrorDef[];
   paginationHint?: { type: "offset" | "cursor" };
-  streamingHint?: { type: "sse" };
+  streamingHint?: { type: "sse"; events: StreamingEvent[] };
   rawResponse?: boolean;
   auth?: string[];
   sdkName?: string;
@@ -133,7 +134,7 @@ export function parseOperations(spec: OpenApiSpec): ParsedOperation[] {
         ...extractSuccessResponse(op.responses),
         errors: extractErrors(op.responses),
         paginationHint: op["x-sdk-pagination"],
-        streamingHint: op["x-sdk-streaming"],
+        streamingHint: parseStreamingHint(op["x-sdk-streaming"]),
         auth: op["x-auth"],
         sdkName: op["x-sdk-name"],
         tags: op.tags,
@@ -142,6 +143,26 @@ export function parseOperations(spec: OpenApiSpec): ParsedOperation[] {
   }
 
   return operations;
+}
+
+/**
+ * Parse the `x-sdk-streaming` extension into a streaming hint. The optional
+ * `events` map (SSE event name → payload schema) is resolved to typed
+ * `StreamingEvent`s so backends can emit a discriminated event union.
+ */
+function parseStreamingHint(
+  ext: { type: "sse"; events?: Record<string, JsonSchema> } | undefined
+): { type: "sse"; events: StreamingEvent[] } | undefined {
+  if (!ext) return undefined;
+
+  const events: StreamingEvent[] = ext.events
+    ? Object.entries(ext.events).map(([event, schema]) => ({
+        event,
+        dataType: jsonSchemaToTypeRef(schema),
+      }))
+    : [];
+
+  return { type: ext.type, events };
 }
 
 // ─── Internal ────────────────────────────────────────────────────
