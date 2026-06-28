@@ -3295,10 +3295,22 @@ describe("Python resource emitter streams SSE operations", () => {
     .map((r) => emitPythonResourceFile(r, "/api/v1"))
     .join("\n");
 
-  it("emits an async generator returning AsyncIterator", () => {
-    expect(output).toMatch(/async def \w+\(self.*\) -> AsyncIterator\[Dict\[str, Any\]\]/);
+  it("emits an async generator over the runtime stream_sse iterator", () => {
     expect(output).toContain("async for event in self._http.stream_sse(");
     expect(output).toContain("yield event");
+  });
+
+  it("types the events as a discriminated TypedDict union (parity with TS)", () => {
+    expect(output).toContain("class CompletionStreamEventMessageDelta(TypedDict):");
+    expect(output).toContain('event: Literal["message_delta"]');
+    expect(output).toContain(
+      "CompletionStreamEvent = CompletionStreamEventMessageDelta"
+    );
+    expect(output).toMatch(
+      /async def \w+\(self.*\) -> AsyncIterator\[CompletionStreamEvent\]/
+    );
+    expect(output).toMatch(/def \w+\(self.*\) -> Iterator\[CompletionStreamEvent\]/);
+    expect(output).not.toContain("AsyncIterator[Dict[str, Any]]");
   });
 
   it("passes the POST method and body to stream_sse", () => {
