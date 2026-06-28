@@ -82,6 +82,9 @@ export function emitPythonResourceFile(
     collectedResponses.map((g) => [g.operationId, g.name] as const)
   );
 
+  // SSE event TypedDict unions for streaming ops that declare events.
+  const streamingEventGroups = collectStreamingEventGroups(allResources);
+
   for (const line of generatedHeaderPython().trim().split("\n")) { cb.line(line); };
   cb.line();
   cb.line("from __future__ import annotations");
@@ -156,6 +159,27 @@ export function emitPythonResourceFile(
       fields: group.fields,
       description: group.description,
     });
+    cb.line();
+    cb.line();
+  }
+
+  // SSE event TypedDict unions — one discriminated member per declared event,
+  // referenced by the streaming methods' return annotations.
+  for (const group of streamingEventGroups) {
+    for (const member of group.members) {
+      cb.pyBlock(`class ${member.className}(TypedDict)`, () => {
+        cb.line(`event: Literal[${JSON.stringify(member.eventName)}]`);
+        cb.line(`data: ${typeRefToPythonResourceAnnotation(member.dataType)}`);
+      });
+      cb.line();
+      cb.line();
+    }
+
+    const rhs =
+      group.members.length === 1
+        ? group.members[0]!.className
+        : `Union[${group.members.map((m) => m.className).join(", ")}]`;
+    cb.line(`${group.unionName} = ${rhs}`);
     cb.line();
     cb.line();
   }
@@ -280,6 +304,14 @@ function collectOperationTypingImports(
         imports.add("Iterator");
         imports.add("Dict");
         imports.add("Any");
+        if (op.streaming.events.length > 0) {
+          imports.add("Literal");
+          imports.add("TypedDict");
+          if (op.streaming.events.length > 1) imports.add("Union");
+          for (const e of op.streaming.events) {
+            collectTypingFromTypeRef(e.dataType, imports);
+          }
+        }
       } else if (op.rawResponse) {
         imports.add("Dict");
       } else if (!responseNameByOpId.has(op.operationId)) {
@@ -351,6 +383,49 @@ function collectInlineInputs(resources: ResourceDef[]): InlineInputGroup[] {
           description: op.summary ?? op.description,
         });
       }
+    }
+  }
+  return groups;
+}
+
+/** Name of the TypedDict union for a streaming op's events, e.g. `RunStreamEvent`. */
+function streamEventUnionName(resource: ResourceDef, op: OperationDef): string {
+  const shortName = resource.className.replace(/Resource$/, "");
+  return `${shortName}${pascalCase(op.name)}Event`;
+}
+
+/** Return annotation for a streaming op: the typed event union, or a generic dict. */
+function streamEventType(op: OperationDef, resource: ResourceDef): string {
+  return op.streaming && op.streaming.events.length > 0
+    ? streamEventUnionName(resource, op)
+    : "Dict[str, Any]";
+}
+
+interface StreamingEventGroup {
+  unionName: string;
+  members: Array<{ className: string; eventName: string; dataType: TypeRef }>;
+}
+
+/**
+ * For every streaming op that declares events, build a discriminated TypedDict
+ * union: one `{event: Literal["name"], data: <DataType>}` member per event,
+ * aliased as `{ResourceShort}{Op}Event`. Mirrors the TypeScript backend's
+ * inline event union. Ops with no declared events stay `Dict[str, Any]`.
+ */
+function collectStreamingEventGroups(resources: ResourceDef[]): StreamingEventGroup[] {
+  const groups: StreamingEventGroup[] = [];
+  for (const resource of resources) {
+    for (const op of resource.operations) {
+      if (!op.streaming || op.streaming.events.length === 0) continue;
+      const unionName = streamEventUnionName(resource, op);
+      groups.push({
+        unionName,
+        members: op.streaming.events.map((e) => ({
+          className: `${unionName}${pascalCase(e.event)}`,
+          eventName: e.event,
+          dataType: e.dataType,
+        })),
+      });
     }
   }
   return groups;
@@ -480,9 +555,10 @@ function emitStreamingOperation(
 ): void {
   const pythonNames = buildOperationPythonNames(op, resource);
   const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
+  const eventType = streamEventType(op, resource);
 
   cb.pyBlock(
-    `async def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> AsyncIterator[Dict[str, Any]]`,
+    `async def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> AsyncIterator[${eventType}]`,
     () => {
       emitOperationDocstring(cb, op, resource, pythonNames);
 
@@ -524,9 +600,10 @@ function emitSyncStreamingOperation(
 ): void {
   const pythonNames = buildOperationPythonNames(op, resource);
   const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
+  const eventType = streamEventType(op, resource);
 
   cb.pyBlock(
-    `def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> Iterator[Dict[str, Any]]`,
+    `def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> Iterator[${eventType}]`,
     () => {
       emitOperationDocstring(cb, op, resource, pythonNames);
 
@@ -883,6 +960,10 @@ function collectSchemaRefs(resources: ResourceDef[]): Set<string> {
       // `fields`) get a TypedDict emitted in this same file.
       if (op.body?.schema && !op.body.fields) {
         refs.add(op.body.schema);
+      }
+      // $ref event payloads (data:) need the model imported too.
+      if (op.streaming) {
+        for (const e of op.streaming.events) collectTypeRefs(e.dataType, refs);
       }
     }
   }
