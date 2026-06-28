@@ -112,6 +112,11 @@ function emitOperation(
   resource: ResourceDef,
   _apiPrefix: string
 ): void {
+  if (op.streaming) {
+    emitStreamingOperation(cb, op, resource);
+    return;
+  }
+
   const params = buildParamList(op, resource);
   const returnType = typeRefToTS(op.returnType);
   const returnTypeStr = op.rawResponse
@@ -142,6 +147,49 @@ function emitOperation(
       cb.line(`${awaitPrefix}this.http.${requestMethod}(${pathExpr});`);
     }
   });
+}
+
+// Emit an SSE streaming operation as an async generator that yields parsed,
+// typed events. Targets the runtime's `streamSSE(path, opts)` primitive, which
+// opens the request (any method + body), reads the `text/event-stream` body, and
+// yields `{ event, data }` records.
+function emitStreamingOperation(
+  cb: CodeBuilder,
+  op: OperationDef,
+  resource: ResourceDef
+): void {
+  const params = buildParamList(op, resource);
+  const eventType = streamingEventType(op);
+
+  emitOperationComment(cb, op, resource);
+
+  cb.block(`async *${op.name}(${params}): AsyncIterable<${eventType}>`, () => {
+    const pathExpr = buildPathExpression(op, resource);
+    if (op.queryParams.length > 0) {
+      emitQueryBuilder(cb, op.queryParams);
+      cb.line();
+    }
+
+    const options = buildRequestOptions(op);
+    const call = options
+      ? `this.http.streamSSE(${pathExpr}, ${options})`
+      : `this.http.streamSSE(${pathExpr})`;
+
+    cb.line(`yield* ${call} as AsyncIterable<${eventType}>;`);
+  });
+}
+
+// The yielded event type: a discriminated union over the declared SSE events
+// (`x-sdk-streaming.events`), or a generic record when none are declared.
+function streamingEventType(op: OperationDef): string {
+  const events = op.streaming?.events ?? [];
+  if (events.length === 0) return "{ event: string; data: unknown }";
+
+  return events
+    .map(
+      (e) => `{ event: ${JSON.stringify(e.event)}; data: ${typeRefToTS(e.dataType)} }`
+    )
+    .join(" | ");
 }
 
 function emitOperationComment(

@@ -275,7 +275,12 @@ function collectOperationTypingImports(
 ): void {
   for (const resource of resources) {
     for (const op of resource.operations) {
-      if (op.rawResponse) {
+      if (op.streaming) {
+        imports.add("AsyncIterator");
+        imports.add("Iterator");
+        imports.add("Dict");
+        imports.add("Any");
+      } else if (op.rawResponse) {
         imports.add("Dict");
       } else if (!responseNameByOpId.has(op.operationId)) {
         collectTypingFromResourceAnnotation(op.returnType, imports);
@@ -406,6 +411,11 @@ function emitOperation(
   inputNameByOpId: Map<string, string>,
   responseNameByOpId: Map<string, string>
 ): void {
+  if (op.streaming) {
+    emitStreamingOperation(cb, op, resource, inputNameByOpId);
+    return;
+  }
+
   const pythonNames = buildOperationPythonNames(op, resource);
   const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
   const responseName = responseNameByOpId.get(op.operationId);
@@ -459,6 +469,95 @@ function emitOperation(
   );
 }
 
+// Emit an SSE streaming op as an async generator that yields parsed events.
+// Targets the runtime's `stream_sse(path, ...)` async iterator (any method +
+// body). Events are yielded as dicts; typed event models are a follow-up.
+function emitStreamingOperation(
+  cb: CodeBuilder,
+  op: OperationDef,
+  resource: ResourceDef,
+  inputNameByOpId: Map<string, string>
+): void {
+  const pythonNames = buildOperationPythonNames(op, resource);
+  const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
+
+  cb.pyBlock(
+    `async def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> AsyncIterator[Dict[str, Any]]`,
+    () => {
+      emitOperationDocstring(cb, op, resource, pythonNames);
+
+      if (op.queryParams.length > 0) {
+        cb.line("query: dict[str, object] = {}");
+        for (let i = 0; i < op.queryParams.length; i++) {
+          const qp = op.queryParams[i]!;
+          const py = pythonNames.query[i]!;
+          const wireKey = JSON.stringify(qp.wireName ?? qp.name);
+          if (qp.required) {
+            cb.line(`query[${wireKey}] = ${py}`);
+          } else {
+            cb.line(`if ${py} is not None:`);
+            cb.line(`    query[${wireKey}] = ${py}`);
+          }
+        }
+      }
+
+      const pathExpr = buildPathExpression(op, resource, pythonNames);
+      const parts: string[] = [pathExpr];
+      if (op.method !== "GET") parts.push(`method="${op.method}"`);
+      if (op.body) parts.push(`body=${pythonNames.body}`);
+      if (op.queryParams.length > 0) parts.push("query=query");
+
+      cb.pyBlock(`async for event in self._http.stream_sse(${parts.join(", ")})`, () => {
+        cb.line("yield event");
+      });
+    }
+  );
+}
+
+// Sync variant of an SSE stream: a sync generator over the runtime's
+// `stream_sse_sync(path, ...)` iterator.
+function emitSyncStreamingOperation(
+  cb: CodeBuilder,
+  op: OperationDef,
+  resource: ResourceDef,
+  inputNameByOpId: Map<string, string>
+): void {
+  const pythonNames = buildOperationPythonNames(op, resource);
+  const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
+
+  cb.pyBlock(
+    `def ${pythonParameterName(op.name)}(self${params ? ", " + params : ""}) -> Iterator[Dict[str, Any]]`,
+    () => {
+      emitOperationDocstring(cb, op, resource, pythonNames);
+
+      if (op.queryParams.length > 0) {
+        cb.line("query: dict[str, object] = {}");
+        for (let i = 0; i < op.queryParams.length; i++) {
+          const qp = op.queryParams[i]!;
+          const py = pythonNames.query[i]!;
+          const wireKey = JSON.stringify(qp.wireName ?? qp.name);
+          if (qp.required) {
+            cb.line(`query[${wireKey}] = ${py}`);
+          } else {
+            cb.line(`if ${py} is not None:`);
+            cb.line(`    query[${wireKey}] = ${py}`);
+          }
+        }
+      }
+
+      const pathExpr = buildPathExpression(op, resource, pythonNames);
+      const parts: string[] = [pathExpr];
+      if (op.method !== "GET") parts.push(`method="${op.method}"`);
+      if (op.body) parts.push(`body=${pythonNames.body}`);
+      if (op.queryParams.length > 0) parts.push("query=query");
+
+      cb.pyBlock(`for event in self._http.stream_sse_sync(${parts.join(", ")})`, () => {
+        cb.line("yield event");
+      });
+    }
+  );
+}
+
 function emitSyncOperation(
   cb: CodeBuilder,
   op: OperationDef,
@@ -466,6 +565,11 @@ function emitSyncOperation(
   inputNameByOpId: Map<string, string>,
   responseNameByOpId: Map<string, string>
 ): void {
+  if (op.streaming) {
+    emitSyncStreamingOperation(cb, op, resource, inputNameByOpId);
+    return;
+  }
+
   const pythonNames = buildOperationPythonNames(op, resource);
   const params = buildParamList(op, resource, inputNameByOpId, pythonNames);
   const responseName = responseNameByOpId.get(op.operationId);

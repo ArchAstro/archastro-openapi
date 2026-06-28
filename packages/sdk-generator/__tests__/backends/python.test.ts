@@ -3244,3 +3244,70 @@ describe("Pydantic emitter — plain oneOf (no discriminator)", () => {
     expect(output).not.toContain('Field(discriminator=');
   });
 });
+
+describe("Python resource emitter streams SSE operations", () => {
+  const sseFixture = {
+    openapi: "3.0.0",
+    info: { title: "SSE API", version: "1.0.0" },
+    paths: {
+      "/api/v1/ai/chat/completions/stream": {
+        post: {
+          operationId: "post_api_v1_ai_chat_completions_stream",
+          summary: "Stream a chat completion",
+          "x-sdk-streaming": {
+            type: "sse",
+            events: {
+              message_delta: {
+                type: "object",
+                properties: { delta: { type: "string" } },
+              },
+            },
+          },
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: { model: { type: "string" } },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "SSE stream",
+              content: { "text/event-stream": { schema: { type: "object" } } },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  const sseAst = parseOpenApiSpec(sseFixture, {
+    name: "archastro-platform",
+    version: "0.1.0",
+    baseUrl: "https://platform.archastro.ai",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+  const output = sseAst.resources
+    .map((r) => emitPythonResourceFile(r, "/api/v1"))
+    .join("\n");
+
+  it("emits an async generator returning AsyncIterator", () => {
+    expect(output).toMatch(/async def \w+\(self.*\) -> AsyncIterator\[Dict\[str, Any\]\]/);
+    expect(output).toContain("async for event in self._http.stream_sse(");
+    expect(output).toContain("yield event");
+  });
+
+  it("passes the POST method and body to stream_sse", () => {
+    expect(output).toContain('method="POST"');
+    expect(output).toContain("body=");
+  });
+
+  it("does not emit a normal request() call for the stream", () => {
+    expect(output).not.toContain("self._http.request(");
+    expect(output).not.toContain("self._http.request_raw(");
+  });
+});
