@@ -18,6 +18,7 @@
 import {
   readFileSync,
   writeFileSync,
+  copyFileSync,
   mkdirSync,
   rmSync,
   existsSync,
@@ -34,9 +35,13 @@ import {
 import {
   parseOpenApiSpec,
   emitChannelFile,
+  emitResourceFile,
   channelTestFileStem,
   emitChannelContractTestFile,
+  emitStreamContractTestFile,
+  specHasStreamingOps,
   snakeCase,
+  type ResourceDef,
 } from "@archastro/sdk-generator";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -48,6 +53,9 @@ const SPEC_PATH = resolve(pkgRoot, "__tests__/fixtures/channel-harness-spec.json
 const OUT_ROOT = resolve(pkgRoot, "__tests__/generated-sdk");
 const CHANNELS_DIR = join(OUT_ROOT, "src/channels");
 const PHX_DIR = join(OUT_ROOT, "src/phx_channel");
+const RESOURCES_DIR = join(OUT_ROOT, "src/resources");
+const RUNTIME_DIR = join(OUT_ROOT, "src/runtime");
+const SAMPLE_HTTP_CLIENT = resolve(pkgRoot, "__tests__/setup/sample-http-client.ts");
 const GENERATED_TESTS_DIR = resolve(pkgRoot, "__tests__/__generated__");
 const DIST_BIN = resolve(pkgRoot, "dist/bin.js");
 const SRC_DIR = resolve(pkgRoot, "src");
@@ -110,6 +118,39 @@ function regenerateSampleSdk(): void {
 
   writeFileSync(join(PHX_DIR, "channel.ts"), CHANNEL_STUB, "utf-8");
   writeFileSync(join(PHX_DIR, "socket.ts"), SOCKET_STUB, "utf-8");
+
+  // SSE streaming routes: emit the resource classes, copy in the runtime
+  // HttpClient (the streamSSE primitive), and generate the stream contract
+  // test that drives the generated stream() against the harness over HTTP.
+  if (specHasStreamingOps(ast)) {
+    mkdirSync(RESOURCES_DIR, { recursive: true });
+    mkdirSync(RUNTIME_DIR, { recursive: true });
+    copyFileSync(SAMPLE_HTTP_CLIENT, join(RUNTIME_DIR, "http-client.ts"));
+
+    for (const top of ast.resources) {
+      if (!subtreeHasStreaming(top)) continue;
+      writeFileSync(
+        join(RESOURCES_DIR, `${snakeCase(top.name)}.ts`),
+        emitResourceFile(top, "/api"),
+        "utf-8"
+      );
+    }
+
+    writeFileSync(
+      join(GENERATED_TESTS_DIR, "stream.contract.test.ts"),
+      emitStreamContractTestFile(
+        ast,
+        "../generated-sdk/src/resources",
+        "../generated-sdk/src/runtime/http-client.js"
+      ),
+      "utf-8"
+    );
+  }
+}
+
+function subtreeHasStreaming(resource: ResourceDef): boolean {
+  if (resource.operations.some((op) => op.streaming)) return true;
+  return resource.children.some(subtreeHasStreaming);
 }
 
 // ─── harness subprocess ────────────────────────────────────────

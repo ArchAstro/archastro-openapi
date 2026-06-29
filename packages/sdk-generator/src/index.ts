@@ -40,10 +40,15 @@ export { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.
 export { generatePythonSamples } from "./backends/python/sample-emitter.js";
 export type * from "./backends/samples.js";
 export { emitChannelFile } from "./backends/typescript/channel-emitter.js";
+export { emitResourceFile } from "./backends/typescript/resource-emitter.js";
 export {
   channelTestFileStem,
   emitChannelContractTestFile,
 } from "./backends/contract-tests/channel-emitter.js";
+export {
+  emitStreamContractTestFile,
+  specHasStreamingOps,
+} from "./backends/contract-tests/stream-emitter.js";
 export { snakeCase, camelCase, pascalCase } from "./utils/naming.js";
 
 export function generateSdkSamples(
