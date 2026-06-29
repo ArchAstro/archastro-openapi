@@ -59,11 +59,15 @@ export {
   loadSpec,
   topicPatternToRegex,
   matchTopic,
+  pathPatternToRegex,
+  matchStreamRoute,
   type LoadedSpec,
   type ChannelContract,
   type JoinContract,
   type MessageContract,
   type PushContract,
+  type StreamContract,
+  type StreamEventContract,
   type JsonSchema,
 } from "./spec/loader.js";
 
@@ -107,3 +111,13 @@ export {
   type ScenarioAction,
   type ScenarioRequest,
 } from "./service/scenario.js";
+
+export { handleSseRequest } from "./server/sse-server.js";
+
+export { type StreamAction } from "./scenarios/stream-dsl.js";
+
+export {
+  validateStreamScenarioRequest,
+  StreamScenarioRequestError,
+  type StreamScenarioRequest,
+} from "./service/stream-scenario.js";

@@ -28,6 +28,7 @@ import {
   type ScenarioBuilder,
   type ScenarioDefinition,
 } from "../scenarios/dsl.js";
+import type { StreamAction } from "../scenarios/stream-dsl.js";
 
 export interface ContractServerOptions {
   /**
@@ -85,6 +86,7 @@ export class ContractServer {
   private readonly strict: boolean;
   private readonly validateOutbound: boolean;
   private readonly scenarios = new Map<string, ScenarioDefinition>();
+  private readonly streamScenarios = new Map<string, StreamAction[]>();
   private readonly transports = new Set<TransportSession>();
   private readonly _handlerErrors: Error[] = [];
   private readonly _observations: Observation[] = [];
@@ -132,6 +134,26 @@ export class ContractServer {
   }
 
   /**
+   * Register a scenario for a streaming route (`"POST /api/v1/.../stream"`,
+   * or `"*"` to match any). The action list is replayed when a request hits
+   * the route. One registration per route, per test.
+   */
+  streamScenario(routeKey: string, actions: StreamAction[]): this {
+    if (this.streamScenarios.has(routeKey)) {
+      throw new Error(
+        `ContractServer.streamScenario(${JSON.stringify(routeKey)}) is already registered — call once per route, per test.`
+      );
+    }
+    this.streamScenarios.set(routeKey, actions);
+    return this;
+  }
+
+  /** Resolve the stream scenario for a route, falling back to a `"*"` wildcard. */
+  lookupStreamScenario(routeKey: string): StreamAction[] | null {
+    return this.streamScenarios.get(routeKey) ?? this.streamScenarios.get("*") ?? null;
+  }
+
+  /**
    * Clear every scenario, observation, and recorded handler error. Designed
    * for between-test cleanup when the same server is reused across cases
    * (e.g. via the harness service's HTTP control endpoint).
@@ -141,6 +163,7 @@ export class ContractServer {
    */
   reset(): void {
     this.scenarios.clear();
+    this.streamScenarios.clear();
     this._observations.length = 0;
     this._handlerErrors.length = 0;
   }

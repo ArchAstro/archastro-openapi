@@ -30,6 +30,11 @@ import {
   validateScenarioRequest,
   ScenarioRequestError,
 } from "./scenario.js";
+import {
+  validateStreamScenarioRequest,
+  StreamScenarioRequestError,
+} from "./stream-scenario.js";
+import { handleSseRequest } from "../server/sse-server.js";
 
 export interface HarnessServiceOptions {
   /** Where to read the OpenAPI spec from. Path or in-memory object. */
@@ -52,6 +57,12 @@ export interface HarnessServiceHandle {
   wsUrl: string;
   /** Base URL for the HTTP control API, e.g. `http://127.0.0.1:51235`. */
   controlUrl: string;
+  /**
+   * Base URL an SDK should target for SSE streaming routes. Served by the same
+   * HTTP listener as the control API (streaming paths like `/api/v1/...` never
+   * collide with control paths like `/scenarios`), so it equals `controlUrl`.
+   */
+  sseUrl: string;
   /** Underlying ContractServer (for in-process callers only). */
   server: ContractServer;
   /** Stop the WS + HTTP servers and drop every active connection. */
@@ -72,6 +83,7 @@ export async function startHarnessService(
   return {
     wsUrl: wsHandle.url,
     controlUrl: controlHandle.url,
+    sseUrl: controlHandle.url,
     server,
     async stop() {
       await controlHandle.close();
@@ -167,6 +179,31 @@ async function handleRequest(
     return;
   }
 
+  if (req.method === "POST" && path === "/stream-scenarios") {
+    const body = await readJsonBody(req);
+    let parsed;
+    try {
+      parsed = validateStreamScenarioRequest(body);
+    } catch (err) {
+      if (err instanceof StreamScenarioRequestError) {
+        sendJson(res, 400, { error: "invalid_scenario", message: err.message });
+        return;
+      }
+      throw err;
+    }
+    try {
+      server.streamScenario(parsed.route, parsed.actions);
+    } catch (err) {
+      sendJson(res, 409, {
+        error: "scenario_conflict",
+        message: err instanceof Error ? err.message : String(err),
+      });
+      return;
+    }
+    sendJson(res, 201, { ok: true });
+    return;
+  }
+
   if (req.method === "POST" && path === "/reset") {
     server.reset();
     sendJson(res, 200, { ok: true });
@@ -192,6 +229,11 @@ async function handleRequest(
     );
     return;
   }
+
+  // Not a control path — try serving it as an SSE streaming route the spec
+  // declares. The SDK under test points its base URL here and POSTs the
+  // streaming path directly.
+  if (await handleSseRequest(server, req, res)) return;
 
   sendJson(res, 404, { error: "not_found", path });
 }

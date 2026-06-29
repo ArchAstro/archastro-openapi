@@ -6,7 +6,10 @@ import {
   type ChannelJoinDef,
   type ChannelMessageDef,
   type ChannelPushDef,
+  type OperationDef,
+  type ResourceDef,
   type SdkSpec,
+  type TypeRef,
 } from "@archastro/sdk-generator";
 
 export type JsonSchema = Record<string, unknown>;
@@ -41,11 +44,45 @@ export interface ChannelContract {
   pushes: Map<string, PushContract>;
 }
 
+/** One named SSE event a streaming route can emit. */
+export interface StreamEventContract {
+  event: string;
+  /** Raw JSON schema for the event payload (for Ajv validation). */
+  dataSchema: JsonSchema | null;
+  /** AST type ref for the event payload (for fixture synthesis). */
+  dataType: TypeRef;
+}
+
+/**
+ * A streaming HTTP route declared via `x-sdk-streaming` (the SSE analogue of a
+ * channel): a method + path, a request-body schema, and the set of named SSE
+ * events it may emit.
+ */
+export interface StreamContract {
+  /** `"POST /api/v1/ai/chat/completions/stream"` — method + path. */
+  routeKey: string;
+  method: string;
+  /** Full path with `{param}` placeholders, e.g. `/apps/{app}/...`. */
+  path: string;
+  pathRegex: RegExp;
+  vars: string[];
+  /** Request body schema (application/json), or null when the op has none. */
+  requestSchema: JsonSchema | null;
+  events: Map<string, StreamEventContract>;
+}
+
 export interface LoadedSpec {
   ast: SdkSpec;
   contracts: Map<string, ChannelContract>;
+  /** Streaming (SSE) routes, keyed by `"METHOD /path"`. */
+  streams: Map<string, StreamContract>;
   components: Record<string, JsonSchema>;
   rawSpec: Record<string, unknown>;
+}
+
+interface RawStreamingHint {
+  type?: string;
+  events?: Record<string, JsonSchema>;
 }
 
 interface RawXChannel {
@@ -88,7 +125,121 @@ export function loadSpec(source: string | Record<string, unknown>): LoadedSpec {
     contracts.set(channelDef.name, buildChannelContract(channelDef, raw));
   }
 
-  return { ast, contracts, components, rawSpec };
+  const streams = buildStreamContracts(ast, rawSpec);
+
+  return { ast, contracts, streams, components, rawSpec };
+}
+
+/**
+ * Build a `StreamContract` for every operation the AST marked as streaming.
+ * Event payload schemas + the request-body schema are read from the raw spec
+ * (`x-sdk-streaming.events` and `requestBody`) so they keep their `$ref`s for
+ * Ajv; the matching `dataType` for fixtures comes from the AST operation.
+ */
+function buildStreamContracts(
+  ast: SdkSpec,
+  rawSpec: Record<string, unknown>
+): Map<string, StreamContract> {
+  const streams = new Map<string, StreamContract>();
+  const rawPaths =
+    (rawSpec.paths as Record<string, Record<string, RawOperation>> | undefined) ?? {};
+
+  for (const op of collectStreamingOperations(ast.resources)) {
+    if (!op.streaming) continue;
+    const method = op.method.toUpperCase();
+    const routeKey = `${method} ${op.path}`;
+    const rawOp = rawPaths[op.path]?.[op.method.toLowerCase()];
+    const hint = (rawOp?.["x-sdk-streaming"] as RawStreamingHint | undefined) ?? {};
+
+    const events = new Map<string, StreamEventContract>();
+    for (const ev of op.streaming.events) {
+      events.set(ev.event, {
+        event: ev.event,
+        dataSchema: hint.events?.[ev.event] ?? null,
+        dataType: ev.dataType,
+      });
+    }
+
+    const { regex, vars } = pathPatternToRegex(op.path);
+    streams.set(routeKey, {
+      routeKey,
+      method,
+      path: op.path,
+      pathRegex: regex,
+      vars,
+      requestSchema: extractRequestSchema(rawOp),
+      events,
+    });
+  }
+
+  return streams;
+}
+
+interface RawOperation {
+  "x-sdk-streaming"?: unknown;
+  requestBody?: {
+    content?: Record<string, { schema?: JsonSchema }>;
+  };
+}
+
+function extractRequestSchema(rawOp: RawOperation | undefined): JsonSchema | null {
+  return rawOp?.requestBody?.content?.["application/json"]?.schema ?? null;
+}
+
+function collectStreamingOperations(resources: ResourceDef[]): OperationDef[] {
+  const out: OperationDef[] = [];
+  const walk = (rs: ResourceDef[]): void => {
+    for (const r of rs) {
+      for (const op of r.operations) if (op.streaming) out.push(op);
+      walk(r.children);
+    }
+  };
+  walk(resources);
+  return out;
+}
+
+/**
+ * Convert an HTTP path with `{param}` placeholders into a regex plus the
+ * ordered list of captured variable names.
+ *
+ * `/api/v1/apps/{app}/agents/{agent}/stream` →
+ *   /^\/api\/v1\/apps\/([^/]+)\/agents\/([^/]+)\/stream$/ with ["app", "agent"]
+ */
+export function pathPatternToRegex(pattern: string): {
+  regex: RegExp;
+  vars: string[];
+} {
+  const vars: string[] = [];
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+  const body = escaped.replace(/\\\{([a-zA-Z_][a-zA-Z0-9_]*)\\\}/g, (_, v) => {
+    vars.push(v);
+    return "([^/]+)";
+  });
+  return { regex: new RegExp(`^${body}$`), vars };
+}
+
+/**
+ * Find the streaming route a `METHOD /path` request targets, returning the
+ * contract plus any captured path-variable bindings. Query strings must be
+ * stripped by the caller.
+ */
+export function matchStreamRoute(
+  streams: Map<string, StreamContract>,
+  method: string,
+  path: string
+): { contract: StreamContract; vars: Record<string, string> } | null {
+  const upper = method.toUpperCase();
+  for (const contract of streams.values()) {
+    if (contract.method !== upper) continue;
+    const m = path.match(contract.pathRegex);
+    if (!m) continue;
+    const vars: Record<string, string> = {};
+    contract.vars.forEach((name, i) => {
+      vars[name] = m[i + 1]!;
+    });
+    return { contract, vars };
+  }
+  return null;
 }
 
 function readSpecFile(path: string): Record<string, unknown> {
