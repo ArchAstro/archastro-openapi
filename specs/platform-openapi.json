@@ -23081,6 +23081,381 @@
         "description": "Streams a chat completion over Server-Sent Events. Emits `message_delta`,\n`message_complete`, `tool_call_*`, `tool_result`, and a terminal `done` (or\n`error`) event. Same request shape as the non-streaming completion endpoint;\nthe app must have the `llm_calls` entitlement.\n",
         "operationId": "post_api_v1_ai_chat_completions_stream",
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "context": {},
+                  "messages": [
+                    {
+                      "content": "How can I help you today?",
+                      "content_parts": [
+                        {}
+                      ],
+                      "resume_token": "string",
+                      "role": "user",
+                      "tool_calls": [
+                        {
+                          "arguments": {},
+                          "id": "string",
+                          "name": "Example Name",
+                          "thought_signature": "string"
+                        }
+                      ],
+                      "tool_results": [
+                        {
+                          "content": "string",
+                          "id": "string",
+                          "name": "Example Name"
+                        }
+                      ]
+                    }
+                  ],
+                  "opts": {
+                    "max_tokens": 1,
+                    "model": "string",
+                    "server_tools": [
+                      {}
+                    ],
+                    "temperature": 1.0,
+                    "tool_choice": "string",
+                    "tools": [
+                      {
+                        "function": {
+                          "description": "An example description.",
+                          "name": "Example Name",
+                          "parameters": {}
+                        },
+                        "type": "function"
+                      }
+                    ]
+                  }
+                },
+                "properties": {
+                  "context": {
+                    "description": "Key-value map used to resolve template variables in message content. Omit if messages contain no templates.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "messages": {
+                    "description": "Ordered list of conversation messages to send to the model.",
+                    "example": [
+                      {
+                        "content": "How can I help you today?",
+                        "content_parts": [
+                          {}
+                        ],
+                        "resume_token": "string",
+                        "role": "user",
+                        "tool_calls": [
+                          {
+                            "arguments": {},
+                            "id": "string",
+                            "name": "Example Name",
+                            "thought_signature": "string"
+                          }
+                        ],
+                        "tool_results": [
+                          {
+                            "content": "string",
+                            "id": "string",
+                            "name": "Example Name"
+                          }
+                        ]
+                      }
+                    ],
+                    "items": {
+                      "description": "A single message in an AI conversation, following the OpenAI-compatible chat format. Used in both request inputs and completion responses.",
+                      "example": {
+                        "content": "How can I help you today?",
+                        "content_parts": [
+                          {}
+                        ],
+                        "resume_token": "string",
+                        "role": "user",
+                        "tool_calls": [
+                          {
+                            "arguments": {},
+                            "id": "string",
+                            "name": "Example Name",
+                            "thought_signature": "string"
+                          }
+                        ],
+                        "tool_results": [
+                          {
+                            "content": "string",
+                            "id": "string",
+                            "name": "Example Name"
+                          }
+                        ]
+                      },
+                      "properties": {
+                        "content": {
+                          "description": "Plain-text content of the message. Present for `system`, `user`, and `assistant` messages. `null` when the message body is expressed through `content_parts` or `tool_calls`.",
+                          "example": "How can I help you today?",
+                          "type": "string"
+                        },
+                        "content_parts": {
+                          "description": "Multimodal content parts for the message, used when the body includes images or mixed media. Each part is a map with a `type` key (`\"text\"`, `\"image_url\"`, or `\"image_data\"`). `null` when `content` is set.",
+                          "example": [
+                            {}
+                          ],
+                          "items": {
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "resume_token": {
+                          "description": "Opaque token that can be passed on a subsequent request to resume this conversation from the current state. `null` when the provider does not support conversation resumption.",
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "role": {
+                          "description": "The speaker role for this message. One of `\"system\"`, `\"user\"`, `\"assistant\"`, or `\"tool\"`.",
+                          "example": "user",
+                          "type": "string"
+                        },
+                        "structured_output": {
+                          "description": "Parsed structured data returned by the model when a JSON schema or structured-output mode was requested. Shape varies by the schema supplied at call time. `null` when structured output was not requested."
+                        },
+                        "tool_calls": {
+                          "description": "Tool calls requested by the model in an `assistant` message. Present only on assistant messages that invoke one or more tools. `null` on all other message roles.",
+                          "example": [
+                            {
+                              "arguments": {},
+                              "id": "string",
+                              "name": "Example Name",
+                              "thought_signature": "string"
+                            }
+                          ],
+                          "items": {
+                            "description": "A tool (function) call emitted by the assistant within an AI message. Mirrors the OpenAI tool-call object format.",
+                            "example": {
+                              "arguments": {},
+                              "id": "string",
+                              "name": "Example Name",
+                              "thought_signature": "string"
+                            },
+                            "properties": {
+                              "arguments": {
+                                "description": "Arguments the model wants to pass to the tool, as a key-value map. Deserialize and validate these against the tool's input schema before executing.",
+                                "example": {},
+                                "type": "object"
+                              },
+                              "id": {
+                                "description": "Unique identifier for this tool call, assigned by the model. Use this value as `id` when submitting the corresponding tool result.",
+                                "example": "string",
+                                "type": "string"
+                              },
+                              "name": {
+                                "description": "Name of the tool or function the model wants to invoke, e.g. `\"web_search\"` or `\"run_code\"`.",
+                                "example": "Example Name",
+                                "type": "string"
+                              },
+                              "thought_signature": {
+                                "description": "Opaque signature representing the model's internal reasoning that led to this tool call. `null` when the provider does not expose chain-of-thought data.",
+                                "example": "string",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "arguments"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "tool_results": {
+                          "description": "Tool execution results provided in a `tool` message. Each entry corresponds to a prior tool call by its `id`. `null` on all other message roles.",
+                          "example": [
+                            {
+                              "content": "string",
+                              "id": "string",
+                              "name": "Example Name"
+                            }
+                          ],
+                          "items": {
+                            "description": "The result of executing a tool call, submitted back to the model as a tool-role message. Mirrors the OpenAI tool-result object format.",
+                            "example": {
+                              "content": "string",
+                              "id": "string",
+                              "name": "Example Name"
+                            },
+                            "properties": {
+                              "content": {
+                                "description": "Plain-text output produced by the tool execution. `null` when the result is expressed entirely through `resolution`.",
+                                "example": "string",
+                                "type": "string"
+                              },
+                              "id": {
+                                "description": "ID of the tool call this result satisfies. Must match the `id` from the corresponding `AIToolCall`.",
+                                "example": "string",
+                                "type": "string"
+                              },
+                              "name": {
+                                "description": "Name of the tool or function that was executed, e.g. `\"web_search\"`. Must match the `name` from the corresponding `AIToolCall`.",
+                                "example": "Example Name",
+                                "type": "string"
+                              },
+                              "resolution": {
+                                "description": "Structured result data from the tool execution. Shape varies by tool. `null` when the result is expressed as plain text in `content`."
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "role"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "opts": {
+                    "description": "Model and sampling configuration for this request.",
+                    "example": {
+                      "max_tokens": 1,
+                      "model": "string",
+                      "server_tools": [
+                        {}
+                      ],
+                      "temperature": 1.0,
+                      "tool_choice": "string",
+                      "tools": [
+                        {
+                          "function": {
+                            "description": "An example description.",
+                            "name": "Example Name",
+                            "parameters": {}
+                          },
+                          "type": "function"
+                        }
+                      ]
+                    },
+                    "properties": {
+                      "max_tokens": {
+                        "description": "Maximum number of tokens the model may generate. Omit for the model default.",
+                        "example": 1,
+                        "type": "integer"
+                      },
+                      "model": {
+                        "description": "Model identifier, e.g. `\"gpt-4o\"` or `\"claude-3-7-sonnet-latest\"`.",
+                        "example": "string",
+                        "type": "string"
+                      },
+                      "server_tools": {
+                        "description": "Server-managed tool declarations executed before the response. Each entry must include a `type` key; currently only `\"search\"` is supported.",
+                        "example": [
+                          {}
+                        ],
+                        "items": {
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "temperature": {
+                        "description": "Sampling temperature between `0.0` and `2.0`. Higher values produce more random output. Omit for the model default.",
+                        "example": 1.0,
+                        "type": "number"
+                      },
+                      "tool_choice": {
+                        "description": "Controls tool selection. One of `\"auto\"`, `\"required\"`, or `\"none\"`. Omit to let the model decide.",
+                        "example": "string",
+                        "type": "string"
+                      },
+                      "tools": {
+                        "description": "OpenAI-compatible tool definitions available to the model. Omit when not using function calling.",
+                        "example": [
+                          {
+                            "function": {
+                              "description": "An example description.",
+                              "name": "Example Name",
+                              "parameters": {}
+                            },
+                            "type": "function"
+                          }
+                        ],
+                        "items": {
+                          "description": "An AI tool definition passed to a model, following the OpenAI tool-calling schema.",
+                          "example": {
+                            "function": {
+                              "description": "An example description.",
+                              "name": "Example Name",
+                              "parameters": {}
+                            },
+                            "type": "function"
+                          },
+                          "properties": {
+                            "function": {
+                              "description": "Callable function this tool exposes, including its name, description, and parameter schema.",
+                              "example": {
+                                "description": "An example description.",
+                                "name": "Example Name",
+                                "parameters": {}
+                              },
+                              "properties": {
+                                "description": {
+                                  "description": "Human-readable description of what the function does. The model uses this to decide when to call the function. `null` if not provided.",
+                                  "example": "An example description.",
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "description": "Unique name of the function that the model can invoke, e.g. `\"get_weather\"`.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                },
+                                "parameters": {
+                                  "description": "JSON Schema object describing the function's accepted parameters. Must be a valid JSON Schema of type `\"object\"`.",
+                                  "example": {},
+                                  "type": "object"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "parameters"
+                              ],
+                              "type": "object"
+                            },
+                            "type": {
+                              "description": "The tool type. Currently always `\"function\"`.",
+                              "example": "function",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "function"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "model"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "messages",
+                  "opts"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
