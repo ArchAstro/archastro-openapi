@@ -48,6 +48,14 @@ export interface ChannelValidator {
     event: string,
     payload: unknown
   ): ValidationResult;
+  /** Validate a client → server SSE request body for a streaming route. */
+  validateStreamRequest(routeKey: string, payload: unknown): ValidationResult;
+  /** Validate a server → client SSE event payload for a streaming route. */
+  validateStreamEvent(
+    routeKey: string,
+    event: string,
+    payload: unknown
+  ): ValidationResult;
 }
 
 interface CompiledChannel {
@@ -92,6 +100,18 @@ export function buildValidator(loaded: LoadedSpec): ChannelValidator {
     compiled.set(name, compileChannel(ajv, contract));
   }
 
+  const compiledStreams = new Map<string, CompiledStream>();
+  for (const [routeKey, contract] of loaded.streams) {
+    const events = new Map<string, ValidateFunction | null>();
+    for (const [event, ev] of contract.events) {
+      events.set(event, compileIfPresent(ajv, ev.dataSchema));
+    }
+    compiledStreams.set(routeKey, {
+      request: compileIfPresent(ajv, contract.requestSchema),
+      events,
+    });
+  }
+
   return {
     validateJoinParams(channel, joinIndex, payload) {
       const fn = compiled.get(channel)?.joins[joinIndex]?.params;
@@ -113,7 +133,18 @@ export function buildValidator(loaded: LoadedSpec): ChannelValidator {
       const fn = compiled.get(channel)?.pushes.get(event)?.payload;
       return runValidator(fn, payload);
     },
+    validateStreamRequest(routeKey, payload) {
+      return runValidator(compiledStreams.get(routeKey)?.request, payload);
+    },
+    validateStreamEvent(routeKey, event, payload) {
+      return runValidator(compiledStreams.get(routeKey)?.events.get(event), payload);
+    },
   };
+}
+
+interface CompiledStream {
+  request: ValidateFunction | null;
+  events: Map<string, ValidateFunction | null>;
 }
 
 function compileChannel(
