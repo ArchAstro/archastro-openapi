@@ -1,0 +1,125 @@
+import { describe, it, expect } from "vitest";
+import { parseOpenApiSpec } from "../../src/frontend/index.js";
+import { emitResourceFile } from "../../src/backends/typescript/resource-emitter.js";
+import { emitPythonResourceFile } from "../../src/backends/python/resource-emitter.js";
+
+// A spec with a single SSE streaming operation (`x-sdk-streaming`), modeled on
+// POST /ai/chat/completions/stream: a typed request body plus a discriminated
+// set of named SSE event payloads. Exercises the whole pipeline — the operation
+// parser reads the hint, the resource inferrer attaches `streaming`, and the
+// backends emit a stream method rather than a plain request.
+const streamSpec = {
+  openapi: "3.0.0",
+  info: { title: "Stream API", version: "1.0.0" },
+  paths: {
+    "/api/v1/ai/chat/completions/stream": {
+      post: {
+        operationId: "post_api_v1_ai_chat_completions_stream",
+        summary: "Stream a chat completion",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["messages"],
+                properties: {
+                  messages: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      required: ["role"],
+                      properties: {
+                        role: { type: "string" },
+                        content: { type: "string" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "x-sdk-streaming": {
+          type: "sse",
+          events: {
+            message_delta: { $ref: "#/components/schemas/StreamMessageDelta" },
+            done: { $ref: "#/components/schemas/StreamDone" },
+          },
+        },
+        responses: { "200": { description: "Server-Sent Events stream" } },
+      },
+    },
+  },
+  components: {
+    schemas: {
+      StreamMessageDelta: {
+        type: "object",
+        properties: { delta: { type: "string" } },
+      },
+      StreamDone: {
+        type: "object",
+        properties: { finish_reason: { type: "string" } },
+      },
+    },
+  },
+};
+
+const parseOpts = {
+  name: "archastro-platform",
+  version: "0.1.0",
+  baseUrl: "https://platform.archastro.ai",
+  apiBase: "/api",
+  defaultVersion: "v1",
+};
+
+const ast = parseOpenApiSpec(streamSpec, parseOpts);
+// Emit every resource and join — robust to how the nested ai/chat/completions
+// tree is named; the `stream` method lands somewhere in the combined output.
+const tsOutput = ast.resources
+  .map((r) => emitResourceFile(r, "/api/v1"))
+  .join("\n\n");
+const pyOutput = ast.resources
+  .map((r) => emitPythonResourceFile(r, "/api/v1"))
+  .join("\n\n");
+
+describe("TypeScript SSE streaming emission", () => {
+  it("emits an async generator method (not a Promise-returning request)", () => {
+    expect(tsOutput).toMatch(/async \*stream\(/);
+  });
+
+  it("passes the typed request body through to streamSSE", () => {
+    expect(tsOutput).toMatch(/async \*stream\(input:/);
+    expect(tsOutput).toContain("this.http.streamSSE(");
+    expect(tsOutput).toContain("body: input");
+  });
+
+  it("types the yielded events as a discriminated union of {event, data}", () => {
+    expect(tsOutput).toContain("AsyncIterable<");
+    expect(tsOutput).toContain('{ event: "done"; data: StreamDone }');
+    expect(tsOutput).toContain(
+      '{ event: "message_delta"; data: StreamMessageDelta }',
+    );
+  });
+});
+
+describe("Python SSE streaming emission", () => {
+  it("emits both async and sync generator methods with a typed input", () => {
+    expect(pyOutput).toContain("async def stream(self, input:");
+    expect(pyOutput).toContain("-> AsyncIterator[");
+    expect(pyOutput).toContain("-> Iterator[");
+  });
+
+  it("drives the stream through stream_sse / stream_sse_sync", () => {
+    expect(pyOutput).toContain("stream_sse(");
+    expect(pyOutput).toContain("stream_sse_sync(");
+  });
+
+  it("types the events as a TypedDict union keyed by a Literal tag", () => {
+    expect(pyOutput).toContain('event: Literal["done"]');
+    expect(pyOutput).toContain('event: Literal["message_delta"]');
+    expect(pyOutput).toContain("data: StreamDone");
+    expect(pyOutput).toContain("data: StreamMessageDelta");
+    expect(pyOutput).toContain("Union[");
+  });
+});
