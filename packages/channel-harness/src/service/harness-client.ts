@@ -22,6 +22,7 @@ import {
 } from "../server/frame.js";
 import type { Observation } from "../server/contract-server.js";
 import type { ScenarioRequest } from "./scenario.js";
+import type { StreamScenarioRequest } from "./stream-scenario.js";
 
 export interface HarnessServiceClientOptions {
   /** `ws://host:port/socket/websocket` — the SDK traffic endpoint. */
@@ -65,6 +66,20 @@ export class HarnessServiceClient {
     if (!res.ok) {
       throw new Error(
         `registerScenario(${scenario.topic}) failed: ${res.status} ${await res.text()}`
+      );
+    }
+  }
+
+  /** Register a scenario for an SSE streaming route (`"METHOD /path"`). */
+  async registerStreamScenario(scenario: StreamScenarioRequest): Promise<void> {
+    const res = await fetch(`${this.controlUrl}/stream-scenarios`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(scenario),
+    });
+    if (!res.ok) {
+      throw new Error(
+        `registerStreamScenario(${scenario.route}) failed: ${res.status} ${await res.text()}`
       );
     }
   }

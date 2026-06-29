@@ -5,7 +5,44 @@
     "version": "0.1.0",
     "description": "Fake real-time collaborative-document API used to exercise the channel harness end-to-end."
   },
-  "paths": {},
+  "paths": {
+    "/api/v1/echo/stream": {
+      "post": {
+        "operationId": "post_api_v1_echo_stream",
+        "summary": "Echo a prompt back as a stream of SSE chunks.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": { "prompt": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "x-sdk-streaming": {
+          "type": "sse",
+          "events": {
+            "chunk": {
+              "type": "object",
+              "required": ["text"],
+              "properties": { "text": { "type": "string" } }
+            },
+            "done": {
+              "type": "object",
+              "required": ["ok"],
+              "properties": { "ok": { "type": "boolean" } }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Server-Sent Events stream of echo chunks." }
+        }
+      }
+    }
+  },
   "components": {
     "schemas": {
       "User": {
