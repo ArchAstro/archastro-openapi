@@ -241,8 +241,10 @@ function emitMessageTests(
       if (msgRequired.length > 0) {
         for (const p of msgRequired) {
           const py = generatePyValue(p);
+          // `is` for bool literals (ruff E712 forbids `== True`/`== False`).
+          const eq = py === "True" || py === "False" ? "is" : "==";
           cb.line(
-            `assert observed[0]["params"][${pyString(p.name)}] == ${py}`
+            `assert observed[0]["params"][${pyString(p.name)}] ${eq} ${py}`
           );
         }
       } else {
