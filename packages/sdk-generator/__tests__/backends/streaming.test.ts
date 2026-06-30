@@ -136,7 +136,9 @@ describe("Python SSE streaming emission", () => {
     expect(pyOutput).toContain('event: Literal["message_delta"]');
     expect(pyOutput).toContain("data: StreamDone");
     expect(pyOutput).toContain("data: StreamMessageDelta");
-    expect(pyOutput).toContain("Union[");
+    // The event union is `A | B` (ruff UP007), not `Union[A, B]`.
+    expect(pyOutput).not.toContain("Union[");
+    expect(pyOutput).toMatch(/CompletionStreamEvent\w* = \w+ \| \w+/);
   });
 });
 

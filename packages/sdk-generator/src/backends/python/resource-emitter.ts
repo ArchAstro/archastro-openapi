@@ -178,7 +178,8 @@ export function emitPythonResourceFile(
     const rhs =
       group.members.length === 1
         ? group.members[0]!.className
-        : `Union[${group.members.map((m) => m.className).join(", ")}]`;
+        // `A | B` rather than `Union[A, B]` (ruff UP007).
+        : group.members.map((m) => m.className).join(" | ");
     cb.line(`${group.unionName} = ${rhs}`);
     cb.line();
     cb.line();
@@ -628,9 +629,9 @@ function emitSyncStreamingOperation(
       if (op.body) parts.push(`body=${pythonNames.body}`);
       if (op.queryParams.length > 0) parts.push("query=query");
 
-      cb.pyBlock(`for event in self._http.stream_sse_sync(${parts.join(", ")})`, () => {
-        cb.line("yield event");
-      });
+      // `yield from` (not a for/yield loop) — ruff UP028, and equivalent for a
+      // sync generator delegating to the iterator.
+      cb.line(`yield from self._http.stream_sse_sync(${parts.join(", ")})`);
     }
   );
 }
