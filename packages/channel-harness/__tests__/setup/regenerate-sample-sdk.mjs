@@ -1,18 +1,24 @@
 /**
- * Vitest globalSetup — regenerates `__tests__/generated-sdk/` from the
- * fixture spec and boots a channel-harness service subprocess that the
- * generated contract tests connect to.
+ * Regenerates `__tests__/generated-sdk/` (channels + SSE resources + runtime)
+ * and the generated contract tests under `__tests__/__generated__/` from the
+ * fixture spec, then (as vitest globalSetup) boots a channel-harness service
+ * subprocess the generated tests connect to.
  *
- * Why a subprocess: the channel-harness emitter's output is supposed to
- * exercise the real wire protocol end-to-end — over WebSocket for SDK
- * traffic and HTTP for scenario control — so the same generated tests work
- * from any language. Running the service in-process would be a shortcut
- * that masks problems with serialization, lifecycle, and connection
- * handling. We build `dist/` on demand so the CLI always reflects the
- * current source.
+ * Why a subprocess: the emitter's output should exercise the real wire
+ * protocol end-to-end — WebSocket for SDK traffic, HTTP for scenario control —
+ * so the same generated tests work from any language. We build `dist/` on
+ * demand so the CLI always reflects current source.
  *
- * The generated tree + __generated__ tests are `.gitignore`d — the output
- * of this function is the only source of truth at test time.
+ * This file is plain ESM (not TS) so it doubles as the package `pretest` step:
+ * `node regenerate-sample-sdk.mjs` regenerates the files WITHOUT booting the
+ * subprocess. That matters because vitest globs its test files at startup —
+ * *before* globalSetup runs — so on a cold checkout the generated contract
+ * tests wouldn't be collected unless they already exist on disk. Running the
+ * regeneration as a pretest puts them there first; globalSetup then refreshes
+ * them and boots the service.
+ *
+ * The generated tree + __generated__ tests are `.gitignore`d — this script is
+ * the only source of truth at test time.
  */
 
 import {
@@ -27,11 +33,7 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-  type ChildProcessWithoutNullStreams,
-  spawn,
-  spawnSync,
-} from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import {
   parseOpenApiSpec,
   emitChannelFile,
@@ -41,7 +43,6 @@ import {
   emitStreamContractTestFile,
   specHasStreamingOps,
   snakeCase,
-  type ResourceDef,
 } from "@archastro/sdk-generator";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -72,40 +73,45 @@ const SOCKET_STUB = `// Auto-generated test stub. Re-exports the harness adapter
 export type { Socket } from "@archastro/channel-harness";
 `;
 
-let serviceProc: ChildProcessWithoutNullStreams | null = null;
+let serviceProc = null;
 
-export async function setup(): Promise<void> {
-  ensureSdkGeneratorBuilt();
-  regenerateSampleSdk();
+// ─── vitest globalSetup interface ───────────────────────────────
+
+export async function setup() {
+  regenerate();
   await startHarnessSubprocess();
 }
 
-export async function teardown(): Promise<void> {
+export async function teardown() {
   await stopHarnessSubprocess();
   // Leave the regenerated tree in place — useful for editor navigation after
-  // a test run, and the next `vitest run` wipes & re-emits from scratch.
+  // a test run, and the next run wipes & re-emits from scratch.
 }
 
 // ─── sample SDK + generated tests ───────────────────────────────
 
-function regenerateSampleSdk(): void {
+/**
+ * Build the generator (if stale) and (re)emit the sample SDK + contract tests.
+ * Safe to run standalone (pretest) or from globalSetup.
+ */
+export function regenerate() {
+  ensureSdkGeneratorBuilt();
+  regenerateSampleSdk();
+}
+
+function regenerateSampleSdk() {
   const spec = JSON.parse(readFileSync(SPEC_PATH, "utf-8"));
   const ast = parseOpenApiSpec(spec);
 
   if (existsSync(OUT_ROOT)) rmSync(OUT_ROOT, { recursive: true });
-  if (existsSync(GENERATED_TESTS_DIR))
-    rmSync(GENERATED_TESTS_DIR, { recursive: true });
+  if (existsSync(GENERATED_TESTS_DIR)) rmSync(GENERATED_TESTS_DIR, { recursive: true });
   mkdirSync(CHANNELS_DIR, { recursive: true });
   mkdirSync(PHX_DIR, { recursive: true });
   mkdirSync(GENERATED_TESTS_DIR, { recursive: true });
 
   for (const channel of ast.channels) {
     const fileName = snakeCase(channel.name);
-    writeFileSync(
-      join(CHANNELS_DIR, `${fileName}.ts`),
-      emitChannelFile(channel),
-      "utf-8"
-    );
+    writeFileSync(join(CHANNELS_DIR, `${fileName}.ts`), emitChannelFile(channel), "utf-8");
 
     const testStem = channelTestFileStem(channel);
     const channelImportPath = `../generated-sdk/src/channels/${fileName}.js`;
@@ -148,14 +154,14 @@ function regenerateSampleSdk(): void {
   }
 }
 
-function subtreeHasStreaming(resource: ResourceDef): boolean {
+function subtreeHasStreaming(resource) {
   if (resource.operations.some((op) => op.streaming)) return true;
   return resource.children.some(subtreeHasStreaming);
 }
 
 // ─── harness subprocess ────────────────────────────────────────
 
-async function startHarnessSubprocess(): Promise<void> {
+async function startHarnessSubprocess() {
   ensureDistBuilt();
 
   serviceProc = spawn("node", [DIST_BIN, SPEC_PATH], {
@@ -163,7 +169,7 @@ async function startHarnessSubprocess(): Promise<void> {
     stdio: ["pipe", "pipe", "pipe"],
   });
 
-  serviceProc.stderr.on("data", (chunk: Buffer) => {
+  serviceProc.stderr.on("data", (chunk) => {
     process.stderr.write(`[harness-service] ${chunk.toString("utf-8")}`);
   });
 
@@ -172,12 +178,12 @@ async function startHarnessSubprocess(): Promise<void> {
   process.env.ARCHASTRO_HARNESS_CONTROL_URL = controlUrl;
 }
 
-async function stopHarnessSubprocess(): Promise<void> {
+async function stopHarnessSubprocess() {
   if (!serviceProc) return;
   const proc = serviceProc;
   serviceProc = null;
 
-  await new Promise<void>((resolve) => {
+  await new Promise((resolve) => {
     const onExit = () => resolve();
     proc.once("exit", onExit);
     proc.kill("SIGTERM");
@@ -193,38 +199,27 @@ async function stopHarnessSubprocess(): Promise<void> {
   });
 }
 
-function readFirstJsonLine(
-  proc: ChildProcessWithoutNullStreams
-): Promise<{ wsUrl: string; controlUrl: string }> {
+function readFirstJsonLine(proc) {
   return new Promise((resolve, reject) => {
     let buf = "";
-    const onData = (chunk: Buffer): void => {
+    const onData = (chunk) => {
       buf += chunk.toString("utf-8");
       const nl = buf.indexOf("\n");
       if (nl === -1) return;
       const line = buf.slice(0, nl);
       proc.stdout.off("data", onData);
       try {
-        const parsed = JSON.parse(line) as {
-          wsUrl: string;
-          controlUrl: string;
-        };
+        const parsed = JSON.parse(line);
         if (!parsed.wsUrl || !parsed.controlUrl) {
-          throw new Error(
-            `harness service did not report URLs: ${JSON.stringify(parsed)}`
-          );
+          throw new Error(`harness service did not report URLs: ${JSON.stringify(parsed)}`);
         }
         resolve(parsed);
       } catch (err) {
         reject(err);
       }
     };
-    const onExit = (code: number | null): void => {
-      reject(
-        new Error(
-          `harness service exited before emitting URLs (code=${code})`
-        )
-      );
+    const onExit = (code) => {
+      reject(new Error(`harness service exited before emitting URLs (code=${code})`));
     };
     proc.stdout.on("data", onData);
     proc.once("exit", onExit);
@@ -238,32 +233,31 @@ function readFirstJsonLine(
 
 // ─── dist/ bootstrap ───────────────────────────────────────────
 
-function ensureSdkGeneratorBuilt(): void {
+function ensureSdkGeneratorBuilt() {
   const sdkDist = resolve(sdkGeneratorRoot, "dist/index.js");
-  if (existsSync(sdkDist) && newestMtime(resolve(sdkGeneratorRoot, "dist")) >= newestMtime(resolve(sdkGeneratorRoot, "src"))) {
+  if (
+    existsSync(sdkDist) &&
+    newestMtime(resolve(sdkGeneratorRoot, "dist")) >= newestMtime(resolve(sdkGeneratorRoot, "src"))
+  ) {
     return;
   }
-  const result = spawnSync("npx", ["tsc"], {
-    cwd: sdkGeneratorRoot,
-    stdio: "inherit",
-  });
+  const result = spawnSync("npx", ["tsc"], { cwd: sdkGeneratorRoot, stdio: "inherit" });
   if (result.status !== 0) {
-    throw new Error(`@archastro/sdk-generator tsc build failed with status ${result.status ?? "null"}`);
+    throw new Error(
+      `@archastro/sdk-generator tsc build failed with status ${result.status ?? "null"}`
+    );
   }
   if (!existsSync(sdkDist)) {
     throw new Error(`tsc build did not produce ${sdkDist}`);
   }
 }
 
-function ensureDistBuilt(): void {
+function ensureDistBuilt() {
   if (existsSync(DIST_BIN) && distIsFresh()) return;
 
-  // `tsc` is the project's build script. Invoke it directly so we don't
-  // depend on whoever is running the tests having installed extra tools.
-  const result = spawnSync("npx", ["tsc"], {
-    cwd: pkgRoot,
-    stdio: "inherit",
-  });
+  // `tsc` is the project's build script. Invoke it directly so we don't depend
+  // on whoever is running the tests having installed extra tools.
+  const result = spawnSync("npx", ["tsc"], { cwd: pkgRoot, stdio: "inherit" });
   if (result.status !== 0) {
     throw new Error(`tsc build failed with status ${result.status ?? "null"}`);
   }
@@ -273,23 +267,18 @@ function ensureDistBuilt(): void {
 }
 
 /**
- * Cheap staleness check: compare newest mtime under dist/ against newest
- * mtime under src/. If src has been touched since the last build, rebuild.
- * Skips deep content hashing — a few seconds of tsc is acceptable when it's
- * actually needed.
+ * Cheap staleness check: compare newest mtime under dist/ against newest mtime
+ * under src/. If src has been touched since the last build, rebuild.
  */
-function distIsFresh(): boolean {
+function distIsFresh() {
   try {
-    const distDir = resolve(pkgRoot, "dist");
-    const distTime = newestMtime(distDir);
-    const srcTime = newestMtime(SRC_DIR);
-    return distTime >= srcTime;
+    return newestMtime(resolve(pkgRoot, "dist")) >= newestMtime(SRC_DIR);
   } catch {
     return false;
   }
 }
 
-function newestMtime(dir: string): number {
+function newestMtime(dir) {
   let newest = 0;
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
@@ -301,4 +290,12 @@ function newestMtime(dir: string): number {
     }
   }
   return newest;
+}
+
+// ─── pretest CLI entry ──────────────────────────────────────────
+// When invoked directly (`node regenerate-sample-sdk.mjs`), regenerate the
+// files only — no subprocess. globalSetup imports this module instead, so the
+// guard keeps the regeneration from running twice at import time.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  regenerate();
 }

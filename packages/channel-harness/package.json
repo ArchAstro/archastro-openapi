@@ -36,6 +36,7 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "tsc",
+    "pretest": "node ./__tests__/setup/regenerate-sample-sdk.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
