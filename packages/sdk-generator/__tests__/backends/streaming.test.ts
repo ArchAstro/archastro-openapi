@@ -102,6 +102,21 @@ describe("TypeScript SSE streaming emission", () => {
       '{ event: "message_delta"; data: StreamMessageDelta }',
     );
   });
+
+  it("imports the event payload schemas referenced in the union", () => {
+    // Regression: the stream() union references the event schema names, so they
+    // must be added to the resource file's imports — otherwise tsc fails with
+    // TS2304 "Cannot find name". (Only manifests with $ref'd, named events.)
+    const schemaImports = {
+      StreamMessageDelta: "../../types/sample.js",
+      StreamDone: "../../types/sample.js",
+    };
+    const out = ast.resources
+      .map((r) => emitResourceFile(r, "/api/v1", { schemaImports }))
+      .join("\n\n");
+    expect(out).toMatch(/import type \{[^}]*\bStreamMessageDelta\b[^}]*\} from/);
+    expect(out).toMatch(/import type \{[^}]*\bStreamDone\b[^}]*\} from/);
+  });
 });
 
 describe("Python SSE streaming emission", () => {
