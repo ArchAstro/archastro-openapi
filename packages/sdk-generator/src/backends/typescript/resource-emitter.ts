@@ -497,6 +497,11 @@ function collectSchemaRefs(resources: ResourceDef[]): Set<string> {
           refs.add(op.body.schema);
         }
       }
+      // SSE event payloads appear in the stream() return union, so their
+      // schema names must be imported into the resource file too.
+      if (op.streaming) {
+        for (const ev of op.streaming.events) collectTypeRefs(ev.dataType, refs);
+      }
     }
   }
   return refs;
