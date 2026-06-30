@@ -3,6 +3,7 @@ import type { SdkSpec } from "../../ast/types.js";
 import { CodeBuilder, generatedHeader } from "../../utils/codegen.js";
 import {
   buildMethodCalls,
+  buildStreamCalls,
   groupByTopLevelResource,
   type MethodCallInfo,
 } from "./method-chain-builder.js";
@@ -59,11 +60,26 @@ export function emitTypeScriptContractTests(
     files[filePath] = emitChannelContractTestFile(channel, channelImportPath);
   }
 
-  // Generate global setup — spawns Prism for REST traffic and (if the spec
-  // has channels) the harness-service subprocess for channel tests.
+  // Generate per-resource SSE stream contract tests. Like channels, these are
+  // harness-backed (the SDK's stream() runs against the channel-harness over
+  // real HTTP) and gated by the same opt-in env var.
+  let streamCallCount = 0;
+  for (const versionSet of spec.versions) {
+    const streamCalls = buildStreamCalls(spec, versionSet, "typescript");
+    streamCallCount += streamCalls.length;
+    const groups = groupByTopLevelResource(streamCalls);
+
+    for (const [resourceName, resourceCalls] of groups) {
+      const filePath = `${testDir}/streams/${resourceName}.contract.test.ts`;
+      files[filePath] = emitStreamTestFile(resourceName, resourceCalls);
+    }
+  }
+
+  // Generate global setup — spawns Prism for REST traffic and (if the spec has
+  // channels or SSE streams) the harness-service subprocess those tests drive.
   files[`${testDir}/global-setup.ts`] = emitGlobalSetup({
     includePrism: restCallCount > 0,
-    includeHarness: spec.channels.length > 0,
+    includeHarness: spec.channels.length > 0 || streamCallCount > 0,
   });
 
   // Generate vitest config
@@ -193,6 +209,115 @@ function emitErrorTests(cb: CodeBuilder, call: MethodCallInfo): void {
     cb.line("});");
     cb.line();
   }
+}
+
+// ─── SSE stream contract tests ───────────────────────────────────
+
+/**
+ * Emit a vitest file driving a resource's SSE stream() methods through the SDK
+ * runtime's streamSSE against the channel-harness: register an emit scenario
+ * over the control API, iterate the method, assert the yielded events; and a
+ * non-2xx scenario that must surface as ApiError.
+ */
+function emitStreamTestFile(
+  resourceName: string,
+  calls: MethodCallInfo[]
+): string {
+  const cb = new CodeBuilder();
+
+  cb.line(generatedHeader());
+  cb.line();
+  cb.line('import { describe, it, expect, beforeEach, afterEach } from "vitest";');
+  cb.line('import { HarnessServiceClient } from "@archastro/channel-harness";');
+  cb.line('import { PlatformClient } from "../../../src/index.js";');
+  cb.line('import { ApiError } from "../../../src/runtime/http-client.js";');
+  cb.line();
+  cb.line("let harness: HarnessServiceClient;");
+  cb.line("let client: PlatformClient;");
+  cb.line();
+  cb.line("beforeEach(async () => {");
+  cb.indent();
+  cb.line("const wsUrl = process.env.ARCHASTRO_HARNESS_WS_URL;");
+  cb.line("const controlUrl = process.env.ARCHASTRO_HARNESS_CONTROL_URL;");
+  cb.line("if (!wsUrl || !controlUrl) {");
+  cb.line(
+    '  throw new Error("SSE contract tests require ARCHASTRO_HARNESS_WS_URL and ARCHASTRO_HARNESS_CONTROL_URL — set by global-setup.");'
+  );
+  cb.line("}");
+  cb.line("harness = new HarnessServiceClient({ wsUrl, controlUrl });");
+  cb.line("await harness.reset();");
+  cb.line("// The harness serves SSE routes on its control listener, so the SDK");
+  cb.line("// base URL is the control URL.");
+  cb.line("client = new PlatformClient({");
+  cb.line("  baseUrl: controlUrl,");
+  cb.line('  defaultHeaders: { "x-archastro-api-key": "pk_test-key" },');
+  cb.line('  accessToken: "test-token",');
+  cb.line("});");
+  cb.dedent();
+  cb.line("});");
+  cb.line();
+  cb.line("afterEach(() => {");
+  cb.line("  harness.closeAllSockets();");
+  cb.line("});");
+  cb.line();
+
+  cb.line(`describe("contract: ${resourceName} (SSE)", () => {`);
+  cb.indent();
+  for (const call of calls) emitStreamTest(cb, call);
+  cb.dedent();
+  cb.line("});");
+
+  return cb.toString();
+}
+
+function emitStreamTest(cb: CodeBuilder, call: MethodCallInfo): void {
+  const routeKey = `${call.httpMethod} ${call.httpPath}`;
+  const events = call.operation.streaming?.events ?? [];
+  const argValues = call.args.map((a) => a.value).join(", ");
+  const callExpr = `${call.accessorChain}.${call.methodName}(${argValues})`;
+  // autoEmit: the harness synthesizes a contract-valid payload for each event
+  // from its schema (resolving $refs via its own fixture generator), so the
+  // test stays valid without re-deriving event fixtures SDK-side.
+  const emitActions = events
+    .map((e) => `{ type: "autoEmit", event: ${JSON.stringify(e.event)} }`)
+    .join(", ");
+  const expectedNames = JSON.stringify(events.map((e) => e.event));
+  const label = `${call.accessorChain.replace("client.", "")}.${call.methodName}`;
+
+  cb.line(`describe("${label} (${routeKey})", () => {`);
+  cb.indent();
+
+  cb.line('it("yields the declared SSE events in order", async () => {');
+  cb.indent();
+  cb.line(
+    `await harness.registerStreamScenario({ route: ${JSON.stringify(routeKey)}, actions: [${emitActions}] });`
+  );
+  cb.line("const events: Array<{ event: string; data: unknown }> = [];");
+  cb.line(`for await (const ev of ${callExpr}) {`);
+  cb.line("  events.push(ev);");
+  cb.line("}");
+  cb.line(`expect(events.map((e) => e.event)).toEqual(${expectedNames});`);
+  cb.dedent();
+  cb.line("});");
+  cb.line();
+
+  cb.line('it("rejects with ApiError on a non-2xx status", async () => {');
+  cb.indent();
+  cb.line(
+    `await harness.registerStreamScenario({ route: ${JSON.stringify(routeKey)}, actions: [{ type: "status", code: 402, body: { error: { code: "plan_not_entitled" } } }] });`
+  );
+  cb.line("const drain = async (): Promise<void> => {");
+  cb.line(`  for await (const _ of ${callExpr}) {`);
+  cb.line("    // drain");
+  cb.line("  }");
+  cb.line("};");
+  cb.line("await expect(drain()).rejects.toBeInstanceOf(ApiError);");
+  cb.dedent();
+  cb.line("});");
+
+  cb.dedent();
+  cb.line("});");
+  cb.line();
 }
 
 function emitGlobalSetup(opts: {
@@ -344,7 +469,7 @@ export default defineConfig({
     include: ["__tests__/contract/**/*.contract.test.ts"],
     exclude: channelTestsEnabled()
       ? []
-      : ["__tests__/contract/channels/**/*"],
+      : ["__tests__/contract/channels/**/*", "__tests__/contract/streams/**/*"],
     globalSetup: ["__tests__/contract/global-setup.ts"],
     testTimeout: 30000,
     // Channel tests share a single harness-service subprocess; scenarios

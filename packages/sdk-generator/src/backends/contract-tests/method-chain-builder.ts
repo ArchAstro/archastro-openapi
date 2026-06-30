@@ -39,7 +39,9 @@ export interface MethodCallInfo {
 }
 
 /**
- * Determine whether an operation should be included in contract tests.
+ * Determine whether an operation should be included in the normal
+ * call-and-assert-response contract tests. Streaming ops are excluded here —
+ * they get dedicated SSE tests via {@link buildStreamCalls}.
  */
 function isTestableOperation(op: OperationDef): boolean {
   if (op.streaming) return false;
@@ -47,13 +49,39 @@ function isTestableOperation(op: OperationDef): boolean {
 }
 
 /**
- * Walk the resource tree and yield MethodCallInfo for every testable operation.
+ * Walk the resource tree and yield MethodCallInfo for every non-streaming
+ * (testable) operation.
  */
 export function buildMethodCalls(
   spec: SdkSpec,
   versionSet: VersionedResourceSet,
   lang: "typescript" | "python",
   opts: ValueOptions = {}
+): MethodCallInfo[] {
+  return collectCalls(spec, versionSet, lang, opts, isTestableOperation);
+}
+
+/**
+ * Walk the resource tree and yield MethodCallInfo for every SSE streaming
+ * operation (`op.streaming`) — the dedicated set the stream contract tests
+ * drive against the harness. Each result's `operation.streaming.events` carries
+ * the declared SSE events.
+ */
+export function buildStreamCalls(
+  spec: SdkSpec,
+  versionSet: VersionedResourceSet,
+  lang: "typescript" | "python",
+  opts: ValueOptions = {}
+): MethodCallInfo[] {
+  return collectCalls(spec, versionSet, lang, opts, (op) => Boolean(op.streaming));
+}
+
+function collectCalls(
+  spec: SdkSpec,
+  versionSet: VersionedResourceSet,
+  lang: "typescript" | "python",
+  opts: ValueOptions,
+  include: (op: OperationDef) => boolean
 ): MethodCallInfo[] {
   const results: MethodCallInfo[] = [];
   const clientPrefix = `client.${versionSet.version}`;
@@ -71,7 +99,7 @@ export function buildMethodCalls(
         : resource.name;
 
       for (const op of resource.operations) {
-        if (!isTestableOperation(op)) continue;
+        if (!include(op)) continue;
 
         const args: MethodArg[] = [];
 

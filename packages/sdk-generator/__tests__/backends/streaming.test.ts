@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { emitResourceFile } from "../../src/backends/typescript/resource-emitter.js";
 import { emitPythonResourceFile } from "../../src/backends/python/resource-emitter.js";
+import { generateContractTests } from "../../src/backends/contract-tests/index.js";
 
 // A spec with a single SSE streaming operation (`x-sdk-streaming`), modeled on
 // POST /ai/chat/completions/stream: a typed request body plus a discriminated
@@ -121,5 +122,45 @@ describe("Python SSE streaming emission", () => {
     expect(pyOutput).toContain("data: StreamDone");
     expect(pyOutput).toContain("data: StreamMessageDelta");
     expect(pyOutput).toContain("Union[");
+  });
+});
+
+describe("SSE contract-test generation", () => {
+  it("emits a TypeScript stream contract test driving the harness", () => {
+    const files = generateContractTests(ast, { lang: "typescript", outDir: "sdk" });
+    const entry = Object.entries(files).find(
+      ([p]) => p.includes("/streams/") && p.endsWith(".contract.test.ts")
+    );
+    expect(entry).toBeDefined();
+    const content = entry![1];
+    expect(content).toContain('import { HarnessServiceClient } from "@archastro/channel-harness";');
+    expect(content).toContain("registerStreamScenario");
+    // autoEmit lets the harness synthesize contract-valid event payloads.
+    expect(content).toContain('{ type: "autoEmit", event: "message_delta" }');
+    expect(content).toMatch(/for await \(const ev of .*\.stream\(/);
+    // error path asserts a non-2xx surfaces as ApiError
+    expect(content).toContain("ApiError");
+  });
+
+  it("emits a Python stream contract test driving the harness", () => {
+    const files = generateContractTests(ast, { lang: "python", outDir: "sdk" });
+    const entry = Object.entries(files).find(
+      ([p]) => p.includes("/streams/") && p.endsWith(".py")
+    );
+    expect(entry).toBeDefined();
+    const content = entry![1];
+    expect(content).toContain("from archastro.phx_channel import HarnessServiceClient");
+    expect(content).toContain("register_stream_scenario");
+    expect(content).toContain('{"type": "autoEmit", "event": "message_delta"}');
+    expect(content).toMatch(/async for ev in .*\.stream\(/);
+    expect(content).toContain("ApiError");
+  });
+
+  it("gates the stream tests behind the opt-in env + boots the harness", () => {
+    const ts = generateContractTests(ast, { lang: "typescript", outDir: "sdk" });
+    const vitestConfig = ts["sdk/__tests__/contract/vitest.contract.config.ts"];
+    expect(vitestConfig).toContain('"__tests__/contract/streams/**/*"');
+    const globalSetup = ts["sdk/__tests__/contract/global-setup.ts"];
+    expect(globalSetup).toContain("harnessProcess");
   });
 });

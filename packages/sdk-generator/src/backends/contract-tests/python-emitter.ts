@@ -8,6 +8,7 @@ import {
 } from "../python/response-type.js";
 import {
   buildMethodCalls,
+  buildStreamCalls,
   groupByTopLevelResource,
   type MethodCallInfo,
 } from "./method-chain-builder.js";
@@ -55,15 +56,129 @@ export function emitPythonContractTests(
     files[filePath] = emitPythonChannelContractTestFile(channel, modulePath);
   }
 
+  // Per-resource SSE stream contract tests. Like channels, these are
+  // harness-backed (the SDK's async stream() runs against the channel-harness)
+  // and gated by the same opt-in env var.
+  let streamCallCount = 0;
+  for (const versionSet of spec.versions) {
+    const streamCalls = buildStreamCalls(spec, versionSet, "python");
+    streamCallCount += streamCalls.length;
+    const groups = groupByTopLevelResource(streamCalls);
+
+    for (const [resourceName, resourceCalls] of groups) {
+      const filePath = `${testDir}/streams/test_${snakeCase(resourceName)}.py`;
+      files[filePath] = emitPythonStreamTestFile(resourceCalls);
+    }
+  }
+
   // Conftest drives lifecycle for both backends. We only spawn Prism when
   // the spec actually has REST operations (Prism refuses to mock a spec with
-  // no paths) and only spawn the harness service when the spec has channels.
+  // no paths) and only spawn the harness service when the spec has channels
+  // or SSE streams.
   files[`${testDir}/conftest.py`] = emitConftest({
     includePrism: restCallCount > 0,
-    includeHarness: spec.channels.length > 0,
+    includeHarness: spec.channels.length > 0 || streamCallCount > 0,
   });
 
   return files;
+}
+
+// ─── SSE stream contract tests ───────────────────────────────────
+
+/**
+ * Emit a pytest file driving a resource's async stream() methods through the
+ * SDK runtime's stream_sse against the channel-harness: register an autoEmit
+ * scenario over the control API, iterate the method, assert the yielded events;
+ * and a non-2xx scenario that must surface as ApiError.
+ */
+function emitPythonStreamTestFile(calls: MethodCallInfo[]): string {
+  const cb = new CodeBuilder("    ");
+
+  for (const line of generatedHeaderPython().trim().split("\n")) cb.line(line);
+  cb.line();
+  cb.line("import pytest");
+  cb.line("from archastro.platform import AsyncPlatformClient");
+  cb.line("from archastro.platform.runtime.http_client import ApiError");
+  cb.line("from archastro.phx_channel import HarnessServiceClient");
+  cb.line();
+  cb.line("# Mark every coroutine in this file as async so the tests run whether or");
+  cb.line("# not the consuming project sets asyncio_mode=auto.");
+  cb.line("pytestmark = pytest.mark.asyncio");
+  cb.line();
+
+  for (const call of calls) emitPythonStreamTest(cb, call);
+
+  return cb.toString();
+}
+
+function emitPythonStreamTest(cb: CodeBuilder, call: MethodCallInfo): void {
+  const routeKey = `${call.httpMethod} ${call.httpPath}`;
+  const events = call.operation.streaming?.events ?? [];
+  const argStr = buildPythonArgs(call);
+  const chainPy = call.accessorChain.replace("client.", "");
+  const methodCall = `client.${chainPy}.${pythonParameterName(call.methodName)}(${argStr})`;
+  // autoEmit: the harness synthesizes contract-valid payloads from each event
+  // schema (resolving $refs), so the test stays valid without SDK-side fixtures.
+  const actions = events
+    .map((e) => `{"type": "autoEmit", "event": ${JSON.stringify(e.event)}}`)
+    .join(", ");
+  const expectedNames = `[${events.map((e) => JSON.stringify(e.event)).join(", ")}]`;
+
+  const emitClient = (): void => {
+    cb.line(
+      'harness = HarnessServiceClient(ws_url=harness_service["wsUrl"], control_url=harness_service["controlUrl"])'
+    );
+    cb.line("await harness.reset()");
+  };
+  const emitSdkClient = (): void => {
+    cb.line(
+      'client = AsyncPlatformClient(base_url=harness_service["controlUrl"], default_headers={"x-archastro-api-key": "pk_test-key"}, access_token="test-token")'
+    );
+  };
+
+  // Happy path: the SDK yields the declared events, in order.
+  cb.line(`async def ${buildTestName(call, "yields_sse_events")}(harness_service):`);
+  cb.indent();
+  emitClient();
+  cb.line(
+    `await harness.register_stream_scenario({"route": ${JSON.stringify(routeKey)}, "actions": [${actions}]})`
+  );
+  emitSdkClient();
+  cb.pyBlock("try", () => {
+    cb.line("events = []");
+    cb.pyBlock(`async for ev in ${methodCall}`, () => {
+      cb.line("events.append(ev)");
+    });
+    cb.line(`assert [e["event"] for e in events] == ${expectedNames}`);
+  });
+  cb.pyBlock("finally", () => {
+    cb.line("await client.close()");
+    cb.line("await harness.close()");
+  });
+  cb.dedent();
+  cb.line();
+
+  // Error path: a non-2xx status surfaces as ApiError.
+  cb.line(`async def ${buildTestName(call, "rejects_non_2xx")}(harness_service):`);
+  cb.indent();
+  emitClient();
+  cb.line(
+    `await harness.register_stream_scenario({"route": ${JSON.stringify(routeKey)}, "actions": [{"type": "status", "code": 402, "body": {"error": {"code": "plan_not_entitled"}}}]})`
+  );
+  emitSdkClient();
+  cb.pyBlock("try", () => {
+    cb.pyBlock("with pytest.raises(ApiError)", () => {
+      cb.pyBlock(`async for _ in ${methodCall}`, () => {
+        cb.line("pass");
+      });
+    });
+  });
+  cb.pyBlock("finally", () => {
+    cb.line("await client.close()");
+    cb.line("await harness.close()");
+  });
+  cb.dedent();
+  cb.line();
 }
 
 function emitResourceTestFile(
@@ -420,7 +535,7 @@ function emitConftest(opts: {
       "",
       "# Skip the channel test tree entirely at collection time when the env var",
       "# is not set, so CI runs REST tests without pulling in the harness service.",
-      'collect_ignore_glob = [] if _channel_tests_enabled() else ["channels/*"]'
+      'collect_ignore_glob = [] if _channel_tests_enabled() else ["channels/*", "streams/*"]'
     );
   }
 
