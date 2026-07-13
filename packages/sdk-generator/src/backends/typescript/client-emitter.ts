@@ -17,14 +17,14 @@ export function emitClientFile(spec: SdkSpec): string {
     imports.add("./auth.js", "AuthClient");
   }
 
-  // Durable app session (hand-maintained src/user-session.ts) — only when a
+  // Durable app session (hand-maintained src/app-session.ts) — only when a
   // publishable key scheme exists (client-side app auth).
   const schemesForSession = spec.auth?.schemes ?? {};
   const hasPublishableKey = Boolean(schemesForSession.publishable_key);
   if (hasPublishableKey) {
-    imports.add("./user-session.js", "forApp");
-    imports.addType("./user-session.js", "ForAppOptions");
-    imports.addType("./user-session.js", "AppPlatformClient");
+    imports.add("./app-session.js", "forApp");
+    imports.addType("./app-session.js", "ForAppOptions");
+    imports.addType("./app-session.js", "AppPlatformClient");
   }
 
   // Import version namespace classes
@@ -254,8 +254,8 @@ export function emitClientFile(spec: SdkSpec): string {
         }
       }
 
-      // forApp — durable user session for mobile/SPA (hand-maintained
-      // user-session.ts). Abstracts storage, passwordless OTP, and 401
+      // forApp — durable app session for mobile/SPA (hand-maintained
+      // app-session.ts). Abstracts storage, passwordless OTP, and 401
       // auto-refresh behind one PlatformClient instance.
       if (schemes.publishable_key) {
         cb.line();
@@ -279,7 +279,7 @@ export function emitClientFile(spec: SdkSpec): string {
   if (hasPublishableKey) {
     cb.line();
     cb.line(
-      'export type { AppPlatformClient, ForAppOptions, SessionStorage, StoredSession } from "./user-session.js";',
+      'export type { AppPlatformClient, ForAppOptions, SessionStorage, AppSession } from "./app-session.js";',
     );
   }
 
