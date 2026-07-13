@@ -894,6 +894,18 @@ describe("Client emitter", () => {
       'baseUrl: config.baseUrl ?? "https://platform.archastro.ai"'
     );
   });
+
+  it("emits forApp factory delegating to hand-maintained user-session", () => {
+    // Only when the fixture has a publishable_key scheme
+    if (output.includes("withToken")) {
+      expect(output).toContain('from "./user-session.js"');
+      expect(output).toContain("static forApp(options: ForAppOptions)");
+      expect(output).toContain("return forApp(options)");
+      expect(output).toContain(
+        'export type { AppPlatformClient, ForAppOptions, SessionStorage, StoredSession } from "./user-session.js"',
+      );
+    }
+  });
 });
 
 describe("Channel emitter", () => {
