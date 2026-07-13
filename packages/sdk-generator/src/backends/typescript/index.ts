@@ -166,6 +166,13 @@ function generateMainIndex(spec: SdkSpec): string {
   lines.push(
     `export { PlatformClient, type PlatformClientConfig } from "./client.js";`
   );
+  // Session types for PlatformClient.forApp (implementation is hand-maintained
+  // in user-session.ts; only types are re-exported — not PasswordlessAuth etc.)
+  if (spec.auth?.schemes?.publishable_key) {
+    lines.push(
+      `export type { AppPlatformClient, ForAppOptions, SessionStorage, StoredSession } from "./client.js";`,
+    );
+  }
   if ((spec.authOperations ?? []).length > 0) {
     lines.push(
       `export { AuthClient, type AuthTokens } from "./auth.js";`

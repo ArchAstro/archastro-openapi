@@ -17,6 +17,16 @@ export function emitClientFile(spec: SdkSpec): string {
     imports.add("./auth.js", "AuthClient");
   }
 
+  // Durable app session (hand-maintained src/user-session.ts) — only when a
+  // publishable key scheme exists (client-side app auth).
+  const schemesForSession = spec.auth?.schemes ?? {};
+  const hasPublishableKey = Boolean(schemesForSession.publishable_key);
+  if (hasPublishableKey) {
+    imports.add("./user-session.js", "forApp");
+    imports.addType("./user-session.js", "ForAppOptions");
+    imports.addType("./user-session.js", "AppPlatformClient");
+  }
+
   // Import version namespace classes
   for (const versionSet of spec.versions) {
     const cls = versionClassName(versionSet.version);
@@ -243,8 +253,35 @@ export function emitClientFile(spec: SdkSpec): string {
           );
         }
       }
+
+      // forApp — durable user session for mobile/SPA (hand-maintained
+      // user-session.ts). Abstracts storage, passwordless OTP, and 401
+      // auto-refresh behind one PlatformClient instance.
+      if (schemes.publishable_key) {
+        cb.line();
+        cb.line(
+          "/** Client-side app: publishable key + durable session storage. " +
+            "Wires passwordless OTP, restore/signIn/signOut, 401 auto-refresh, and createSocket(). */",
+        );
+        cb.block(
+          `static forApp(options: ForAppOptions): AppPlatformClient`,
+          () => {
+            cb.line("return forApp(options);");
+          },
+        );
+      }
     }
   });
+
+  // Re-export only the types apps need to implement storage / type the client.
+  // Session internals (PasswordlessAuth, free forApp, sockets) stay unexported
+  // from the package barrel — they live behind PlatformClient.forApp.
+  if (hasPublishableKey) {
+    cb.line();
+    cb.line(
+      'export type { AppPlatformClient, ForAppOptions, SessionStorage, StoredSession } from "./user-session.js";',
+    );
+  }
 
   return cb.toString();
 }
