@@ -115,6 +115,35 @@ export function parseOpenApiSpec(
 
         versions.push({ version: ver, apiPrefix: verPrefix, resources });
       }
+
+      // Paths outside the versioned prefix (e.g. /oauth/*) attach to the
+      // default version's resource set so SDKs still expose them
+      // (client.v1.oauth + the default-version alias client.oauth).
+      const versionedPaths = new Set(
+        [...versionGroups.values()].flat()
+      );
+      const unversionedOps = nonAuthOps.filter(
+        (op) => !versionedPaths.has(op.path)
+      );
+      if (unversionedOps.length > 0) {
+        const { resources } = inferResourceTree(unversionedOps, {
+          apiPrefix: "",
+          scopePrefix: cfg.scopePrefix,
+          operationOverrides: cfg.operationOverrides,
+          resourceOverrides: cfg.resourceOverrides,
+        });
+        const defaultSet =
+          versions.find((v) => v.version === defaultVersion) ?? versions[0];
+        if (defaultSet) {
+          defaultSet.resources.push(...resources);
+        } else {
+          versions.push({
+            version: defaultVersion,
+            apiPrefix: apiBase,
+            resources,
+          });
+        }
+      }
     }
   } else {
     // Legacy single-version mode: use apiPrefix directly
