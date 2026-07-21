@@ -1,17 +1,22 @@
 import type { TypeRef, FieldDef, BodyDef, SchemaDef } from "../../ast/types.js";
 
+/** Languages the value/literal renderers can emit. */
+export type ValueLang = "typescript" | "python" | "swift";
+
 /**
  * Render a JSON value (e.g. an OpenAPI `example`) as a language literal.
  *
  * Handles strings, numbers, booleans, null, arrays, and nested objects so a
- * spec example like `{"name": "Acme", "tags": ["a"]}` becomes idiomatic TS or
- * Python source.
+ * spec example like `{"name": "Acme", "tags": ["a"]}` becomes idiomatic TS,
+ * Python, or Swift source. Swift literals target `JSONValue`-typed positions
+ * (dictionary/array/scalar literals all work via ExpressibleBy…Literal).
  */
-export function renderLiteral(
-  value: unknown,
-  lang: "typescript" | "python"
-): string {
-  if (value === null) return lang === "python" ? "None" : "null";
+export function renderLiteral(value: unknown, lang: ValueLang): string {
+  if (value === null) {
+    if (lang === "python") return "None";
+    if (lang === "swift") return "JSONValue.null";
+    return "null";
+  }
   if (typeof value === "string") return JSON.stringify(value);
   if (typeof value === "number") return String(value);
   if (typeof value === "boolean") {
@@ -25,17 +30,23 @@ export function renderLiteral(
     const entries = Object.entries(value as Record<string, unknown>).map(
       ([k, v]) => {
         const rendered = renderLiteral(v, lang);
-        if (lang === "python") return `"${k}": ${rendered}`;
+        if (lang === "python" || lang === "swift") {
+          return `"${k}": ${rendered}`;
+        }
         const key = isValidIdentifier(k) ? k : JSON.stringify(k);
         return `${key}: ${rendered}`;
       }
     );
-    if (entries.length === 0) return lang === "python" ? "{}" : "{}";
-    return lang === "python"
-      ? `{${entries.join(", ")}}`
-      : `{ ${entries.join(", ")} }`;
+    if (entries.length === 0) {
+      return lang === "swift" ? "[:]" : "{}";
+    }
+    if (lang === "python") return `{${entries.join(", ")}}`;
+    if (lang === "swift") return `[${entries.join(", ")}]`;
+    return `{ ${entries.join(", ")} }`;
   }
-  return lang === "python" ? "None" : "undefined";
+  if (lang === "python") return "None";
+  if (lang === "swift") return "JSONValue.null";
+  return "undefined";
 }
 
 function isValidIdentifier(s: string): boolean {
@@ -53,12 +64,13 @@ function isValidIdentifier(s: string): boolean {
 export function generateDummyValue(
   typeRef: TypeRef,
   fieldName?: string,
-  lang: "typescript" | "python" = "typescript",
+  lang: ValueLang = "typescript",
   example?: unknown
 ): string {
   if (example !== undefined) {
     return renderLiteral(example, lang);
   }
+  const emptyDict = lang === "swift" ? "[:]" : "{}";
   switch (typeRef.kind) {
     case "primitive":
       return generatePrimitiveValue(typeRef.type, fieldName, lang);
@@ -68,11 +80,11 @@ export function generateDummyValue(
         const itemVal = generateDummyValue(typeRef.items, undefined, lang);
         return `[${itemVal}]`;
       }
-      return lang === "python" ? "[]" : "[]";
+      return "[]";
     case "object":
       return generateObjectValue(typeRef.fields, lang);
     case "ref":
-      return lang === "python" ? "{}" : "{}";
+      return emptyDict;
     case "enum":
       return typeRef.values.length > 0
         ? `"${typeRef.values[0]}"`
@@ -80,32 +92,36 @@ export function generateDummyValue(
     case "union":
       return typeRef.variants.length > 0
         ? generateDummyValue(typeRef.variants[0]!, fieldName, lang)
-        : lang === "python" ? "None" : "undefined";
+        : nullLiteral(lang);
     case "optional":
       return generateDummyValue(typeRef.inner, fieldName, lang);
     case "map":
-      return lang === "python" ? "{}" : "{}";
+      return emptyDict;
     case "unknown":
-      return lang === "python" ? "{}" : "{}";
+      return emptyDict;
     case "void":
-      return lang === "python" ? "None" : "undefined";
+      return nullLiteral(lang);
   }
 }
 
-function generateObjectValue(
-  fields: FieldDef[],
-  lang: "typescript" | "python"
-): string {
-  if (!fields || fields.length === 0) return lang === "python" ? "{}" : "{}";
+function nullLiteral(lang: ValueLang): string {
+  if (lang === "python") return "None";
+  if (lang === "swift") return "JSONValue.null";
+  return "undefined";
+}
+
+function generateObjectValue(fields: FieldDef[], lang: ValueLang): string {
+  const emptyDict = lang === "swift" ? "[:]" : "{}";
+  if (!fields || fields.length === 0) return emptyDict;
 
   const requiredFields = fields.filter((f) => f.required);
-  if (requiredFields.length === 0) return lang === "python" ? "{}" : "{}";
+  if (requiredFields.length === 0) return emptyDict;
 
-  if (lang === "python") {
+  if (lang === "python" || lang === "swift") {
     const entries = requiredFields.map(
-      (f) => `"${f.name}": ${generateDummyValue(f.type, f.name, "python")}`
+      (f) => `"${f.name}": ${generateDummyValue(f.type, f.name, lang)}`
     );
-    return `{${entries.join(", ")}}`;
+    return lang === "python" ? `{${entries.join(", ")}}` : `[${entries.join(", ")}]`;
   } else {
     const entries = requiredFields.map(
       (f) => `${f.name}: ${generateDummyValue(f.type, f.name, "typescript")}`
@@ -117,7 +133,7 @@ function generateObjectValue(
 function generatePrimitiveValue(
   type: string,
   fieldName?: string,
-  lang: "typescript" | "python" = "typescript"
+  lang: ValueLang = "typescript"
 ): string {
   switch (type) {
     case "string":
@@ -138,7 +154,7 @@ function generatePrimitiveValue(
 /**
  * Heuristic: pick a sensible dummy string based on the field name.
  */
-function stringValueForField(fieldName?: string): string {
+export function stringValueForField(fieldName?: string): string {
   if (!fieldName) return '"test-value"';
 
   const lower = fieldName.toLowerCase();
@@ -182,14 +198,15 @@ export interface ValueOptions {
 export function generateBodyLiteral(
   body: BodyDef,
   schemas: SchemaDef[],
-  lang: "typescript" | "python",
+  lang: ValueLang,
   opts: ValueOptions = {}
 ): string {
+  const emptyDict = lang === "swift" ? "[:]" : "{}";
   const fields = resolveBodyFields(body, schemas);
-  if (fields.length === 0) return lang === "python" ? "{}" : "{}";
+  if (fields.length === 0) return emptyDict;
 
   const selected = opts.includeOptional ? fields : fields.filter((f) => f.required);
-  if (selected.length === 0) return lang === "python" ? "{}" : "{}";
+  if (selected.length === 0) return emptyDict;
 
   const entries = selected.map((f) => {
     const value = generateDummyValue(
@@ -198,13 +215,16 @@ export function generateBodyLiteral(
       lang,
       opts.useExamples ? f.example : undefined
     );
-    return lang === "python" ? `"${f.name}": ${value}` : `${f.name}: ${value}`;
+    if (lang === "python" || lang === "swift") return `"${f.name}": ${value}`;
+    return `${f.name}: ${value}`;
   });
 
-  return lang === "python" ? `{${entries.join(", ")}}` : `{ ${entries.join(", ")} }`;
+  if (lang === "python") return `{${entries.join(", ")}}`;
+  if (lang === "swift") return `[${entries.join(", ")}]`;
+  return `{ ${entries.join(", ")} }`;
 }
 
-function resolveBodyFields(
+export function resolveBodyFields(
   body: BodyDef,
   schemas: SchemaDef[]
 ): FieldDef[] {

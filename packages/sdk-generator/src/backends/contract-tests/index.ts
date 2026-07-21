@@ -1,12 +1,13 @@
 import type { SdkSpec } from "../../ast/types.js";
 import { emitTypeScriptContractTests } from "./typescript-emitter.js";
 import { emitPythonContractTests } from "./python-emitter.js";
+import { emitSwiftContractTests } from "./swift-emitter.js";
 
 export type GeneratedFiles = Record<string, string>;
 
 export interface ContractTestOptions {
   outDir: string;
-  lang: "typescript" | "python";
+  lang: "typescript" | "python" | "swift";
 }
 
 /**
@@ -22,6 +23,8 @@ export function generateContractTests(
 ): GeneratedFiles {
   if (options.lang === "typescript") {
     return emitTypeScriptContractTests(spec, options);
+  } else if (options.lang === "swift") {
+    return emitSwiftContractTests(spec, options);
   } else {
     return emitPythonContractTests(spec, options);
   }
