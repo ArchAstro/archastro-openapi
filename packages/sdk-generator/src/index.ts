@@ -20,6 +20,12 @@ import { parseOpenApiSpec } from "./frontend/index.js";
 import type { FrontendConfig } from "./frontend/config.js";
 import { generateTypeScript, writeGeneratedFiles } from "./backends/typescript/index.js";
 import { generatePython, writePythonFiles } from "./backends/python/index.js";
+import {
+  generateSwift,
+  writeSwiftFiles,
+  SWIFT_GENERATED_DIR,
+} from "./backends/swift/index.js";
+import { SWIFT_TESTS_DIR } from "./backends/contract-tests/swift-emitter.js";
 import { generateContractTests } from "./backends/contract-tests/index.js";
 import { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.js";
 import { generatePythonSamples } from "./backends/python/sample-emitter.js";
@@ -35,7 +41,9 @@ export type { FrontendConfig } from "./frontend/config.js";
 export type * from "./ast/types.js";
 export { generateTypeScript, writeGeneratedFiles } from "./backends/typescript/index.js";
 export { generatePython, writePythonFiles } from "./backends/python/index.js";
+export { generateSwift, writeSwiftFiles, prepareSwiftSpec } from "./backends/swift/index.js";
 export { generateContractTests } from "./backends/contract-tests/index.js";
+export { emitSwiftContractTests } from "./backends/contract-tests/swift-emitter.js";
 export { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.js";
 export { generatePythonSamples } from "./backends/python/sample-emitter.js";
 export type * from "./backends/samples.js";
@@ -80,7 +88,7 @@ function main() {
   const astOnly = args.includes("--ast-only");
 
   if (!specPath) {
-    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|contract-tests-ts|contract-tests-py] [--out <dir>] [--config <config.json>] [--mode sdk|samples] [--ast-only]");
+    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|swift|contract-tests-ts|contract-tests-py|contract-tests-swift] [--out <dir>] [--config <config.json>] [--mode sdk|samples] [--ast-only]");
     process.exit(1);
   }
 
@@ -179,8 +187,32 @@ function main() {
       console.log(`Python contract tests generated at ${resolvedOut} (${Object.keys(files).length} files)`);
       break;
     }
+    case "swift": {
+      const files = generateSwift(ast, { outDir: resolvedOut });
+      const gen = resolve(resolvedOut, SWIFT_GENERATED_DIR);
+      const cleanDirs = [
+        gen,
+        resolve(gen, "Types"),
+        resolve(gen, "Channels"),
+        ...ast.versions.map((v) => resolve(gen, v.version.toUpperCase())),
+      ];
+      writeSwiftFiles(files, cleanDirs);
+      console.log(`Swift SDK generated at ${resolvedOut} (${Object.keys(files).length} files)`);
+      break;
+    }
+    case "contract-tests-swift": {
+      const files = generateContractTests(ast, { outDir: resolvedOut, lang: "swift" });
+      const tests = resolve(resolvedOut, SWIFT_TESTS_DIR);
+      writeSwiftFiles(files, [
+        resolve(tests, "Channels"),
+        resolve(tests, "Streams"),
+        ...ast.versions.map((v) => resolve(tests, v.version.toUpperCase())),
+      ]);
+      console.log(`Swift contract tests generated at ${resolvedOut} (${Object.keys(files).length} files)`);
+      break;
+    }
     default:
-      console.error(`Unknown language: ${lang}. Supported: typescript, python, contract-tests-ts, contract-tests-py`);
+      console.error(`Unknown language: ${lang}. Supported: typescript, python, swift, contract-tests-ts, contract-tests-py, contract-tests-swift`);
       process.exit(1);
   }
 }

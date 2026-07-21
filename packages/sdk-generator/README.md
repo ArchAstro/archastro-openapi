@@ -1,7 +1,7 @@
 # @archastro/sdk-generator
 
-Generate typed TypeScript and Python SDKs — plus cross-language contract
-tests — from an OpenAPI spec produced by the ArchAstro API DSL.
+Generate typed TypeScript, Python, and Swift SDKs — plus cross-language
+contract tests — from an OpenAPI spec produced by the ArchAstro API DSL.
 
 ## Install
 
@@ -18,7 +18,7 @@ sdk-generator --spec ./openapi.json --lang python --out ./sdk
 
 ```
 sdk-generator --spec <openapi.json> \
-                  [--lang typescript|python|contract-tests-ts|contract-tests-py] \
+                  [--lang typescript|python|swift|contract-tests-ts|contract-tests-py|contract-tests-swift] \
                   [--out <dir>] \
                   [--config <config.json>] \
                   [--ast-only]
@@ -30,16 +30,18 @@ Targets:
 | --- | --- |
 | `typescript` | TS SDK: resources, channel classes, auth, client, zod schemas |
 | `python` | Python SDK: Pydantic models, resources, channels |
+| `swift` | Swift SDK: Codable models, resources, channels, async client |
 | `contract-tests-ts` | TS contract tests that drive `@archastro/channel-harness` |
 | `contract-tests-py` | Python contract tests (pytest + Prism mock server) |
+| `contract-tests-swift` | Swift contract tests (swift-testing + Prism + harness) |
 
 ## Generated SDK documentation
 
 The generator preserves OpenAPI documentation as idiomatic source docs in each
 language. Use standard OpenAPI fields as the source of truth:
 
-- Operation `summary` and `description` become TypeScript JSDoc and Python
-  method docstrings.
+- Operation `summary` and `description` become TypeScript JSDoc, Python
+  method docstrings, and Swift `///` documentation comments.
 - Parameter and request-body field `description` values become parameter docs
   and input object field docs.
 - Success response descriptions become return-value docs.

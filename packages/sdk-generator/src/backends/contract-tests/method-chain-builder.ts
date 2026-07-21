@@ -8,6 +8,7 @@ import type {
 import {
   generateDummyValue,
   generateBodyLiteral,
+  type ValueLang,
   type ValueOptions,
 } from "./value-generator.js";
 
@@ -55,7 +56,7 @@ function isTestableOperation(op: OperationDef): boolean {
 export function buildMethodCalls(
   spec: SdkSpec,
   versionSet: VersionedResourceSet,
-  lang: "typescript" | "python",
+  lang: ValueLang,
   opts: ValueOptions = {}
 ): MethodCallInfo[] {
   return collectCalls(spec, versionSet, lang, opts, isTestableOperation);
@@ -70,7 +71,7 @@ export function buildMethodCalls(
 export function buildStreamCalls(
   spec: SdkSpec,
   versionSet: VersionedResourceSet,
-  lang: "typescript" | "python",
+  lang: ValueLang,
   opts: ValueOptions = {}
 ): MethodCallInfo[] {
   return collectCalls(spec, versionSet, lang, opts, (op) => Boolean(op.streaming));
@@ -79,7 +80,7 @@ export function buildStreamCalls(
 function collectCalls(
   spec: SdkSpec,
   versionSet: VersionedResourceSet,
-  lang: "typescript" | "python",
+  lang: ValueLang,
   opts: ValueOptions,
   include: (op: OperationDef) => boolean
 ): MethodCallInfo[] {
