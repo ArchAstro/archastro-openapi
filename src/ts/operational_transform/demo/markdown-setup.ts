@@ -81,12 +81,6 @@ const editorTheme = EditorView.theme({
     borderRadius: "0 0 8px 8px",
     paddingBottom: "6px",
   },
-  // Tables in monospace so the pipes align while editing.
-  ".cm-md-table": {
-    fontFamily: MONO,
-    fontSize: "12.5px",
-    backgroundColor: "#fbfcfe",
-  },
 });
 
 export function editorExtensions(): Extension[] {

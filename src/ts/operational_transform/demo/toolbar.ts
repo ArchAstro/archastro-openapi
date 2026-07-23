@@ -2,6 +2,20 @@
 
 import { EditorSelection } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
+import { tableTemplate } from "./table-model.js";
+
+/** Insert a fresh rows x cols markdown table on its own block after the cursor's line. */
+export function insertTable(view: EditorView, rows: number, cols: number): void {
+  const { state } = view;
+  const line = state.doc.lineAt(state.selection.main.head);
+  const prefix = line.text.trim() === "" ? "" : "\n\n";
+  const at = line.to;
+  view.dispatch({
+    changes: { from: at, insert: `${prefix}${tableTemplate(rows, cols)}\n` },
+    userEvent: "input.table",
+  });
+  view.focus();
+}
 
 /** Wrap (or unwrap) the selection with an inline marker like `**` or `` ` ``. */
 export function toggleWrap(view: EditorView, marker: string): void {

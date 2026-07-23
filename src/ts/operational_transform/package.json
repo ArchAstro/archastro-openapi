@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "build:demo": "node scripts/build-demo.mjs",
     "watch:demo": "node scripts/build-demo.mjs --watch",
-    "test:browser": "node browser-test/concurrent-editors.mjs"
+    "test:browser": "node browser-test/concurrent-editors.mjs && node browser-test/table-editing.mjs",
+    "test:browser:tables": "node browser-test/table-editing.mjs"
   },
   "dependencies": {
     "phoenix": "^1.8.0"

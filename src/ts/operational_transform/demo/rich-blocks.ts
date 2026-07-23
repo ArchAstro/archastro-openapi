@@ -13,11 +13,12 @@
 import { ensureSyntaxTree } from "@codemirror/language";
 import { EditorState, Range, StateField } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, WidgetType } from "@codemirror/view";
+import { parseTable } from "./table-model.js";
+import { TableWidget } from "./table-widget.js";
 
 const codeLine = Decoration.line({ class: "cm-md-codeblock" });
 const codeLineFirst = Decoration.line({ class: "cm-md-codeblock cm-md-codeblock-first" });
 const codeLineLast = Decoration.line({ class: "cm-md-codeblock cm-md-codeblock-last" });
-const tableLine = Decoration.line({ class: "cm-md-table" });
 
 class ImageWidget extends WidgetType {
   constructor(
@@ -53,9 +54,12 @@ class ImageWidget extends WidgetType {
 
 function buildDecorations(state: EditorState): DecorationSet {
   const ranges: Range<Decoration>[] = [];
-  // Parse the whole (small) document so decorations don't pop in lazily.
-  const tree = ensureSyntaxTree(state, state.doc.length, 100) ?? null;
+  // Parse the whole (small) document so decorations don't pop in lazily; a
+  // generous budget keeps table widgets from flickering to raw markdown for
+  // a frame after a large insert invalidates the tree.
+  const tree = ensureSyntaxTree(state, state.doc.length, 500) ?? null;
   if (!tree) return Decoration.none;
+  const docText = state.doc.toString();
 
   tree.iterate({
     enter: (node) => {
@@ -68,10 +72,17 @@ function buildDecorations(state: EditorState): DecorationSet {
           ranges.push(deco.range(line.from));
         }
       } else if (node.name === "Table") {
-        const first = state.doc.lineAt(node.from).number;
-        const last = state.doc.lineAt(node.to).number;
-        for (let n = first; n <= last; n++) {
-          ranges.push(tableLine.range(state.doc.line(n).from));
+        // Spreadsheet mode: the markdown stays the document of record; the
+        // table region renders as an interactive grid (see table-widget.ts).
+        const model = parseTable(docText, node.from, node.to);
+        if (model) {
+          ranges.push(
+            Decoration.replace({
+              widget: new TableWidget(model, docText.slice(model.from, model.to)),
+              block: true,
+            }).range(model.from, model.to),
+          );
+          return false;
         }
       } else if (node.name === "Image") {
         const text = state.sliceDoc(node.from, node.to);

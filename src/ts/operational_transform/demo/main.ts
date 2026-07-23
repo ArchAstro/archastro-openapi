@@ -9,7 +9,7 @@ import {
   remoteTransaction,
 } from "./cm-adapter.js";
 import { editorExtensions } from "./markdown-setup.js";
-import { toggleLinePrefix, toggleWrap } from "./toolbar.js";
+import { insertTable, toggleLinePrefix, toggleWrap } from "./toolbar.js";
 import "./style.css";
 
 const NAMES = ["Ada", "Grace", "Alan", "Edsger", "Barbara", "Donald", "Radia", "Leslie"];
@@ -186,6 +186,61 @@ el("btn-h2").addEventListener("click", withView((v) => toggleLinePrefix(v, "## "
 el("btn-h3").addEventListener("click", withView((v) => toggleLinePrefix(v, "### ")));
 el("btn-quote").addEventListener("click", withView((v) => toggleLinePrefix(v, "> ")));
 el("btn-list").addEventListener("click", withView((v) => toggleLinePrefix(v, "- ")));
+
+// Table insert: Docs-style hover grid picker.
+{
+  const button = el<HTMLButtonElement>("btn-table");
+  const picker = el<HTMLDivElement>("table-picker");
+  const grid = el<HTMLDivElement>("table-picker-grid");
+  const label = el<HTMLDivElement>("table-picker-label");
+  const MAX_ROWS = 5;
+  const MAX_COLS = 7;
+
+  for (let r = 1; r <= MAX_ROWS; r++) {
+    for (let c = 1; c <= MAX_COLS; c++) {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "table-picker-cell";
+      dot.dataset.rows = String(r);
+      dot.dataset.cols = String(c);
+      grid.appendChild(dot);
+    }
+  }
+
+  const highlight = (rows: number, cols: number) => {
+    for (const dot of grid.children) {
+      const cell = dot as HTMLElement;
+      cell.classList.toggle(
+        "active",
+        Number(cell.dataset.rows) <= rows && Number(cell.dataset.cols) <= cols,
+      );
+    }
+    label.textContent = rows > 0 ? `${cols} × ${rows} table` : "Insert table";
+  };
+
+  button.addEventListener("click", () => {
+    picker.hidden = !picker.hidden;
+    highlight(0, 0);
+  });
+
+  grid.addEventListener("mouseover", (event) => {
+    const cell = (event.target as HTMLElement).closest<HTMLElement>(".table-picker-cell");
+    if (cell) highlight(Number(cell.dataset.rows), Number(cell.dataset.cols));
+  });
+
+  grid.addEventListener("click", (event) => {
+    const cell = (event.target as HTMLElement).closest<HTMLElement>(".table-picker-cell");
+    if (!cell || !view) return;
+    picker.hidden = true;
+    insertTable(view, Number(cell.dataset.rows), Number(cell.dataset.cols));
+  });
+
+  document.addEventListener("mousedown", (event) => {
+    if (!picker.hidden && !picker.contains(event.target as Node) && event.target !== button) {
+      picker.hidden = true;
+    }
+  });
+}
 
 el("btn-share").addEventListener("click", () => {
   void navigator.clipboard.writeText(location.href).then(() => {
