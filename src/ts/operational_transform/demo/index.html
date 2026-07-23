@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ArchAstro Docs</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9D%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/assets/app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">📝</span>
+        <div class="brand-text">
+          <span class="brand-title">ArchAstro Docs</span>
+          <span class="doc-chip" id="doc-chip"></span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span id="status-pill" class="status-pill status-muted">Connecting…</span>
+        <div id="avatars" class="avatars"></div>
+        <button id="btn-preview" class="button ghost" title="Toggle rendered preview">Preview</button>
+        <button id="btn-share" class="button primary" title="Copy link">Share</button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <button id="btn-h1" class="tool" title="Heading 1">H1</button>
+      <button id="btn-h2" class="tool" title="Heading 2">H2</button>
+      <button id="btn-h3" class="tool" title="Heading 3">H3</button>
+      <span class="tool-divider"></span>
+      <button id="btn-bold" class="tool tool-bold" title="Bold (**text**)">B</button>
+      <button id="btn-italic" class="tool tool-italic" title="Italic (*text*)">I</button>
+      <button id="btn-strike" class="tool tool-strike" title="Strikethrough (~~text~~)">S</button>
+      <button id="btn-code" class="tool tool-code" title="Inline code (`code`)">&lt;/&gt;</button>
+      <span class="tool-divider"></span>
+      <button id="btn-quote" class="tool" title="Quote (&gt; )">❝</button>
+      <button id="btn-list" class="tool" title="Bulleted list (- )">•≡</button>
+      <span class="toolbar-hint">Markdown under the hood — edits merge live via OT</span>
+    </div>
+
+    <main class="workspace">
+      <section class="sheet-wrap">
+        <div class="sheet" id="editor"></div>
+      </section>
+      <aside class="preview-wrap">
+        <div class="preview-title">Rendered preview</div>
+        <article class="preview" id="preview"></article>
+      </aside>
+    </main>
+
+    <script type="module" src="/assets/app.js"></script>
+  </body>
+</html>

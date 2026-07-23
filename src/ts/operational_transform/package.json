@@ -1,0 +1,40 @@
+{
+  "name": "@archastro/operational-transform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Operational transformation client for collaborative markdown editing, paired with the ArchAstro.OperationalTransform Elixir library",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:demo": "node scripts/build-demo.mjs",
+    "watch:demo": "node scripts/build-demo.mjs --watch",
+    "test:browser": "node browser-test/concurrent-editors.mjs"
+  },
+  "dependencies": {
+    "phoenix": "^1.8.0"
+  },
+  "devDependencies": {
+    "@codemirror/commands": "^6.8.0",
+    "@codemirror/lang-markdown": "^6.3.0",
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/language-data": "^6.5.2",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.36.0",
+    "@lezer/highlight": "^1.2.0",
+    "@types/phoenix": "^1.6.0",
+    "dompurify": "^3.2.0",
+    "esbuild": "^0.25.0",
+    "marked": "^15.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.1": true
+  }
+}

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="220" viewBox="0 0 720 220" font-family="Segoe UI, Roboto, Arial, sans-serif">
+  <rect width="720" height="220" rx="12" fill="#f8fafd"/>
+  <!-- Browser A -->
+  <rect x="28" y="36" width="170" height="64" rx="10" fill="#ffffff" stroke="#e8453c" stroke-width="2"/>
+  <circle cx="52" cy="56" r="8" fill="#e8453c"/>
+  <text x="68" y="61" font-size="14" font-weight="600" fill="#1f2430">Alice's browser</text>
+  <text x="46" y="84" font-size="12" fill="#5f6368">TextOperation + Client</text>
+  <!-- Browser B -->
+  <rect x="28" y="126" width="170" height="64" rx="10" fill="#ffffff" stroke="#12a765" stroke-width="2"/>
+  <circle cx="52" cy="146" r="8" fill="#12a765"/>
+  <text x="68" y="151" font-size="14" font-weight="600" fill="#1f2430">Bob's browser</text>
+  <text x="46" y="174" font-size="12" fill="#5f6368">TextOperation + Client</text>
+  <!-- Channel arrows -->
+  <path d="M204 68 C 260 68, 260 90, 306 100" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M306 118 C 260 128, 260 158, 204 158" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
+  <text x="216" y="82" font-size="11" fill="#5f6368">ops [n, "s", -m]</text>
+  <text x="222" y="150" font-size="11" fill="#5f6368">broadcasts</text>
+  <!-- Phoenix -->
+  <rect x="308" y="76" width="168" height="66" rx="10" fill="#ffffff" stroke="#f5a623" stroke-width="2"/>
+  <text x="330" y="103" font-size="14" font-weight="600" fill="#1f2430">Phoenix channel</text>
+  <text x="336" y="124" font-size="12" fill="#5f6368">doc:&lt;id&gt; on /socket</text>
+  <!-- Arrow to GenServer -->
+  <path d="M482 109 L 528 109" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
+  <!-- GenServer -->
+  <rect x="532" y="60" width="162" height="98" rx="10" fill="#ffffff" stroke="#4f6df5" stroke-width="2"/>
+  <text x="556" y="90" font-size="14" font-weight="600" fill="#1f2430">Document.Server</text>
+  <text x="558" y="112" font-size="12" fill="#5f6368">GenServer · transforms</text>
+  <text x="558" y="130" font-size="12" fill="#5f6368">history · revision log</text>
+  <text x="558" y="148" font-size="12" fill="#5f6368">markdown source</text>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#9aa0a6"/></marker>
+    <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#9aa0a6"/></marker>
+    <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#9aa0a6"/></marker>
+  </defs>
+</svg>
