@@ -4,7 +4,7 @@ OpenAPI tooling for the ArchAstro platform. Two tools live here:
 
 | Package | What it does | Install / run |
 | --- | --- | --- |
-| [`@archastro/sdk-generator`](./packages/sdk-generator) | Reads an OpenAPI spec and emits typed TypeScript / Python SDKs plus cross-language contract tests. | `npx @archastro/sdk-generator` / `sdk-generator` |
+| [`@archastro/sdk-generator`](./packages/sdk-generator) | Reads an OpenAPI spec and emits typed TypeScript / Python / Swift / Go SDKs plus cross-language contract tests. | `npx @archastro/sdk-generator` / `sdk-generator` |
 | [`@archastro/channel-harness`](./packages/channel-harness) | Runtime contract-testing harness for Phoenix `x-channels` declared in the spec. Exposes a WebSocket + HTTP control API so TS, Python, (or any other) test suites can drive the same server. | `npx @archastro/channel-harness` / `channel-harness` |
 
 ---
@@ -29,13 +29,43 @@ Supported `--lang` values:
 
 - `typescript` — emit a typed TS SDK (resources, channel classes, auth helpers)
 - `python` — emit a typed Python SDK (Pydantic models, resources, channels)
+- `swift` — emit a typed Swift SDK (Codable models, async resources, channels)
+- `go` — emit a typed Go SDK (structs with JSON tags, context-taking resource
+  methods, channel helpers)
 - `contract-tests-ts` — emit TS contract tests that drive the channel harness
 - `contract-tests-py` — emit Python contract tests (pytest + prism mock server)
+- `contract-tests-swift` — emit swift-testing contract tests
+- `contract-tests-go` — emit Go contract tests (`go test`, prism + harness)
 
 Other flags:
 
 - `--config <config.json>` — package metadata (name, version, baseUrl, apiBase, defaultVersion)
 - `--ast-only` — skip codegen; write the intermediate SDK AST as JSON
+
+### Go target configuration
+
+Go compiles one package per directory and the generated contract tests live
+in a sibling package, so the Go backend needs to know both the package name
+and the import path callers reach it by. Put them in the config file:
+
+```jsonc
+{
+  "name": "archastro-go",
+  "baseUrl": "https://platform.archastro.ai",
+  "apiBase": "/api",
+  "defaultVersion": "v1",
+  "go": {
+    "packageName": "platform",
+    "importPath": "github.com/ArchAstro/archastro-go/platform"
+  }
+}
+```
+
+Everything lands flat in `<out>/<packageName>/` with a role prefix in the
+filename (`types_*.go`, `v1_*.go`, `channels_*.go`, `client.go`, `auth.go`);
+contract tests land in `<out>/contracttests/`. The emitter writes
+structurally correct Go, not column-aligned Go — run `gofmt -w` over the
+output as part of regeneration.
 
 ### `@archastro/channel-harness`
 

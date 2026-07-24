@@ -1,6 +1,6 @@
 # @archastro/sdk-generator
 
-Generate typed TypeScript, Python, and Swift SDKs — plus cross-language
+Generate typed TypeScript, Python, Swift, and Go SDKs — plus cross-language
 contract tests — from an OpenAPI spec produced by the ArchAstro API DSL.
 
 ## Install
@@ -18,7 +18,7 @@ sdk-generator --spec ./openapi.json --lang python --out ./sdk
 
 ```
 sdk-generator --spec <openapi.json> \
-                  [--lang typescript|python|swift|contract-tests-ts|contract-tests-py|contract-tests-swift] \
+                  [--lang typescript|python|swift|go|contract-tests-ts|contract-tests-py|contract-tests-swift|contract-tests-go] \
                   [--out <dir>] \
                   [--config <config.json>] \
                   [--ast-only]
@@ -31,9 +31,33 @@ Targets:
 | `typescript` | TS SDK: resources, channel classes, auth, client, zod schemas |
 | `python` | Python SDK: Pydantic models, resources, channels |
 | `swift` | Swift SDK: Codable models, resources, channels, async client |
+| `go` | Go SDK: JSON-tagged structs, context-taking resources, channels, client |
 | `contract-tests-ts` | TS contract tests that drive `@archastro/channel-harness` |
 | `contract-tests-py` | Python contract tests (pytest + Prism mock server) |
 | `contract-tests-swift` | Swift contract tests (swift-testing + Prism + harness) |
+| `contract-tests-go` | Go contract tests (`go test` + Prism + harness) |
+
+### Go target configuration
+
+Go resolves types *and* functions from one package-level namespace, and it
+compiles one package per directory, so the Go backend needs the package name
+and the import path callers reach it by. Both live in the config file under
+`go`:
+
+```jsonc
+{
+  "go": {
+    "packageName": "platform",
+    "importPath": "github.com/ArchAstro/archastro-go/platform"
+  }
+}
+```
+
+The SDK lands flat in `<out>/<packageName>/` (`types_*.go`, `v1_*.go`,
+`channels_*.go`, `client.go`, `auth.go`) and the contract tests in
+`<out>/contracttests/`, which imports the SDK by that path. The emitter
+writes structurally correct Go, not column-aligned Go — run `gofmt -w` over
+the output as part of regeneration.
 
 ## Generated SDK documentation
 
@@ -41,7 +65,7 @@ The generator preserves OpenAPI documentation as idiomatic source docs in each
 language. Use standard OpenAPI fields as the source of truth:
 
 - Operation `summary` and `description` become TypeScript JSDoc, Python
-  method docstrings, and Swift `///` documentation comments.
+  method docstrings, and Swift/Go `//` documentation comments.
 - Parameter and request-body field `description` values become parameter docs
   and input object field docs.
 - Success response descriptions become return-value docs.

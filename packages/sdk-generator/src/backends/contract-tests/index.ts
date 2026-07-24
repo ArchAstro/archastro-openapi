@@ -2,12 +2,17 @@ import type { SdkSpec } from "../../ast/types.js";
 import { emitTypeScriptContractTests } from "./typescript-emitter.js";
 import { emitPythonContractTests } from "./python-emitter.js";
 import { emitSwiftContractTests } from "./swift-emitter.js";
+import { emitGoContractTests } from "./go-emitter.js";
 
 export type GeneratedFiles = Record<string, string>;
 
 export interface ContractTestOptions {
   outDir: string;
-  lang: "typescript" | "python" | "swift";
+  lang: "typescript" | "python" | "swift" | "go";
+  /** Go only: import path of the generated SDK package. */
+  goImportPath?: string;
+  /** Go only: package alias the generated tests reference the SDK through. */
+  goPackageAlias?: string;
 }
 
 /**
@@ -25,6 +30,12 @@ export function generateContractTests(
     return emitTypeScriptContractTests(spec, options);
   } else if (options.lang === "swift") {
     return emitSwiftContractTests(spec, options);
+  } else if (options.lang === "go") {
+    return emitGoContractTests(spec, {
+      outDir: options.outDir,
+      importPath: options.goImportPath,
+      packageAlias: options.goPackageAlias,
+    });
   } else {
     return emitPythonContractTests(spec, options);
   }

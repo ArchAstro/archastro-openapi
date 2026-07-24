@@ -1,20 +1,23 @@
 import type { TypeRef, FieldDef, BodyDef, SchemaDef } from "../../ast/types.js";
 
 /** Languages the value/literal renderers can emit. */
-export type ValueLang = "typescript" | "python" | "swift";
+export type ValueLang = "typescript" | "python" | "swift" | "go";
 
 /**
  * Render a JSON value (e.g. an OpenAPI `example`) as a language literal.
  *
  * Handles strings, numbers, booleans, null, arrays, and nested objects so a
  * spec example like `{"name": "Acme", "tags": ["a"]}` becomes idiomatic TS,
- * Python, or Swift source. Swift literals target `JSONValue`-typed positions
- * (dictionary/array/scalar literals all work via ExpressibleBy…Literal).
+ * Python, Swift, or Go source. Swift literals target `JSONValue`-typed
+ * positions (dictionary/array/scalar literals all work via
+ * ExpressibleBy…Literal); Go literals target `any`-typed positions, which is
+ * what the runtime's `JSONOf` helper accepts.
  */
 export function renderLiteral(value: unknown, lang: ValueLang): string {
   if (value === null) {
     if (lang === "python") return "None";
     if (lang === "swift") return "JSONValue.null";
+    if (lang === "go") return "nil";
     return "null";
   }
   if (typeof value === "string") return JSON.stringify(value);
@@ -24,19 +27,23 @@ export function renderLiteral(value: unknown, lang: ValueLang): string {
     return String(value);
   }
   if (Array.isArray(value)) {
+    if (lang === "go") {
+      return `[]any{${value.map((v) => renderLiteral(v, lang)).join(", ")}}`;
+    }
     return `[${value.map((v) => renderLiteral(v, lang)).join(", ")}]`;
   }
   if (typeof value === "object") {
     const entries = Object.entries(value as Record<string, unknown>).map(
       ([k, v]) => {
         const rendered = renderLiteral(v, lang);
-        if (lang === "python" || lang === "swift") {
+        if (lang === "python" || lang === "swift" || lang === "go") {
           return `"${k}": ${rendered}`;
         }
         const key = isValidIdentifier(k) ? k : JSON.stringify(k);
         return `${key}: ${rendered}`;
       }
     );
+    if (lang === "go") return `map[string]any{${entries.join(", ")}}`;
     if (entries.length === 0) {
       return lang === "swift" ? "[:]" : "{}";
     }
@@ -46,6 +53,7 @@ export function renderLiteral(value: unknown, lang: ValueLang): string {
   }
   if (lang === "python") return "None";
   if (lang === "swift") return "JSONValue.null";
+  if (lang === "go") return "nil";
   return "undefined";
 }
 
@@ -70,7 +78,7 @@ export function generateDummyValue(
   if (example !== undefined) {
     return renderLiteral(example, lang);
   }
-  const emptyDict = lang === "swift" ? "[:]" : "{}";
+  const emptyDict = emptyDictLiteral(lang);
   switch (typeRef.kind) {
     case "primitive":
       return generatePrimitiveValue(typeRef.type, fieldName, lang);
@@ -78,9 +86,9 @@ export function generateDummyValue(
       // Generate one element so Prism doesn't reject empty required arrays
       if (typeRef.items) {
         const itemVal = generateDummyValue(typeRef.items, undefined, lang);
-        return `[${itemVal}]`;
+        return lang === "go" ? `[]any{${itemVal}}` : `[${itemVal}]`;
       }
-      return "[]";
+      return lang === "go" ? "[]any{}" : "[]";
     case "object":
       return generateObjectValue(typeRef.fields, lang);
     case "ref":
@@ -107,21 +115,31 @@ export function generateDummyValue(
 function nullLiteral(lang: ValueLang): string {
   if (lang === "python") return "None";
   if (lang === "swift") return "JSONValue.null";
+  if (lang === "go") return "nil";
   return "undefined";
 }
 
+/** Empty-object literal in a JSON-shaped (untyped) position. */
+export function emptyDictLiteral(lang: ValueLang): string {
+  if (lang === "swift") return "[:]";
+  if (lang === "go") return "map[string]any{}";
+  return "{}";
+}
+
 function generateObjectValue(fields: FieldDef[], lang: ValueLang): string {
-  const emptyDict = lang === "swift" ? "[:]" : "{}";
+  const emptyDict = emptyDictLiteral(lang);
   if (!fields || fields.length === 0) return emptyDict;
 
   const requiredFields = fields.filter((f) => f.required);
   if (requiredFields.length === 0) return emptyDict;
 
-  if (lang === "python" || lang === "swift") {
+  if (lang === "python" || lang === "swift" || lang === "go") {
     const entries = requiredFields.map(
       (f) => `"${f.name}": ${generateDummyValue(f.type, f.name, lang)}`
     );
-    return lang === "python" ? `{${entries.join(", ")}}` : `[${entries.join(", ")}]`;
+    if (lang === "python") return `{${entries.join(", ")}}`;
+    if (lang === "go") return `map[string]any{${entries.join(", ")}}`;
+    return `[${entries.join(", ")}]`;
   } else {
     const entries = requiredFields.map(
       (f) => `${f.name}: ${generateDummyValue(f.type, f.name, "typescript")}`
@@ -201,7 +219,7 @@ export function generateBodyLiteral(
   lang: ValueLang,
   opts: ValueOptions = {}
 ): string {
-  const emptyDict = lang === "swift" ? "[:]" : "{}";
+  const emptyDict = emptyDictLiteral(lang);
   const fields = resolveBodyFields(body, schemas);
   if (fields.length === 0) return emptyDict;
 
@@ -215,12 +233,15 @@ export function generateBodyLiteral(
       lang,
       opts.useExamples ? f.example : undefined
     );
-    if (lang === "python" || lang === "swift") return `"${f.name}": ${value}`;
+    if (lang === "python" || lang === "swift" || lang === "go") {
+      return `"${f.name}": ${value}`;
+    }
     return `${f.name}: ${value}`;
   });
 
   if (lang === "python") return `{${entries.join(", ")}}`;
   if (lang === "swift") return `[${entries.join(", ")}]`;
+  if (lang === "go") return `map[string]any{${entries.join(", ")}}`;
   return `{ ${entries.join(", ")} }`;
 }
 
