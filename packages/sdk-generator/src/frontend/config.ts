@@ -32,6 +32,20 @@ export interface FrontendConfig {
   resourceOverrides?: Record<string, { parent?: string; name?: string }>;
   /** Paths to exclude from the generated SDK (glob patterns) */
   ignorePaths?: string[];
+  /** Go backend settings (package name and import path of the emitted SDK). */
+  go?: GoTargetConfig;
+}
+
+/**
+ * Go compiles one package per directory and generated contract tests live in
+ * a sibling package, so the Go backend needs to know both the package name
+ * and the import path callers reach it by.
+ */
+export interface GoTargetConfig {
+  /** Go package name and directory for the generated SDK (default "platform"). */
+  packageName?: string;
+  /** Import path of that package, used by the generated contract tests. */
+  importPath?: string;
 }
 
 export const DEFAULT_CONFIG: Partial<FrontendConfig> = {

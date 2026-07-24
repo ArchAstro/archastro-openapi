@@ -1,13 +1,15 @@
 {
   "name": "@archastro/sdk-generator",
   "version": "0.7.3",
-  "description": "Generate typed TypeScript and Python SDKs (plus contract tests) from an OpenAPI spec.",
+  "description": "Generate typed TypeScript, Python, Swift, and Go SDKs (plus contract tests) from an OpenAPI spec.",
   "keywords": [
     "openapi",
     "sdk",
     "codegen",
     "typescript",
     "python",
+    "swift",
+    "golang",
     "archastro"
   ],
   "license": "MIT",
