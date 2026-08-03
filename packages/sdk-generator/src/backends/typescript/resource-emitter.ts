@@ -394,6 +394,7 @@ function isRawQueryValueType(ref: TypeRef): boolean {
     case "primitive":
     case "enum":
       return true;
+    case "nullable":
     case "optional":
       return isRawQueryValueType(ref.inner);
     case "array":
@@ -410,6 +411,7 @@ function isRawQueryArrayItemType(ref: TypeRef): boolean {
     case "primitive":
     case "enum":
       return true;
+    case "nullable":
     case "optional":
       return isRawQueryArrayItemType(ref.inner);
     case "union":
@@ -469,6 +471,9 @@ export function typeRefToTS(ref: TypeRef): string {
     case "optional":
       return `${typeRefToTS(ref.inner)} | undefined`;
 
+    case "nullable":
+      return `${typeRefToTS(ref.inner)} | null`;
+
     case "map":
       return `Record<string, ${typeRefToTS(ref.valueType)}>`;
 
@@ -518,6 +523,7 @@ function collectTypeRefs(ref: TypeRef, out: Set<string>): void {
     case "object":
       for (const f of ref.fields) collectTypeRefs(f.type, out);
       break;
+    case "nullable":
     case "optional":
       collectTypeRefs(ref.inner, out);
       break;

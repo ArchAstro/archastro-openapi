@@ -151,15 +151,20 @@ function joinCall(
 
 /** Typed value for a join payload parameter, matching the join signature. */
 function joinPayloadValue(param: ParamDef, ctx: GoValueContext): string {
-  const value = goPlainTypedValue(param.type, param.name, ctx);
+  let value = goPlainTypedValue(param.type, param.name, ctx);
   const base = typeRefToGo(
     unwrapOptional(param.type),
     (schema) => goQualifiedRef(ctx, schema),
     `${ctx.pkg}.`
   );
-  const optional = !param.required || param.type.kind === "optional";
-  const pointer = optional && !base.startsWith("[]") && !base.startsWith("map[");
-  return pointer ? `${ctx.pkg}.Ptr(${value})` : value;
+  const optional =
+    !param.required ||
+    param.type.kind === "optional";
+  if (base.startsWith("*")) value = `${ctx.pkg}.Ptr(${value})`;
+  if (optional && !base.startsWith("[]") && !base.startsWith("map[")) {
+    value = `${ctx.pkg}.Ptr(${value})`;
+  }
+  return value;
 }
 
 function testName(

@@ -5,8 +5,13 @@ import { fileURLToPath } from "node:url";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generateSwift, prepareSwiftSpec } from "../../src/backends/swift/index.js";
 import { emitSwiftModelsFile } from "../../src/backends/swift/model-emitter.js";
+import { emitSwiftChannelFile } from "../../src/backends/swift/channel-emitter.js";
 import { SwiftNameRegistry, uniqueSwiftMemberNames, swiftMemberName } from "../../src/backends/swift/identifiers.js";
-import { typeRefToSwift, findValueCycleSchemas } from "../../src/backends/swift/type-map.js";
+import {
+  typeRefToSwift,
+  findValueCycleSchemas,
+  swiftQueryStringExpr,
+} from "../../src/backends/swift/type-map.js";
 import { emitSwiftContractTests } from "../../src/backends/contract-tests/swift-emitter.js";
 import type { SchemaDef } from "../../src/ast/types.js";
 
@@ -61,12 +66,27 @@ describe("swift type map", () => {
     ).toBe("Team?");
     expect(
       typeRefToSwift({
+        kind: "nullable",
+        inner: { kind: "ref", schema: "Team" },
+      })
+    ).toBe("Team?");
+    expect(
+      typeRefToSwift({
         kind: "map",
         keyType: { kind: "primitive", type: "string" },
         valueType: { kind: "unknown" },
       })
     ).toBe("[String: JSONValue]");
     expect(typeRefToSwift({ kind: "enum", values: ["a", "b"] })).toBe("String");
+    expect(
+      swiftQueryStringExpr(
+        {
+          kind: "nullable",
+          inner: { kind: "primitive", type: "string" },
+        },
+        "value"
+      )
+    ).toBe('value.map { $0 } ?? "null"');
   });
 
   it("detects by-value containment cycles", () => {
@@ -82,6 +102,16 @@ describe("swift type map", () => {
         ],
       },
       {
+        name: "NullableNode",
+        fields: [
+          {
+            name: "next",
+            type: { kind: "nullable", inner: { kind: "ref", schema: "NullableNode" } },
+            required: true,
+          },
+        ],
+      },
+      {
         name: "Tree",
         fields: [
           {
@@ -93,8 +123,9 @@ describe("swift type map", () => {
       },
     ];
     const cycles = findValueCycleSchemas(schemas);
-    // Optional self-ref recurses by value; array self-ref does not (boxed).
+    // Optional and nullable self-refs recurse by value; array self-ref is boxed.
     expect(cycles.has("Node")).toBe(true);
+    expect(cycles.has("NullableNode")).toBe(true);
     expect(cycles.has("Tree")).toBe(false);
   });
 });
@@ -146,6 +177,40 @@ describe("swift model emitter", () => {
 });
 
 describe("swift backend", () => {
+  it("encodes required nullable channel parameters as explicit JSON null", () => {
+    const output = emitSwiftChannelFile(
+      {
+        name: "Nullable",
+        className: "NullableChannel",
+        joins: [
+          {
+            topicPattern: "nullable",
+            params: [
+              {
+                name: "value",
+                type: {
+                  kind: "nullable",
+                  inner: { kind: "primitive", type: "string" },
+                },
+                required: true,
+              },
+            ],
+            returnType: { kind: "unknown" },
+          },
+        ],
+        messages: [],
+        pushes: [],
+      },
+      new SwiftNameRegistry()
+    );
+
+    expect(output).toContain("value: String?");
+    expect(output).not.toContain("value: String? = nil");
+    expect(output).toContain(
+      'payload["value"] = value.map { .string($0) } ?? .null'
+    );
+  });
+
   it("generates the full SDK file set", () => {
     const files = generateFixtureFiles();
     const paths = Object.keys(files);

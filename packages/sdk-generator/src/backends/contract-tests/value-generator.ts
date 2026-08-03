@@ -101,6 +101,7 @@ export function generateDummyValue(
       return typeRef.variants.length > 0
         ? generateDummyValue(typeRef.variants[0]!, fieldName, lang)
         : nullLiteral(lang);
+    case "nullable":
     case "optional":
       return generateDummyValue(typeRef.inner, fieldName, lang);
     case "map":

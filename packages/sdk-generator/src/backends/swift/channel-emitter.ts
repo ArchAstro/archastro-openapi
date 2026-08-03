@@ -289,7 +289,9 @@ function emitJoinMethod(
   for (const tp of topicParams) sigParts.push(`${tp.swiftName}: String`);
   for (const { param, swiftName } of payloadParams) {
     const base = typeRefToSwift(unwrapOptional(param.type));
-    const optional = !param.required || param.type.kind === "optional";
+    const optional =
+      !param.required ||
+      param.type.kind === "optional";
     sigParts.push(optional ? `${swiftName}: ${base}? = nil` : `${swiftName}: ${base}`);
   }
 
@@ -307,7 +309,9 @@ function emitJoinMethod(
         cb.line("var payload: [String: JSONValue] = [:]");
         for (const { param, swiftName } of payloadParams) {
           const bare = swiftName.replace(/`/g, "");
-          const optional = !param.required || param.type.kind === "optional";
+          const optional =
+            !param.required ||
+            param.type.kind === "optional";
           // Wire key preserves the spec's original field name.
           const wireKey = swiftString(param.name);
           if (optional) {

@@ -72,6 +72,7 @@ function containsRef(ref: TypeRef): boolean {
       return true;
     case "array":
       return containsRef(ref.items);
+    case "nullable":
     case "optional":
       return containsRef(ref.inner);
     case "union":

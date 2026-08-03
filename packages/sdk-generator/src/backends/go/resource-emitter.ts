@@ -294,7 +294,9 @@ export function paramAsField(param: ParamDef) {
   return {
     name: param.wireName ?? param.name,
     type: param.type,
-    required: param.required && param.type.kind !== "optional",
+    required:
+      param.required &&
+      param.type.kind !== "optional",
     description: param.description,
   };
 }
@@ -511,20 +513,35 @@ function emitQueryAppend(
     makeRefResolver(registry)
   ).startsWith("*");
 
-  const append = (expr: string): void => {
-    if (inner.kind === "array") {
+  const append = (ref: TypeRef, expr: string): void => {
+    if (ref.kind === "array") {
       cb.block(`for _, item := range ${expr}`, () => {
-        cb.line(`q.Add(${wireKey}, ${goQueryStringExpr(inner.items, "item")})`);
+        cb.line(`q.Add(${wireKey}, ${goQueryStringExpr(ref.items, "item")})`);
       });
     } else {
-      cb.line(`q.Add(${wireKey}, ${goQueryStringExpr(inner, expr)})`);
+      cb.line(`q.Add(${wireKey}, ${goQueryStringExpr(ref, expr)})`);
     }
   };
 
   if (pointer) {
-    cb.block(`if ${accessor} != nil`, () => append(`*${accessor}`));
+    const valueType = inner.kind === "nullable" ? inner.inner : inner;
+    if (param.required && inner.kind === "nullable") {
+      cb.line(`if ${accessor} == nil {`);
+      cb.indent();
+      cb.line(`q.Add(${wireKey}, "null")`);
+      cb.dedent();
+      cb.line("} else {");
+      cb.indent();
+      append(valueType, `*${accessor}`);
+      cb.dedent();
+      cb.line("}");
+    } else {
+      cb.block(`if ${accessor} != nil`, () =>
+        append(valueType, `*${accessor}`)
+      );
+    }
   } else {
-    append(accessor);
+    append(inner, accessor);
   }
 }
 

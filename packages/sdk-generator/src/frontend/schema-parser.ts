@@ -120,7 +120,7 @@ export function jsonSchemaToTypeRef(schema: JsonSchema): TypeRef {
 
   if (schema.nullable) {
     const inner = jsonSchemaToTypeRef({ ...schema, nullable: undefined });
-    return { kind: "optional", inner };
+    return { kind: "nullable", inner };
   }
 
   switch (schema.type) {
@@ -320,6 +320,7 @@ function collectRefsFromTypeRef(ref: TypeRef, deps: Set<string>): void {
     case "object":
       for (const f of ref.fields) collectRefsFromTypeRef(f.type, deps);
       break;
+    case "nullable":
     case "optional":
       collectRefsFromTypeRef(ref.inner, deps);
       break;

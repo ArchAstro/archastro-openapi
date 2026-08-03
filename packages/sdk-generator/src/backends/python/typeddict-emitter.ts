@@ -184,6 +184,7 @@ export function collectTypedDictImports(
 
 function collectTypingFromTypeRef(ref: TypeRef, imports: Set<string>): void {
   switch (ref.kind) {
+    case "nullable":
     case "optional":
       imports.add("Optional");
       collectTypingFromTypeRef(ref.inner, imports);
