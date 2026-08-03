@@ -192,6 +192,51 @@ describe("Zod emitter", () => {
   });
 });
 
+describe("Zod emitter nullable fields", () => {
+  const nullableFixture = {
+    openapi: "3.0.0",
+    info: { title: "Nullable API", version: "1.0.0" },
+    paths: {},
+    components: {
+      schemas: {
+        NullablePayload: {
+          type: "object",
+          properties: {
+            required_value: { type: "string", nullable: true },
+            optional_value: { type: "string", nullable: true },
+          },
+          required: ["required_value"],
+        },
+      },
+    },
+  };
+
+  it("keeps nullability separate from whether an object key is required", () => {
+    const nullableAst = parseOpenApiSpec(nullableFixture, {
+      name: "nullable-api",
+      version: "1.0.0",
+      baseUrl: "https://example.test",
+      apiPrefix: "/api",
+      scopePrefix: "/apps/{app_id}",
+    });
+    const nullableSchema = nullableAst.schemas.find(
+      (schema) => schema.name === "NullablePayload"
+    );
+
+    expect(nullableSchema).toBeDefined();
+    const nullableOutput = emitZodSchemaFile([nullableSchema!]);
+
+    expect(nullableOutput).toContain("required_value: string | null;");
+    expect(nullableOutput).toContain("required_value: z.string().nullable(),");
+    expect(nullableOutput).toContain(
+      "optional_value?: string | null | undefined;"
+    );
+    expect(nullableOutput).toContain(
+      "optional_value: z.string().nullable().optional(),"
+    );
+  });
+});
+
 describe("Zod emitter includes schema and field documentation", () => {
   const output = emitZodSchemaFile([
     {
@@ -634,6 +679,13 @@ describe("TypeScript contract tests include raw response operations", () => {
     );
     expect(content).toContain("expect(result.content).toBeDefined();");
     expect(content).toContain("expect(result.mimeType).toBeTruthy();");
+  });
+
+  it("uses deterministic Prism responses for generated shape contracts", () => {
+    const setup =
+      files["/tmp/test-sdk/__tests__/contract/global-setup.ts"]!;
+
+    expect(setup).not.toContain('"--dynamic"');
   });
 });
 

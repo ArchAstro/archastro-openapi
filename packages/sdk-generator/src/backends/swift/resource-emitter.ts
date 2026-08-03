@@ -380,7 +380,9 @@ function emitQueryAppend(
   wireKey: string
 ): void {
   const bare = name.replace(/`/g, "");
-  const optional = !param.required || param.type.kind === "optional";
+  const optional =
+    !param.required ||
+    param.type.kind === "optional";
   const inner = unwrapOptional(param.type);
 
   const appendLines = (expr: string): void => {
@@ -420,8 +422,16 @@ function buildParamList(
   const resolveRef = (s: string): string =>
     registry.has(`schema:${s}`) ? registry.lookup(`schema:${s}`) : s;
   const withIndex = op.queryParams.map((param, index) => ({ param, index }));
-  const required = withIndex.filter(({ param }) => param.required && param.type.kind !== "optional");
-  const optional = withIndex.filter(({ param }) => !param.required || param.type.kind === "optional");
+  const required = withIndex.filter(
+    ({ param }) =>
+      param.required &&
+      param.type.kind !== "optional"
+  );
+  const optional = withIndex.filter(
+    ({ param }) =>
+      !param.required ||
+      param.type.kind === "optional"
+  );
   for (const { param, index } of required) {
     parts.push(`${names.query[index]}: ${typeRefToSwift(param.type, resolveRef)}`);
   }

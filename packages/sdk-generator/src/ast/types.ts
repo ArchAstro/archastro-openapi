@@ -84,6 +84,7 @@ export type TypeRef =
   | RefTypeRef
   | EnumTypeRef
   | UnionTypeRef
+  | NullableTypeRef
   | OptionalTypeRef
   | MapTypeRef
   | UnknownTypeRef
@@ -138,6 +139,12 @@ export interface UnionDiscriminator {
 
 export interface OptionalTypeRef {
   kind: "optional";
+  inner: TypeRef;
+}
+
+/** A value that may be JSON null. This is distinct from an omitted key. */
+export interface NullableTypeRef {
+  kind: "nullable";
   inner: TypeRef;
 }
 

@@ -593,7 +593,7 @@ function findSdkFieldInType(
     if (!schema) return undefined;
     return schema.fields.find((f) => f.sdkRole === role);
   }
-  if (typeRef.kind === "optional") {
+  if (typeRef.kind === "optional" || typeRef.kind === "nullable") {
     return findSdkFieldInType(typeRef.inner, role, schemas, seenSchemas);
   }
   return undefined;

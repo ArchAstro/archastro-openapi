@@ -1088,7 +1088,7 @@ describe("Python client emitter", () => {
     expect(out).not.toContain("set_refresh_handler(_refresh)");
   });
 
-  it("keeps refresh handling when auth tokens are returned through a schema ref", () => {
+  it("keeps refresh handling when auth tokens are returned through a nullable schema ref", () => {
     const tokenSchema = {
       name: "AuthTokens",
       fields: [
@@ -1144,7 +1144,10 @@ describe("Python client emitter", () => {
               },
             ],
           },
-          returnType: { kind: "ref", schema: "AuthTokens" },
+          returnType: {
+            kind: "nullable",
+            inner: { kind: "ref", schema: "AuthTokens" },
+          },
           errors: [],
         },
         {
@@ -3069,6 +3072,13 @@ describe("Python contract-tests emitter wires channels into the conftest", () =>
     expect(conftest).toContain("npm ci --ignore-scripts");
     expect(conftest).not.toContain('"npx"');
     expect(conftest).not.toContain("npm install @archastro/channel-harness");
+  });
+
+  it("uses deterministic Prism responses for generated shape contracts", () => {
+    const files = emitPythonContractTests(ast, { outDir: "/tmp/test-python-sdk" });
+    const conftest = files["/tmp/test-python-sdk/tests/contract/conftest.py"]!;
+
+    expect(conftest).not.toContain('"--dynamic"');
   });
 
   it("emits per-channel test files under tests/contract/channels/", () => {

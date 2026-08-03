@@ -5,6 +5,9 @@ import { fileURLToPath } from "node:url";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generateGo, prepareGoSpec } from "../../src/backends/go/index.js";
 import { emitGoModelsFile } from "../../src/backends/go/model-emitter.js";
+import { emitGoChannelFile } from "../../src/backends/go/channel-emitter.js";
+import { emitGoResourceFile } from "../../src/backends/go/resource-emitter.js";
+import { emitGoChannelContractTestFile } from "../../src/backends/contract-tests/channel-emitter-go.js";
 import {
   GoNameRegistry,
   goExportedName,
@@ -16,6 +19,7 @@ import {
 import {
   goFieldType,
   goJSONTag,
+  goQueryStringExpr,
   typeRefToGo,
 } from "../../src/backends/go/type-map.js";
 import { emitGoContractTests } from "../../src/backends/contract-tests/go-emitter.js";
@@ -95,6 +99,15 @@ describe("go type map", () => {
       })
     ).toBe("map[string]JSONValue");
     expect(typeRefToGo({ kind: "enum", values: ["a", "b"] })).toBe("string");
+    expect(
+      goQueryStringExpr(
+        {
+          kind: "nullable",
+          inner: { kind: "primitive", type: "string" },
+        },
+        "value"
+      )
+    ).toBe("queryParam(value)");
   });
 
   it("qualifies runtime types when emitting into another package", () => {
@@ -220,6 +233,102 @@ describe("go model emitter", () => {
 });
 
 describe("go backend", () => {
+  it("encodes required nullable channel parameters as explicit JSON null", () => {
+    const registry = new GoNameRegistry();
+    const channel = {
+      name: "Nullable",
+      className: "NullableChannel",
+      joins: [
+        {
+          topicPattern: "nullable",
+          params: [
+            {
+              name: "value",
+              type: {
+                kind: "nullable" as const,
+                inner: { kind: "primitive" as const, type: "string" as const },
+              },
+              required: true,
+            },
+            {
+              name: "optional_value",
+              type: {
+                kind: "optional" as const,
+                inner: {
+                  kind: "nullable" as const,
+                  inner: { kind: "primitive" as const, type: "string" as const },
+                },
+              },
+              required: false,
+            },
+          ],
+          returnType: { kind: "unknown" as const },
+        },
+      ],
+      messages: [],
+      pushes: [],
+    };
+    const output = emitGoChannelFile(
+      "platform",
+      channel,
+      registry
+    );
+    const contract = emitGoChannelContractTestFile(
+      channel,
+      { pkg: "platform", registry, schemas: [] },
+      "github.com/ArchAstro/archastro-go/platform",
+      (name) => name
+    );
+
+    expect(output).toContain("value *string");
+    expect(output).toContain('payload["value"] = JSONOf(value)');
+    expect(output).not.toContain("if value != nil");
+    expect(contract).toMatch(
+      /JoinNullableChannel\(ctx, socket, platform\.Ptr\("[^"]+"\), platform\.Ptr\(platform\.Ptr\("[^"]+"\)\)\)/
+    );
+  });
+
+  it("serializes required nullable query parameters without omitting nil", () => {
+    const output = emitGoResourceFile(
+      "platform",
+      {
+        name: "widgets",
+        className: "WidgetsResource",
+        path: "/widgets",
+        scopeParams: [],
+        children: [],
+        operations: [
+          {
+            name: "list",
+            operationId: "get_widgets",
+            method: "GET",
+            path: "/api/v1/widgets",
+            deprecated: false,
+            pathParams: [],
+            queryParams: [
+              {
+                name: "value",
+                type: {
+                  kind: "nullable",
+                  inner: { kind: "primitive", type: "string" },
+                },
+                required: true,
+              },
+            ],
+            returnType: { kind: "unknown" },
+            errors: [],
+          },
+        ],
+      },
+      new GoNameRegistry()
+    );
+
+    expect(output).toContain("Value *string");
+    expect(output).toContain("if params.Value == nil");
+    expect(output).toContain('q.Add("value", "null")');
+    expect(output).toContain('q.Add("value", *params.Value)');
+  });
+
   it("generates the full SDK file set flat in one package directory", () => {
     const files = generateFixtureFiles();
     const paths = Object.keys(files);

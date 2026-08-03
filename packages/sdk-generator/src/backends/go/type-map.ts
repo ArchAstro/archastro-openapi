@@ -34,6 +34,8 @@ export function typeRefToGo(
       return `${runtimePrefix}JSONValue`;
     case "optional":
       return goPointer(typeRefToGo(ref.inner, resolveRef, runtimePrefix));
+    case "nullable":
+      return goPointer(typeRefToGo(ref.inner, resolveRef, runtimePrefix));
     case "map":
       return `map[string]${typeRefToGo(ref.valueType, resolveRef, runtimePrefix)}`;
     case "unknown":
@@ -110,7 +112,11 @@ export function goJSONTag(field: FieldDef): string {
 }
 
 export function unwrapOptional(ref: TypeRef): TypeRef {
-  return ref.kind === "optional" ? ref.inner : ref;
+  let inner = ref;
+  while (inner.kind === "optional") {
+    inner = inner.inner;
+  }
+  return inner;
 }
 
 /**

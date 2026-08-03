@@ -173,6 +173,9 @@ export function typeRefToZod(ref: TypeRef): string {
     case "optional":
       return `${typeRefToZod(ref.inner)}.optional()`;
 
+    case "nullable":
+      return `${typeRefToZod(ref.inner)}.nullable()`;
+
     case "map":
       return `z.record(${typeRefToZod(ref.valueType)})`;
 
@@ -218,6 +221,8 @@ function typeRefToTS(ref: TypeRef): string {
       return ref.variants.map(typeRefToTS).join(" | ");
     case "optional":
       return `${typeRefToTS(ref.inner)} | undefined`;
+    case "nullable":
+      return `${typeRefToTS(ref.inner)} | null`;
     case "map":
       return `Record<string, ${typeRefToTS(ref.valueType)}>`;
     case "unknown":

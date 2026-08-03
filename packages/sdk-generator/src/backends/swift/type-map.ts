@@ -31,6 +31,8 @@ export function typeRefToSwift(
       return "JSONValue";
     case "optional":
       return `${typeRefToSwift(ref.inner, resolveRef)}?`;
+    case "nullable":
+      return `${typeRefToSwift(ref.inner, resolveRef)}?`;
     case "map":
       return `[String: ${typeRefToSwift(ref.valueType, resolveRef)}]`;
     case "unknown":
@@ -62,7 +64,11 @@ export function isOptionalType(ref: TypeRef): boolean {
 }
 
 export function unwrapOptional(ref: TypeRef): TypeRef {
-  return ref.kind === "optional" ? ref.inner : ref;
+  let inner = ref;
+  while (inner.kind === "optional") {
+    inner = inner.inner;
+  }
+  return inner;
 }
 
 /**
@@ -70,6 +76,10 @@ export function unwrapOptional(ref: TypeRef): TypeRef {
  * join/message payload dictionaries. `expr` is the source expression.
  */
 export function swiftToJSONValueExpr(ref: TypeRef, expr: string): string {
+  if (ref.kind === "nullable") {
+    const valueExpr = swiftToJSONValueExpr(ref.inner, "$0");
+    return `${expr}.map { ${valueExpr} } ?? .null`;
+  }
   const inner = unwrapOptional(ref);
   switch (inner.kind) {
     case "primitive":
@@ -115,6 +125,10 @@ export function swiftToJSONValueExpr(ref: TypeRef, expr: string): string {
  * the caller (repeat-key), so this covers scalars only.
  */
 export function swiftQueryStringExpr(ref: TypeRef, expr: string): string {
+  if (ref.kind === "nullable") {
+    const valueExpr = swiftQueryStringExpr(ref.inner, "$0");
+    return `${expr}.map { ${valueExpr} } ?? "null"`;
+  }
   const inner = unwrapOptional(ref);
   switch (inner.kind) {
     case "primitive":
@@ -156,6 +170,7 @@ function typeRefUsesDate(ref: TypeRef): boolean {
       return typeRefUsesDate(ref.items);
     case "object":
       return ref.fields.some((f) => typeRefUsesDate(f.type));
+    case "nullable":
     case "optional":
       return typeRefUsesDate(ref.inner);
     case "union":
@@ -179,7 +194,9 @@ export function findValueCycleSchemas(schemas: SchemaDef[]): Set<string> {
 
   const collect = (ref: TypeRef, out: Set<string>): void => {
     if (ref.kind === "ref" && names.has(ref.schema)) out.add(ref.schema);
-    else if (ref.kind === "optional") collect(ref.inner, out);
+    else if (ref.kind === "optional" || ref.kind === "nullable") {
+      collect(ref.inner, out);
+    }
   };
 
   for (const schema of schemas) {

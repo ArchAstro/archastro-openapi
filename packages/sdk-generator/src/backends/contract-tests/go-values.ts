@@ -89,6 +89,7 @@ export function goTypedValue(
       return generateDummyValue(typeRef, fieldName, "go");
     case "enum":
       return generateDummyValue(typeRef, fieldName, "go");
+    case "nullable":
     case "optional":
       return goTypedValue(typeRef.inner, fieldName, hoistName, ctx, mode, frame);
     case "array": {
@@ -311,7 +312,10 @@ export function goParamsValue(op: OperationDef, ctx: GoValueContext): string {
   const entries: string[] = [];
   for (let i = 0; i < op.queryParams.length; i++) {
     const param = op.queryParams[i]!;
-    if (!param.required || param.type.kind === "optional") continue;
+    if (
+      !param.required ||
+      param.type.kind === "optional"
+    ) continue;
     const field = paramAsField(param);
     const value = goTypedValue(
       unwrapOptional(param.type),

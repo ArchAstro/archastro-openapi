@@ -283,6 +283,8 @@ function typeRefToTSSimple(ref: TypeRef): string {
       break;
     case "optional":
       return typeRefToTSSimple(ref.inner);
+    case "nullable":
+      return `${typeRefToTSSimple(ref.inner)} | null`;
     default:
       return "string";
   }

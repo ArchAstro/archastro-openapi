@@ -86,6 +86,13 @@ function walkType(
         hoisted: inner.hoisted,
       };
     }
+    case "nullable": {
+      const inner = walkType(t.inner, nameAtThisPoint, variant);
+      return {
+        type: { kind: "nullable", inner: inner.type },
+        hoisted: inner.hoisted,
+      };
+    }
     case "array": {
       const items = walkType(t.items, `${nameAtThisPoint}Item`, variant);
       return {

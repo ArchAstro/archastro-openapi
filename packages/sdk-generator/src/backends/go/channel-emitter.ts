@@ -364,7 +364,9 @@ function emitJoinFunc(
   for (const tp of topicParams) sig.push(`${tp.goName} string`);
   for (const { param, goName } of payloadParams) {
     const base = typeRefToGo(unwrapOptional(param.type), resolveRef);
-    const optional = !param.required || param.type.kind === "optional";
+    const optional =
+      !param.required ||
+      param.type.kind === "optional";
     sig.push(`${goName} ${optional && !base.startsWith("[]") && !base.startsWith("map[") ? `*${base}` : base}`);
   }
 
@@ -382,7 +384,9 @@ function emitJoinFunc(
       if (payloadParams.length > 0) {
         cb.line("payload := map[string]JSONValue{}");
         for (const { param, goName } of payloadParams) {
-          const optional = !param.required || param.type.kind === "optional";
+          const optional =
+            !param.required ||
+            param.type.kind === "optional";
           const base = typeRefToGo(unwrapOptional(param.type), resolveRef);
           const isPointer =
             optional && !base.startsWith("[]") && !base.startsWith("map[");

@@ -267,6 +267,7 @@ function collectInlineResponses(resources: ResourceDef[]): InlineResponseGroup[]
 /** Mirror of pydantic-emitter's typing-import collector for inline TypeRefs. */
 function collectTypingFromTypeRef(ref: TypeRef, imports: Set<string>): void {
   switch (ref.kind) {
+    case "nullable":
     case "optional":
       imports.add("Optional");
       collectTypingFromTypeRef(ref.inner, imports);
@@ -335,6 +336,7 @@ function collectOperationTypingImports(
 
 function collectTypingFromResourceAnnotation(ref: TypeRef, imports: Set<string>): void {
   switch (ref.kind) {
+    case "nullable":
     case "optional":
       imports.add("Optional");
       collectTypingFromResourceAnnotation(ref.inner, imports);
@@ -931,6 +933,8 @@ function typeRefToPythonResourceAnnotation(ref: TypeRef): string {
       return ref.variants.map(typeRefToPythonResourceAnnotation).join(" | ");
     case "optional":
       return `Optional[${typeRefToPythonResourceAnnotation(ref.inner)}]`;
+    case "nullable":
+      return `Optional[${typeRefToPythonResourceAnnotation(ref.inner)}]`;
     case "map":
       return `Dict[str, ${typeRefToPythonResourceAnnotation(ref.valueType)}]`;
     case "unknown":
@@ -982,6 +986,7 @@ function collectTypeRefs(ref: TypeRef, out: Set<string>): void {
     case "object":
       for (const f of ref.fields) collectTypeRefs(f.type, out);
       break;
+    case "nullable":
     case "optional":
       collectTypeRefs(ref.inner, out);
       break;

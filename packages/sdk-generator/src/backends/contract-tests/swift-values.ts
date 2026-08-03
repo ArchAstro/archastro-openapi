@@ -44,6 +44,7 @@ export function swiftTypedValue(
       return generateDummyValue(typeRef, fieldName, "swift");
     case "enum":
       return generateDummyValue(typeRef, fieldName, "swift");
+    case "nullable":
     case "optional":
       return swiftTypedValue(typeRef.inner, fieldName, hoistName, schemas, mode, seenSchemas);
     case "array": {

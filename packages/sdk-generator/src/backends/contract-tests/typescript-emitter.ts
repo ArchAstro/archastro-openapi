@@ -357,11 +357,12 @@ ${includeHarness ? harnessReadUrlsFn() : ""}
 function prismSetup(): string {
   return `
   const prismPort = process.env.PRISM_PORT ?? "4040";
+  // Static responses keep shape-contract tests deterministic. Prism's dynamic
+  // faker can crash on valid deeply nested oneOf schemas.
   prismProcess = spawn("npx", [
     "@stoplight/prism-cli", "mock", specPath,
     "--port", prismPort,
     "--host", "127.0.0.1",
-    "--dynamic",
   ], { stdio: ["pipe", "pipe", "pipe"] });
   await waitForPrism(parseInt(prismPort), 30_000);`;
 }

@@ -203,6 +203,9 @@ export function typeRefToPython(ref: TypeRef): string {
     case "optional":
       return `Optional[${typeRefToPython(ref.inner)}]`;
 
+    case "nullable":
+      return `Optional[${typeRefToPython(ref.inner)}]`;
+
     case "map":
       return `dict[str, ${typeRefToPython(ref.valueType)}]`;
 
@@ -252,6 +255,7 @@ function typeRefUsesDatetime(ref: TypeRef): boolean {
       return typeRefUsesDatetime(ref.items);
     case "object":
       return ref.fields.some((f) => typeRefUsesDatetime(f.type));
+    case "nullable":
     case "optional":
       return typeRefUsesDatetime(ref.inner);
     case "union":
@@ -322,6 +326,7 @@ function collectTypingImports(schemas: SchemaDef[]): Set<string> {
 
 function collectImportsFromType(ref: TypeRef, imports: Set<string>): void {
   switch (ref.kind) {
+    case "nullable":
     case "optional":
       imports.add("Optional");
       collectImportsFromType(ref.inner, imports);
