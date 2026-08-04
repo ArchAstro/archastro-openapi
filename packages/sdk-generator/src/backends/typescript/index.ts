@@ -13,6 +13,8 @@ import { snakeCase } from "../../utils/naming.js";
 export interface TypeScriptBackendOptions {
   /** Output directory for generated SDK files */
   outDir: string;
+  /** Hand-maintained modules re-exported from the generated package barrel. */
+  clientExtensionModules?: string[];
 }
 
 /**
@@ -98,7 +100,10 @@ export function generateTypeScript(
   files[join(srcDir, "client.ts")] = emitClientFile(spec);
 
   // 7. Generate main index
-  files[join(srcDir, "index.ts")] = generateMainIndex(spec);
+  files[join(srcDir, "index.ts")] = generateMainIndex(
+    spec,
+    options.clientExtensionModules ?? [],
+  );
 
   return files;
 }
@@ -144,7 +149,10 @@ function generateVersionedResourcesIndex(
   return lines.join("\n") + "\n";
 }
 
-function generateMainIndex(spec: SdkSpec): string {
+function generateMainIndex(
+  spec: SdkSpec,
+  clientExtensionModules: string[],
+): string {
   const lines = [generatedHeader()];
   lines.push(`export * from "./types/index.js";`);
 
@@ -164,7 +172,7 @@ function generateMainIndex(spec: SdkSpec): string {
   }
 
   lines.push(
-    `export { PlatformClient, type PlatformClientConfig } from "./client.js";`
+    `export { PlatformClient, type PlatformClientConfig, type PlatformClientConstructor, type PlatformClientExtension, type PlatformClientClass } from "./client.js";`
   );
   // Session types for PlatformClient.forApp (implementation is hand-maintained
   // in app-session.ts; only types are re-exported — not PasswordlessAuth etc.)
@@ -186,18 +194,8 @@ function generateMainIndex(spec: SdkSpec): string {
       );
     }
   }
-  if (
-    spec.channels.some((channel) => channel.className === "ApiObjectChannel")
-  ) {
-    lines.push(
-      'export { CustomObjectSubscriptions, type DeepPartial, type CustomObjectConnectionState, type CustomObjectSnapshot, type CustomObjectUpdate, type CustomObjectPresence, type CustomObjectPresenceUpdate, type CustomObjectPresenceLeave, type CustomObjectSubscriptionOptions, type CustomObjectSubscription } from "./custom-object-subscriptions.js";',
-    );
-    lines.push(
-      'export { ApiError, AuthenticationError, AuthorizationError, NotFoundError, ValidationError, NetworkError } from "./runtime/http-client.js";',
-    );
-    lines.push(
-      'export { createPlatformSocket, type PlatformSocketOptions, Socket, Channel, ChannelError, ChannelReplyError, type SocketConfig, type SocketEvent } from "./platform-socket.js";',
-    );
+  for (const moduleSpecifier of clientExtensionModules) {
+    lines.push(`export * from ${JSON.stringify(moduleSpecifier)};`);
   }
   return lines.join("\n") + "\n";
 }

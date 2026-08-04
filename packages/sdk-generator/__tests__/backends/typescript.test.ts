@@ -913,6 +913,20 @@ describe("Resource emitter preserves scoped path parameter docs", () => {
 
 describe("Client emitter", () => {
   const output = emitClientFile(ast);
+  const sessionOutput = emitClientFile({
+    ...ast,
+    auth: {
+      ...ast.auth,
+      schemes: {
+        ...ast.auth.schemes,
+        publishable_key: {
+          type: "apiKey",
+          in: "header",
+          name: "x-archastro-api-key",
+        },
+      },
+    },
+  });
   const realtimeAst = {
     ...ast,
     channels: [
@@ -930,6 +944,18 @@ describe("Client emitter", () => {
 
   it("generates PlatformClient class", () => {
     expect(output).toContain("export class PlatformClient");
+  });
+
+  it("emits a generic, typed class-extension primitive", () => {
+    expect(output).toContain("export type PlatformClientConstructor");
+    expect(output).toContain("new (...args: any[]) => TClient");
+    expect(output).toContain("export type PlatformClientExtension");
+    expect(output).toContain("export interface PlatformClientClass");
+    expect(output).toContain("static extend<");
+    expect(output).toContain("extension: PlatformClientExtension<TBase, TExtended>");
+    expect(output).toContain(
+      "return extension(this) as unknown as PlatformClientClass<InstanceType<TExtended>>;",
+    );
   });
 
   it("generates PlatformClientConfig interface", () => {
@@ -955,6 +981,12 @@ describe("Client emitter", () => {
     expect(output).toContain("this.http.setAccessToken(token)");
   });
 
+  it("uses an ECMAScript private field that remains mixin-compatible", () => {
+    expect(output).toContain("#refreshToken?: string");
+    expect(output).toContain("return this.#refreshToken");
+    expect(output).not.toContain("private _refreshToken");
+  });
+
   it("includes default base URL", () => {
     expect(output).toContain(
       'baseUrl: config.baseUrl ?? "https://platform.archastro.ai"'
@@ -962,38 +994,26 @@ describe("Client emitter", () => {
   });
 
   it("emits forApp factory delegating to hand-maintained app-session", () => {
-    // Only when the fixture has a publishable_key scheme
-    if (output.includes("withToken")) {
-      expect(output).toContain('from "./app-session.js"');
-      expect(output).toContain("static forApp(options: ForAppOptions)");
-      expect(output).toContain("return forApp(options)");
-      expect(output).toContain(
-        'export type { AppPlatformClient, ForAppOptions, SessionStorage, AppSession } from "./app-session.js"',
-      );
-    }
+    expect(sessionOutput).toContain('from "./app-session.js"');
+    expect(sessionOutput).toContain(
+      "static forApp<TClient extends PlatformClient>",
+    );
+    expect(sessionOutput).toContain("return forApp(options, this)");
+    expect(sessionOutput).toContain(
+      'export type { AppPlatformClient, ForAppOptions, SessionStorage, AppSession } from "./app-session.js"',
+    );
   });
 
-  it("wires the hand-maintained custom-object subscription extension", () => {
-    expect(realtimeOutput).toContain(
-      'import { CustomObjectSubscriptions, customObjectSubscriptionsForClient } from "./custom-object-subscriptions.js"',
-    );
-    expect(realtimeOutput).toContain("credentials?: RequestCredentials");
-    expect(realtimeOutput).toContain("socketPath?: string");
-    expect(realtimeOutput).toContain(
-      "readonly customObjectSubscriptions: CustomObjectSubscriptions",
-    );
-    expect(realtimeOutput).toContain(
-      "this.customObjectSubscriptions = customObjectSubscriptionsForClient",
-    );
-    expect(realtimeOutput).toContain("config,\n      this.http,");
-    expect(realtimeOutput).not.toContain("createPlatformSocket");
-    expect(realtimeOutput).not.toContain("x-archastro-api-key");
+  it("keeps generated clients independent of hand-maintained extensions", () => {
+    expect(realtimeOutput).not.toContain("CustomObjectSubscriptions");
+    expect(realtimeOutput).not.toContain("customObjectSubscriptions");
+    expect(realtimeOutput).not.toContain("socketPath?: string");
   });
 
-  it("does not require the custom-object runtime for SDKs without that channel", () => {
-    expect(output).not.toContain("CustomObjectSubscriptions");
-    expect(output).not.toContain("customObjectSubscriptions");
-    expect(output).not.toContain("socketPath?: string");
+  it("constructs subclasses from generated factories", () => {
+    expect(sessionOutput).toContain("this: PlatformClientConstructor<TClient>");
+    expect(sessionOutput).toContain("return new this({");
+    expect(sessionOutput).not.toContain("return new PlatformClient({");
   });
 });
 
@@ -1196,15 +1216,13 @@ describe("TypeScript generation with managed custom-object realtime", () => {
   };
   const files = generateTypeScript(realtimeAst, {
     outDir: "/tmp/test-sdk-realtime",
+    clientExtensionModules: ["./custom-object-subscriptions.js"],
   });
 
-  it("exports the hand-maintained realtime surface from the generated barrel", () => {
+  it("exports configured hand-maintained extensions without knowing their API", () => {
     const index = files["/tmp/test-sdk-realtime/src/index.ts"]!;
-    expect(index).toContain(
-      'from "./custom-object-subscriptions.js"',
-    );
-    expect(index).toContain('from "./runtime/http-client.js"');
-    expect(index).toContain('from "./platform-socket.js"');
+    expect(index).toContain('export * from "./custom-object-subscriptions.js"');
+    expect(index).not.toContain("CustomObjectSubscriptions");
   });
 });
 

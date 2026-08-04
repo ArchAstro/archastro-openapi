@@ -98,6 +98,45 @@ Shared codegen metadata consumed by both backends:
 }
 ```
 
+### TypeScript client extensions
+
+Generated `PlatformClient` classes expose a typed class-expression mixin seam:
+
+```ts
+const RealtimePlatformClient = PlatformClient.extend(
+  withCustomObjectSubscriptions,
+);
+const client = RealtimePlatformClient.withToken("pk_live_...", accessToken);
+```
+
+`extend` returns a subclass rather than modifying `PlatformClient`. Extensions
+therefore retain generated resources, can be chained, and are preserved by the
+generated static factories. A hand-maintained extension uses the standard
+TypeScript mixin shape:
+
+```ts
+const withDiagnostics = <TBase extends PlatformClientConstructor>(Base: TBase) =>
+  class extends Base {
+    diagnosticLabel() {
+      return "ready";
+    }
+  };
+```
+
+Consuming SDKs can keep those modules public across regeneration without
+teaching the generator their methods:
+
+```jsonc
+{
+  "typescript": {
+    "clientExtensionModules": ["./custom-object-subscriptions.js"]
+  }
+}
+```
+
+Each configured module is emitted as an `export *` entry in the generated
+package barrel. The module itself remains hand-maintained.
+
 ## Programmatic use
 
 ```ts

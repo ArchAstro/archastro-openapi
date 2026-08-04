@@ -27,23 +27,6 @@ export function emitClientFile(spec: SdkSpec): string {
     imports.addType("./app-session.js", "AppPlatformClient");
   }
 
-  // Managed custom-object realtime is implemented in the hand-maintained
-  // custom-object-subscriptions.ts runtime. The generator owns only the
-  // PlatformClient wiring when the corresponding channel exists.
-  const hasManagedCustomObjectRealtime = spec.channels.some(
-    (channel) => channel.className === "ApiObjectChannel",
-  );
-  if (hasManagedCustomObjectRealtime) {
-    imports.add(
-      "./custom-object-subscriptions.js",
-      "CustomObjectSubscriptions",
-    );
-    imports.add(
-      "./custom-object-subscriptions.js",
-      "customObjectSubscriptionsForClient",
-    );
-  }
-
   // Import version namespace classes
   for (const versionSet of spec.versions) {
     const cls = versionClassName(versionSet.version);
@@ -74,6 +57,17 @@ export function emitClientFile(spec: SdkSpec): string {
   cb.line(generatedHeader());
   cb.line(imports.emit());
 
+  cb.line(
+    "export type PlatformClientConstructor<TClient extends PlatformClient = PlatformClient> =",
+  );
+  cb.line("  new (...args: any[]) => TClient;");
+  cb.line();
+  cb.line("export type PlatformClientExtension<");
+  cb.line("  TBase extends PlatformClientConstructor,");
+  cb.line("  TExtended extends PlatformClientConstructor,");
+  cb.line("> = (Base: TBase) => TExtended;");
+  cb.line();
+
   cb.block("export interface PlatformClientConfig", () => {
     cb.line("baseUrl?: string;");
     cb.line("accessToken?: string;");
@@ -81,24 +75,44 @@ export function emitClientFile(spec: SdkSpec): string {
     cb.line("onRefreshToken?: () => Promise<string>;");
     cb.line("pathPrefix?: string;");
     cb.line("defaultHeaders?: Record<string, string>;");
-    if (hasManagedCustomObjectRealtime) {
-      cb.line("/** Fetch credential policy for same-origin session gateways. */");
-      cb.line("credentials?: RequestCredentials;");
-      cb.line("/** WebSocket path for realtime subscriptions. */");
-      cb.line("socketPath?: string;");
-    }
+    cb.line("/** Fetch credential policy for same-origin session gateways. */");
+    cb.line("credentials?: RequestCredentials;");
   });
+  cb.line();
+
+  cb.block(
+    "export interface PlatformClientClass<TClient extends PlatformClient = PlatformClient> extends PlatformClientConstructor<TClient>",
+    () => {
+      cb.line("extend<TExtended extends PlatformClientConstructor>(");
+      cb.line("  extension: PlatformClientExtension<this, TExtended>,");
+      cb.line("): PlatformClientClass<InstanceType<TExtended>>;");
+      if (spec.auth?.schemes?.secret_key) {
+        cb.line("withSecretKey(key: string, baseUrl?: string): TClient;");
+      }
+      if (spec.auth?.schemes?.publishable_key) {
+        cb.line(
+          "withToken(apiKey: string, accessToken: string, baseUrl?: string): TClient;",
+        );
+        if (hasAuth && findLoginOperation(authOps, spec.auth.tokenFlows ?? {})) {
+          const loginOp = findLoginOperation(authOps, spec.auth.tokenFlows ?? {})!;
+          const requiredParams = getOperationRequiredInputParams(loginOp);
+          const sig = requiredParams.map((p) => `${p}: string`).join(", ");
+          cb.line(
+            `withCredentials(apiKey: string, ${sig}, baseUrl?: string): Promise<TClient>;`,
+          );
+        }
+        cb.line(
+          "forApp(options: ForAppOptions): AppPlatformClient<TClient>;",
+        );
+      }
+    },
+  );
   cb.line();
 
   cb.block("export class PlatformClient", () => {
     cb.line("readonly http: HttpClient;");
     if (hasAuth) {
       cb.line("readonly auth: AuthClient;");
-    }
-    if (hasManagedCustomObjectRealtime) {
-      cb.line(
-        "readonly customObjectSubscriptions: CustomObjectSubscriptions;",
-      );
     }
 
     // Version namespace properties
@@ -125,9 +139,7 @@ export function emitClientFile(spec: SdkSpec): string {
       cb.line("onRefreshToken: config.onRefreshToken,");
       cb.line("pathPrefix: config.pathPrefix,");
       cb.line("defaultHeaders: config.defaultHeaders,");
-      if (hasManagedCustomObjectRealtime) {
-        cb.line("credentials: config.credentials,");
-      }
+      cb.line("credentials: config.credentials,");
       cb.dedent();
       cb.line("};");
       cb.line();
@@ -150,26 +162,33 @@ export function emitClientFile(spec: SdkSpec): string {
           );
         }
       }
-      if (hasManagedCustomObjectRealtime) {
-        cb.line(
-          "this.customObjectSubscriptions = customObjectSubscriptionsForClient(",
-        );
-        cb.indent();
-        cb.line("config,");
-        cb.line("this.http,");
-        cb.dedent();
-        cb.line(");");
-      }
     });
 
     cb.line();
 
+    cb.line(
+      "/** Return a subclass augmented by a hand-maintained class-expression mixin. */",
+    );
+    cb.block(
+      "static extend<TBase extends PlatformClientConstructor, TExtended extends PlatformClientConstructor>(\n" +
+        "  this: TBase,\n" +
+        "  extension: PlatformClientExtension<TBase, TExtended>,\n" +
+        "): PlatformClientClass<InstanceType<TExtended>>",
+      () => {
+        cb.line(
+          "return extension(this) as unknown as PlatformClientClass<InstanceType<TExtended>>;",
+        );
+      },
+    );
+
     cb.line();
-    cb.line("private _refreshToken?: string;");
+
+    cb.line();
+    cb.line("#refreshToken?: string;");
     cb.line();
 
     cb.block("get refreshToken(): string | undefined", () => {
-      cb.line("return this._refreshToken;");
+      cb.line("return this.#refreshToken;");
     });
 
     cb.line();
@@ -181,7 +200,7 @@ export function emitClientFile(spec: SdkSpec): string {
     cb.line();
 
     cb.block("setRefreshToken(token: string)", () => {
-      cb.line("this._refreshToken = token;");
+      cb.line("this.#refreshToken = token;");
     });
 
     // Factory constructors — generated from auth schemes
@@ -198,9 +217,9 @@ export function emitClientFile(spec: SdkSpec): string {
         cb.line();
         cb.line(`/** ${schemes.secret_key.description ?? "Create a client with a secret API key"} */`);
         cb.block(
-          `static withSecretKey(key: string, baseUrl?: string): PlatformClient`,
+          `static withSecretKey<TClient extends PlatformClient>(this: PlatformClientConstructor<TClient>, key: string, baseUrl?: string): TClient`,
           () => {
-            cb.line("return new PlatformClient({");
+            cb.line("return new this({");
             cb.indent();
             cb.line("baseUrl,");
             cb.line(`defaultHeaders: { "${header}": key },`);
@@ -216,9 +235,9 @@ export function emitClientFile(spec: SdkSpec): string {
         cb.line();
         cb.line("/** Create a client with a publishable key and pre-existing access token. */");
         cb.block(
-          `static withToken(apiKey: string, accessToken: string, baseUrl?: string): PlatformClient`,
+          `static withToken<TClient extends PlatformClient>(this: PlatformClientConstructor<TClient>, apiKey: string, accessToken: string, baseUrl?: string): TClient`,
           () => {
-            cb.line("return new PlatformClient({");
+            cb.line("return new this({");
             cb.indent();
             cb.line("baseUrl,");
             cb.line("accessToken,");
@@ -254,9 +273,9 @@ export function emitClientFile(spec: SdkSpec): string {
           cb.line();
           cb.line(`/** ${desc} */`);
           cb.block(
-            `static async withCredentials(apiKey: string, ${sig}, baseUrl?: string): Promise<PlatformClient>`,
+            `static async withCredentials<TClient extends PlatformClient>(this: PlatformClientConstructor<TClient>, apiKey: string, ${sig}, baseUrl?: string): Promise<TClient>`,
             () => {
-              cb.line("const client = new PlatformClient({");
+              cb.line("const client = new this({");
               cb.indent();
               cb.line("baseUrl,");
               cb.line(`defaultHeaders: { "${header}": apiKey },`);
@@ -305,9 +324,9 @@ export function emitClientFile(spec: SdkSpec): string {
             "Wires passwordless OTP, restore/signIn/signOut, 401 auto-refresh, and createSocket(). */",
         );
         cb.block(
-          `static forApp(options: ForAppOptions): AppPlatformClient`,
+          `static forApp<TClient extends PlatformClient>(this: PlatformClientConstructor<TClient>, options: ForAppOptions): AppPlatformClient<TClient>`,
           () => {
-            cb.line("return forApp(options);");
+            cb.line("return forApp(options, this);");
           },
         );
       }
