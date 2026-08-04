@@ -186,5 +186,18 @@ function generateMainIndex(spec: SdkSpec): string {
       );
     }
   }
+  if (
+    spec.channels.some((channel) => channel.className === "ApiObjectChannel")
+  ) {
+    lines.push(
+      'export { CustomObjectSubscriptions, type DeepPartial, type CustomObjectConnectionState, type CustomObjectSnapshot, type CustomObjectUpdate, type CustomObjectPresence, type CustomObjectPresenceUpdate, type CustomObjectPresenceLeave, type CustomObjectSubscriptionOptions, type CustomObjectSubscription } from "./custom-object-subscriptions.js";',
+    );
+    lines.push(
+      'export { ApiError, AuthenticationError, AuthorizationError, NotFoundError, ValidationError, NetworkError } from "./runtime/http-client.js";',
+    );
+    lines.push(
+      'export { createPlatformSocket, type PlatformSocketOptions, Socket, Channel, ChannelError, ChannelReplyError, type SocketConfig, type SocketEvent } from "./platform-socket.js";',
+    );
+  }
   return lines.join("\n") + "\n";
 }
