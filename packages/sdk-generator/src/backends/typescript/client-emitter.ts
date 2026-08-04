@@ -27,6 +27,23 @@ export function emitClientFile(spec: SdkSpec): string {
     imports.addType("./app-session.js", "AppPlatformClient");
   }
 
+  // Managed custom-object realtime is implemented in the hand-maintained
+  // custom-object-subscriptions.ts runtime. The generator owns only the
+  // PlatformClient wiring when the corresponding channel exists.
+  const hasManagedCustomObjectRealtime = spec.channels.some(
+    (channel) => channel.className === "ApiObjectChannel",
+  );
+  if (hasManagedCustomObjectRealtime) {
+    imports.add(
+      "./custom-object-subscriptions.js",
+      "CustomObjectSubscriptions",
+    );
+    imports.add(
+      "./custom-object-subscriptions.js",
+      "customObjectSubscriptionsForClient",
+    );
+  }
+
   // Import version namespace classes
   for (const versionSet of spec.versions) {
     const cls = versionClassName(versionSet.version);
@@ -64,6 +81,12 @@ export function emitClientFile(spec: SdkSpec): string {
     cb.line("onRefreshToken?: () => Promise<string>;");
     cb.line("pathPrefix?: string;");
     cb.line("defaultHeaders?: Record<string, string>;");
+    if (hasManagedCustomObjectRealtime) {
+      cb.line("/** Fetch credential policy for same-origin session gateways. */");
+      cb.line("credentials?: RequestCredentials;");
+      cb.line("/** WebSocket path for realtime subscriptions. */");
+      cb.line("socketPath?: string;");
+    }
   });
   cb.line();
 
@@ -71,6 +94,11 @@ export function emitClientFile(spec: SdkSpec): string {
     cb.line("readonly http: HttpClient;");
     if (hasAuth) {
       cb.line("readonly auth: AuthClient;");
+    }
+    if (hasManagedCustomObjectRealtime) {
+      cb.line(
+        "readonly customObjectSubscriptions: CustomObjectSubscriptions;",
+      );
     }
 
     // Version namespace properties
@@ -97,6 +125,9 @@ export function emitClientFile(spec: SdkSpec): string {
       cb.line("onRefreshToken: config.onRefreshToken,");
       cb.line("pathPrefix: config.pathPrefix,");
       cb.line("defaultHeaders: config.defaultHeaders,");
+      if (hasManagedCustomObjectRealtime) {
+        cb.line("credentials: config.credentials,");
+      }
       cb.dedent();
       cb.line("};");
       cb.line();
@@ -118,6 +149,16 @@ export function emitClientFile(spec: SdkSpec): string {
             `this.${resource.name} = this.${spec.defaultVersion}.${resource.name};`
           );
         }
+      }
+      if (hasManagedCustomObjectRealtime) {
+        cb.line(
+          "this.customObjectSubscriptions = customObjectSubscriptionsForClient(",
+        );
+        cb.indent();
+        cb.line("config,");
+        cb.line("this.http,");
+        cb.dedent();
+        cb.line(");");
       }
     });
 

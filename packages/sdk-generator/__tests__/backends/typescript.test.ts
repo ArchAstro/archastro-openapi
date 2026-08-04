@@ -913,6 +913,20 @@ describe("Resource emitter preserves scoped path parameter docs", () => {
 
 describe("Client emitter", () => {
   const output = emitClientFile(ast);
+  const realtimeAst = {
+    ...ast,
+    channels: [
+      ...ast.channels,
+      {
+        name: "ApiObjectChannel",
+        className: "ApiObjectChannel",
+        joins: [],
+        messages: [],
+        pushes: [],
+      },
+    ],
+  };
+  const realtimeOutput = emitClientFile(realtimeAst);
 
   it("generates PlatformClient class", () => {
     expect(output).toContain("export class PlatformClient");
@@ -957,6 +971,29 @@ describe("Client emitter", () => {
         'export type { AppPlatformClient, ForAppOptions, SessionStorage, AppSession } from "./app-session.js"',
       );
     }
+  });
+
+  it("wires the hand-maintained custom-object subscription extension", () => {
+    expect(realtimeOutput).toContain(
+      'import { CustomObjectSubscriptions, customObjectSubscriptionsForClient } from "./custom-object-subscriptions.js"',
+    );
+    expect(realtimeOutput).toContain("credentials?: RequestCredentials");
+    expect(realtimeOutput).toContain("socketPath?: string");
+    expect(realtimeOutput).toContain(
+      "readonly customObjectSubscriptions: CustomObjectSubscriptions",
+    );
+    expect(realtimeOutput).toContain(
+      "this.customObjectSubscriptions = customObjectSubscriptionsForClient",
+    );
+    expect(realtimeOutput).toContain("config,\n      this.http,");
+    expect(realtimeOutput).not.toContain("createPlatformSocket");
+    expect(realtimeOutput).not.toContain("x-archastro-api-key");
+  });
+
+  it("does not require the custom-object runtime for SDKs without that channel", () => {
+    expect(output).not.toContain("CustomObjectSubscriptions");
+    expect(output).not.toContain("customObjectSubscriptions");
+    expect(output).not.toContain("socketPath?: string");
   });
 });
 
@@ -1140,6 +1177,34 @@ describe("Full TypeScript generation", () => {
   it("versioned resource files use correct import depth", () => {
     const teamResource = files["/tmp/test-sdk/src/v1/resources/teams.ts"]!;
     expect(teamResource).toContain('from "../../runtime/http-client.js"');
+  });
+});
+
+describe("TypeScript generation with managed custom-object realtime", () => {
+  const realtimeAst = {
+    ...ast,
+    channels: [
+      ...ast.channels,
+      {
+        name: "ApiObjectChannel",
+        className: "ApiObjectChannel",
+        joins: [],
+        messages: [],
+        pushes: [],
+      },
+    ],
+  };
+  const files = generateTypeScript(realtimeAst, {
+    outDir: "/tmp/test-sdk-realtime",
+  });
+
+  it("exports the hand-maintained realtime surface from the generated barrel", () => {
+    const index = files["/tmp/test-sdk-realtime/src/index.ts"]!;
+    expect(index).toContain(
+      'from "./custom-object-subscriptions.js"',
+    );
+    expect(index).toContain('from "./runtime/http-client.js"');
+    expect(index).toContain('from "./platform-socket.js"');
   });
 });
 
