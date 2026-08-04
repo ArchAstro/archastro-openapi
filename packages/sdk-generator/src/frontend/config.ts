@@ -34,6 +34,13 @@ export interface FrontendConfig {
   ignorePaths?: string[];
   /** Go backend settings (package name and import path of the emitted SDK). */
   go?: GoTargetConfig;
+  /** TypeScript backend settings for hand-maintained client extensions. */
+  typescript?: TypeScriptTargetConfig;
+}
+
+export interface TypeScriptTargetConfig {
+  /** Modules re-exported from the generated package barrel. */
+  clientExtensionModules?: string[];
 }
 
 /**

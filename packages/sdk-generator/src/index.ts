@@ -152,7 +152,10 @@ function main() {
 
   switch (lang) {
     case "typescript": {
-      const files = generateTypeScript(ast, { outDir: resolvedOut });
+      const files = generateTypeScript(ast, {
+        outDir: resolvedOut,
+        clientExtensionModules: config.typescript?.clientExtensionModules,
+      });
       const src = resolve(resolvedOut, "src");
       writeGeneratedFiles(files, [
         resolve(src, "types"),
