@@ -20,6 +20,10 @@ export interface HoistResult {
   hoisted: HoistedGroup[];
 }
 
+export interface HoistOptions {
+  hoistUnions?: boolean;
+}
+
 /**
  * Walk an inline schema's fields and pull every nested inline object out as
  * a sibling type with a deterministic name (`{Parent}{FieldPascal}`,
@@ -35,14 +39,25 @@ export interface HoistResult {
 export function hoistInlineObjects(
   fields: ReadonlyArray<FieldDef>,
   parentName: string,
-  variant: HoistVariant
+  variant: HoistVariant,
+  options: HoistOptions = {}
+): HoistResult {
+  return hoistFields(fields, parentName, variant, new Set(), options);
+}
+
+function hoistFields(
+  fields: ReadonlyArray<FieldDef>,
+  parentName: string,
+  variant: HoistVariant,
+  usedNames: Set<string>,
+  options: HoistOptions
 ): HoistResult {
   const newFields: FieldDef[] = [];
   const hoisted: HoistedGroup[] = [];
 
   for (const field of fields) {
     const fieldRoot = `${parentName}${pascalCase(field.name)}`;
-    const walked = walkType(field.type, fieldRoot, variant);
+    const walked = walkType(field.type, fieldRoot, variant, usedNames, options);
     newFields.push({ ...field, type: walked.type });
     hoisted.push(...walked.hoisted);
   }
@@ -58,7 +73,9 @@ interface WalkResult {
 function walkType(
   t: TypeRef,
   nameAtThisPoint: string,
-  variant: HoistVariant
+  variant: HoistVariant,
+  usedNames: Set<string>,
+  options: HoistOptions
 ): WalkResult {
   switch (t.kind) {
     case "object": {
@@ -67,8 +84,8 @@ function walkType(
       // for things like `metadata`.
       if (t.fields.length === 0) return { type: t, hoisted: [] };
 
-      const className = nameAtThisPoint;
-      const inner = hoistInlineObjects(t.fields, className, variant);
+      const className = allocateName(nameAtThisPoint, usedNames);
+      const inner = hoistFields(t.fields, className, variant, usedNames, options);
       return {
         type: { kind: "ref", schema: className },
         // Children are emitted before the parent so forward references
@@ -80,21 +97,21 @@ function walkType(
       };
     }
     case "optional": {
-      const inner = walkType(t.inner, nameAtThisPoint, variant);
+      const inner = walkType(t.inner, nameAtThisPoint, variant, usedNames, options);
       return {
         type: { kind: "optional", inner: inner.type },
         hoisted: inner.hoisted,
       };
     }
     case "nullable": {
-      const inner = walkType(t.inner, nameAtThisPoint, variant);
+      const inner = walkType(t.inner, nameAtThisPoint, variant, usedNames, options);
       return {
         type: { kind: "nullable", inner: inner.type },
         hoisted: inner.hoisted,
       };
     }
     case "array": {
-      const items = walkType(t.items, `${nameAtThisPoint}Item`, variant);
+      const items = walkType(t.items, `${nameAtThisPoint}Item`, variant, usedNames, options);
       return {
         type: { kind: "array", items: items.type },
         hoisted: items.hoisted,
@@ -104,7 +121,9 @@ function walkType(
       const value = walkType(
         t.valueType,
         `${nameAtThisPoint}Value`,
-        variant
+        variant,
+        usedNames,
+        options
       );
       return {
         type: { kind: "map", keyType: t.keyType, valueType: value.type },
@@ -112,13 +131,24 @@ function walkType(
       };
     }
     case "union": {
-      // Skip union hoisting — naming each variant is ambiguous and unions
-      // of inline objects are rare in practice. They land as
-      // `dict[str, object] | dict[str, object]` today, which is no worse
-      // than the current state for non-hoisted unions.
-      return { type: t, hoisted: [] };
+      if (!options.hoistUnions) return { type: t, hoisted: [] };
+      const walked = t.variants.map((item, index) =>
+        walkType(item, `${nameAtThisPoint}Variant${index + 1}`, variant, usedNames, options)
+      );
+      return {
+        type: { ...t, variants: walked.map((item) => item.type) },
+        hoisted: walked.flatMap((item) => item.hoisted),
+      };
     }
     default:
       return { type: t, hoisted: [] };
   }
+}
+
+function allocateName(preferred: string, usedNames: Set<string>): string {
+  let candidate = preferred;
+  let suffix = 2;
+  while (usedNames.has(candidate)) candidate = `${preferred}${suffix++}`;
+  usedNames.add(candidate);
+  return candidate;
 }

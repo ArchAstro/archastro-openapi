@@ -9,6 +9,8 @@
 export interface VersionedResourceSet {
   /** Version identifier, e.g., "v1" */
   version: string;
+  /** Optional language-specific collision-safe SDK name. */
+  sdkName?: string;
   /** Full API prefix for this version, e.g., "/api/v1" */
   apiPrefix: string;
   /** Resource tree for this version */
@@ -166,6 +168,8 @@ export interface VoidTypeRef {
 
 export interface FieldDef {
   name: string;
+  /** Original OpenAPI wire name when a backend must disambiguate the SDK identifier. */
+  wireName?: string;
   type: TypeRef;
   required: boolean;
   default?: unknown;
@@ -269,6 +273,8 @@ export interface StreamingConfig {
 
 export interface StreamingEvent {
   event: string;
+  /** Backend-safe payload type segment; the wire event is unchanged. */
+  sdkTypeName?: string;
   dataType: TypeRef;
 }
 
@@ -283,6 +289,8 @@ export interface ErrorDef {
 export interface ChannelDef {
   name: string;
   className: string;
+  /** Optional language-specific collision-safe facade module segment. */
+  sdkName?: string;
   description?: string;
   joins: ChannelJoinDef[];
   messages: ChannelMessageDef[];
@@ -293,6 +301,8 @@ export interface ChannelDef {
 export interface ChannelJoinDef {
   topicPattern: string;
   name?: string;
+  /** Backend-safe payload type segment; the wire-facing join name is unchanged. */
+  sdkTypeName?: string;
   description?: string;
   params: ParamDef[];
   returnType: TypeRef;
@@ -300,6 +310,8 @@ export interface ChannelJoinDef {
 
 export interface ChannelMessageDef {
   event: string;
+  /** Backend-safe payload type segment; the wire event is unchanged. */
+  sdkTypeName?: string;
   description?: string;
   params: ParamDef[];
   returnType: TypeRef;
@@ -307,6 +319,8 @@ export interface ChannelMessageDef {
 
 export interface ChannelPushDef {
   event: string;
+  /** Backend-safe payload type segment; the wire event is unchanged. */
+  sdkTypeName?: string;
   description?: string;
   payloadType: TypeRef;
 }

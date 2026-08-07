@@ -1,6 +1,6 @@
 # @archastro/sdk-generator
 
-Generate typed TypeScript, Python, Swift, and Go SDKs — plus cross-language
+Generate typed TypeScript, Python, Swift, Go, and Elixir SDKs — plus cross-language
 contract tests — from an OpenAPI spec produced by the ArchAstro API DSL.
 
 ## Install
@@ -18,7 +18,7 @@ sdk-generator --spec ./openapi.json --lang python --out ./sdk
 
 ```
 sdk-generator --spec <openapi.json> \
-                  [--lang typescript|python|swift|go|contract-tests-ts|contract-tests-py|contract-tests-swift|contract-tests-go] \
+                  [--lang typescript|python|swift|go|elixir|contract-tests-ts|contract-tests-py|contract-tests-swift|contract-tests-go|contract-tests-elixir] \
                   [--out <dir>] \
                   [--config <config.json>] \
                   [--ast-only]
@@ -32,10 +32,12 @@ Targets:
 | `python` | Python SDK: Pydantic models, resources, channels |
 | `swift` | Swift SDK: Codable models, resources, channels, async client |
 | `go` | Go SDK: JSON-tagged structs, context-taking resources, channels, client |
+| `elixir` | Elixir SDK: structs, resource modules, auth, and Phoenix Channel facades |
 | `contract-tests-ts` | TS contract tests that drive `@archastro/channel-harness` |
 | `contract-tests-py` | Python contract tests (pytest + Prism mock server) |
 | `contract-tests-swift` | Swift contract tests (swift-testing + Prism + harness) |
 | `contract-tests-go` | Go contract tests (`go test` + Prism + harness) |
+| `contract-tests-elixir` | Elixir contract tests (ExUnit + Prism + harness) |
 
 ### Go target configuration
 

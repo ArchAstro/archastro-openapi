@@ -45,6 +45,22 @@ describe("generateDummyValue", () => {
     expect(generateDummyValue(str, "email", "typescript")).toBe('"test@example.com"');
     expect(generateDummyValue(num, "count", "typescript")).toBe("1");
   });
+
+  it("escapes OpenAPI enum values in generated Elixir", () => {
+    expect(
+      generateDummyValue(
+        { kind: "enum", values: ['unsafe#{raise "compiled"}'] },
+        "state",
+        "elixir"
+      )
+    ).toBe('"unsafe\\#{raise \\"compiled\\"}"');
+  });
+
+  it("generates typed DateTime values for Elixir contracts", () => {
+    expect(
+      generateDummyValue({ kind: "primitive", type: "datetime" }, "created_at", "elixir")
+    ).toBe("~U[2024-01-01 00:00:00Z]");
+  });
 });
 
 describe("generateBodyLiteral", () => {

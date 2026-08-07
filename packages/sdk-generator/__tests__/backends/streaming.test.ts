@@ -3,6 +3,7 @@ import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { emitResourceFile } from "../../src/backends/typescript/resource-emitter.js";
 import { emitPythonResourceFile } from "../../src/backends/python/resource-emitter.js";
 import { generateContractTests } from "../../src/backends/contract-tests/index.js";
+import { generateElixir } from "../../src/backends/elixir/index.js";
 
 // A spec with a single SSE streaming operation (`x-sdk-streaming`), modeled on
 // POST /ai/chat/completions/stream: a typed request body plus a discriminated
@@ -139,6 +140,46 @@ describe("Python SSE streaming emission", () => {
     // The event union is `A | B` (ruff UP007), not `Union[A, B]`.
     expect(pyOutput).not.toContain("Union[");
     expect(pyOutput).toMatch(/CompletionStreamEvent\w* = \w+ \| \w+/);
+  });
+});
+
+describe("Elixir SSE streaming emission", () => {
+  it("decodes declared event payloads and safely passes through unknown events", () => {
+    const output = Object.values(generateElixir(ast, { outDir: "sdk" })).join("\n");
+
+    expect(output).toContain("ArchAstro.SSE.Stream.t(");
+    expect(output).toContain("def decode(%ArchAstro.SSE.Event{event:");
+    expect(output).toContain("def decode(event), do: event");
+    expect(output).toContain("| ArchAstro.JSON.t()}");
+  });
+
+  it("keeps colliding normalized inline event payload modules distinct", () => {
+    const collisionAst = structuredClone(ast);
+    const operation = collisionAst.versions
+      .flatMap((version) => version.resources)
+      .flatMap(function walk(resource): typeof resource[] {
+        return [resource, ...resource.children.flatMap(walk)];
+      })
+      .flatMap((resource) => resource.operations)
+      .find((candidate) => candidate.streaming)!;
+    const dataType = {
+      kind: "object" as const,
+      fields: [{
+        name: "value",
+        type: { kind: "primitive" as const, type: "string" as const },
+        required: true,
+      }],
+    };
+    operation.streaming!.events = [
+      { event: "item-added", dataType },
+      { event: "item_added", dataType: structuredClone(dataType) },
+    ];
+
+    const output = Object.values(generateElixir(collisionAst, { outDir: "sdk" })).join("\n");
+    expect(output).toContain(".StreamEvents.ItemAddedData do");
+    expect(output).toContain(".StreamEvents.ItemAdded2Data do");
+    expect(output).toContain('event: "item-added"');
+    expect(output).toContain('event: "item_added"');
   });
 });
 

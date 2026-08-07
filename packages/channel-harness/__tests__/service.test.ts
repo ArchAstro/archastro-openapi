@@ -109,6 +109,31 @@ describe("HarnessService over the wire", () => {
     });
   });
 
+  it("triggers a contract-valid push after a remote client subscribes", async () => {
+    await client.registerScenario({
+      topic: "doc:doc_42",
+      onJoin: [{ type: "autoReply" }],
+    });
+    const channel = await LiveDocChannel.joinDocument(socket, "doc_42", {
+      userId: "user_1",
+    });
+    const received = new Promise<unknown>((resolvePayload) => {
+      channel.onUserJoined(resolvePayload);
+    });
+
+    const response = await fetch(`${service.controlUrl}/pushes`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ topic: "doc:doc_42", event: "user_joined" }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(received).resolves.toEqual({
+      id: expect.any(String),
+      name: expect.any(String),
+    });
+  });
+
   it("records observations visible through the HTTP control API", async () => {
     await client.registerScenario({
       topic: "doc:doc_42",

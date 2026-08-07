@@ -1,7 +1,7 @@
 import type { TypeRef, FieldDef, BodyDef, SchemaDef } from "../../ast/types.js";
 
 /** Languages the value/literal renderers can emit. */
-export type ValueLang = "typescript" | "python" | "swift" | "go";
+export type ValueLang = "typescript" | "python" | "swift" | "go" | "elixir";
 
 /**
  * Render a JSON value (e.g. an OpenAPI `example`) as a language literal.
@@ -15,12 +15,13 @@ export type ValueLang = "typescript" | "python" | "swift" | "go";
  */
 export function renderLiteral(value: unknown, lang: ValueLang): string {
   if (value === null) {
+    if (lang === "elixir") return "nil";
     if (lang === "python") return "None";
     if (lang === "swift") return "JSONValue.null";
     if (lang === "go") return "nil";
     return "null";
   }
-  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "string") return lang === "elixir" ? elixirString(value) : JSON.stringify(value);
   if (typeof value === "number") return String(value);
   if (typeof value === "boolean") {
     if (lang === "python") return value ? "True" : "False";
@@ -39,11 +40,13 @@ export function renderLiteral(value: unknown, lang: ValueLang): string {
         if (lang === "python" || lang === "swift" || lang === "go") {
           return `"${k}": ${rendered}`;
         }
+        if (lang === "elixir") return `${elixirString(k)} => ${rendered}`;
         const key = isValidIdentifier(k) ? k : JSON.stringify(k);
         return `${key}: ${rendered}`;
       }
     );
     if (lang === "go") return `map[string]any{${entries.join(", ")}}`;
+    if (lang === "elixir") return `%{${entries.join(", ")}}`;
     if (entries.length === 0) {
       return lang === "swift" ? "[:]" : "{}";
     }
@@ -54,7 +57,12 @@ export function renderLiteral(value: unknown, lang: ValueLang): string {
   if (lang === "python") return "None";
   if (lang === "swift") return "JSONValue.null";
   if (lang === "go") return "nil";
+  if (lang === "elixir") return "nil";
   return "undefined";
+}
+
+function elixirString(value: string): string {
+  return JSON.stringify(value).replace(/#\{/g, "\\#{");
 }
 
 function isValidIdentifier(s: string): boolean {
@@ -95,8 +103,8 @@ export function generateDummyValue(
       return emptyDict;
     case "enum":
       return typeRef.values.length > 0
-        ? `"${typeRef.values[0]}"`
-        : `"unknown"`;
+        ? renderLiteral(typeRef.values[0], lang)
+        : renderLiteral("unknown", lang);
     case "union":
       return typeRef.variants.length > 0
         ? generateDummyValue(typeRef.variants[0]!, fieldName, lang)
@@ -117,6 +125,7 @@ function nullLiteral(lang: ValueLang): string {
   if (lang === "python") return "None";
   if (lang === "swift") return "JSONValue.null";
   if (lang === "go") return "nil";
+  if (lang === "elixir") return "nil";
   return "undefined";
 }
 
@@ -124,6 +133,7 @@ function nullLiteral(lang: ValueLang): string {
 export function emptyDictLiteral(lang: ValueLang): string {
   if (lang === "swift") return "[:]";
   if (lang === "go") return "map[string]any{}";
+  if (lang === "elixir") return "%{}";
   return "{}";
 }
 
@@ -134,12 +144,15 @@ function generateObjectValue(fields: FieldDef[], lang: ValueLang): string {
   const requiredFields = fields.filter((f) => f.required);
   if (requiredFields.length === 0) return emptyDict;
 
-  if (lang === "python" || lang === "swift" || lang === "go") {
+  if (lang === "python" || lang === "swift" || lang === "go" || lang === "elixir") {
     const entries = requiredFields.map(
-      (f) => `"${f.name}": ${generateDummyValue(f.type, f.name, lang)}`
+      (f) => lang === "elixir"
+        ? `${elixirString(f.name)} => ${generateDummyValue(f.type, f.name, lang)}`
+        : `"${f.name}": ${generateDummyValue(f.type, f.name, lang)}`
     );
     if (lang === "python") return `{${entries.join(", ")}}`;
     if (lang === "go") return `map[string]any{${entries.join(", ")}}`;
+    if (lang === "elixir") return `%{${entries.join(", ")}}`;
     return `[${entries.join(", ")}]`;
   } else {
     const entries = requiredFields.map(
@@ -164,7 +177,7 @@ function generatePrimitiveValue(
     case "boolean":
       return lang === "python" ? "True" : "true";
     case "datetime":
-      return '"2024-01-01T00:00:00Z"';
+      return lang === "elixir" ? "~U[2024-01-01 00:00:00Z]" : '"2024-01-01T00:00:00Z"';
     default:
       return '"test-value"';
   }
@@ -237,12 +250,14 @@ export function generateBodyLiteral(
     if (lang === "python" || lang === "swift" || lang === "go") {
       return `"${f.name}": ${value}`;
     }
+    if (lang === "elixir") return `${elixirString(f.name)} => ${value}`;
     return `${f.name}: ${value}`;
   });
 
   if (lang === "python") return `{${entries.join(", ")}}`;
   if (lang === "swift") return `[${entries.join(", ")}]`;
   if (lang === "go") return `map[string]any{${entries.join(", ")}}`;
+  if (lang === "elixir") return `%{${entries.join(", ")}}`;
   return `{ ${entries.join(", ")} }`;
 }
 
