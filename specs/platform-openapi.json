@@ -7215,6 +7215,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -7416,6 +7417,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -7845,6 +7847,7 @@
               "replies_before_cursor": "string",
               "reply_count": 1,
               "reply_to": {},
+              "root_message_id": "string",
               "sandbox": "string",
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
@@ -8622,6 +8625,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -8823,6 +8827,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -9450,6 +9455,7 @@
               "replies_before_cursor": "string",
               "reply_count": 1,
               "reply_to": {},
+              "root_message_id": "string",
               "sandbox": "string",
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
@@ -9604,6 +9610,7 @@
             "replies_before_cursor": "string",
             "reply_count": 1,
             "reply_to": {},
+            "root_message_id": "string",
             "sandbox": "string",
             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
             "thread": "string",
@@ -10143,6 +10150,7 @@
               "replies_before_cursor": "string",
               "reply_count": 1,
               "reply_to": {},
+              "root_message_id": "string",
               "sandbox": "string",
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
@@ -10344,6 +10352,7 @@
               "replies_before_cursor": "string",
               "reply_count": 1,
               "reply_to": {},
+              "root_message_id": "string",
               "sandbox": "string",
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
@@ -11256,6 +11265,34 @@
       "CustomObject": {
         "description": "A custom object belonging to an organization. Custom objects store arbitrary structured data defined by a schema type and are scoped to an org, team, or user.",
         "example": {
+          "acl": {
+            "add": [
+              {
+                "actions": [
+                  "read",
+                  "write"
+                ],
+                "principal": "string",
+                "principal_type": "user"
+              }
+            ],
+            "grants": [
+              {
+                "actions": [
+                  "read",
+                  "write"
+                ],
+                "principal": "string",
+                "principal_type": "user"
+              }
+            ],
+            "remove": [
+              {
+                "principal": "string",
+                "principal_type": "user"
+              }
+            ]
+          },
           "created_at": "2024-01-01T00:00:00Z",
           "fields": {
             "key": "value"
@@ -11271,6 +11308,10 @@
           "version": 1
         },
         "properties": {
+          "acl": {
+            "$ref": "#/components/schemas/Acl",
+            "description": "Access control list governing read and write access to this custom object. Only returned to resource owners and privileged or organization-admin viewers; `null` for everyone else."
+          },
           "created_at": {
             "description": "When the custom object was created (ISO 8601).",
             "example": "2024-01-01T00:00:00Z",
@@ -11395,6 +11436,34 @@
         "example": {
           "data": [
             {
+              "acl": {
+                "add": [
+                  {
+                    "actions": [
+                      "read",
+                      "write"
+                    ],
+                    "principal": "string",
+                    "principal_type": "user"
+                  }
+                ],
+                "grants": [
+                  {
+                    "actions": [
+                      "read",
+                      "write"
+                    ],
+                    "principal": "string",
+                    "principal_type": "user"
+                  }
+                ],
+                "remove": [
+                  {
+                    "principal": "string",
+                    "principal_type": "user"
+                  }
+                ]
+              },
               "created_at": "2024-01-01T00:00:00Z",
               "fields": {
                 "key": "value"
@@ -13008,6 +13077,7 @@
             "replies_before_cursor": "string",
             "reply_count": 1,
             "reply_to": {},
+            "root_message_id": "string",
             "sandbox": "string",
             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
             "thread": "string",
@@ -13015,6 +13085,7 @@
             "user": "string",
             "visibility": "default"
           },
+          "root_message_id": "string",
           "sandbox": "string",
           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
           "thread": "string",
@@ -13275,6 +13346,7 @@
               "replies_before_cursor": "string",
               "reply_count": 1,
               "reply_to": {},
+              "root_message_id": "string",
               "sandbox": "string",
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
@@ -13283,6 +13355,12 @@
               "visibility": "default"
             },
             "type": "object"
+          },
+          "root_message_id": {
+            "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
           },
           "sandbox": {
             "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -13735,6 +13813,7 @@
               "replies_before_cursor": "string",
               "reply_count": 1,
               "reply_to": {},
+              "root_message_id": "string",
               "sandbox": "string",
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
@@ -13963,6 +14042,7 @@
           "channel": "C01234ABCDE",
           "customer_label": "string",
           "deposit_thread": "string",
+          "disclosure_state": "pending",
           "id": "scb_0aBcDeFgHiJkLmNoPqRsTu",
           "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
           "is_ext_shared_cached": true,
@@ -13972,7 +14052,9 @@
           "reply_style": "string",
           "resident_agent": "string",
           "route_kind": "fda",
-          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu"
+          "scope_key": "string",
+          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+          "vendor_admin_channel_access": "invited"
         },
         "properties": {
           "agents": {
@@ -14003,6 +14085,16 @@
           "deposit_thread": {
             "description": "Staging thread the deposit pipe copies this channel's mirror content into (`thr_…` public ID). `null` when the pipe is off for this binding.",
             "example": "string",
+            "type": "string"
+          },
+          "disclosure_state": {
+            "description": "Slack Connect lifecycle: `pending` while the customer has not accepted the invite (nothing mirrors), `posted` once the AI disclosure is in the channel and the channel is live, `suppressed` when relay is stopped. `null` for a binding that never went through Connect provisioning.",
+            "enum": [
+              "pending",
+              "posted",
+              "suppressed"
+            ],
+            "example": "pending",
             "type": "string"
           },
           "id": {
@@ -14055,9 +14147,25 @@
             "example": "fda",
             "type": "string"
           },
+          "scope_key": {
+            "description": "The customer key this channel's agent is locked to, written when adding the customer finishes. A `posted` binding whose `scope_key` is still null has been accepted but not finished — the addition is either in flight or was refused.",
+            "example": "string",
+            "type": "string"
+          },
           "team": {
             "description": "ID of the ArchAstro team this channel is bound to.",
             "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "vendor_admin_channel_access": {
+            "description": "Whether the admin who added this customer ended up inside a Connect channel we created for them: `invited` (we put them in), `already_member` (they were in it already), `no_slack_user` (their account email is not a Slack account in your workspace, so nobody was invited), or `failed` (Slack refused). A created Connect channel is private and has no self-join, so the last two mean the channel has no human from your side until someone already in it adds one. `null` when nobody was added: the channel was adopted rather than created (an existing channel already has its own members), the binding never went through Connect provisioning, or the call had no admin behind it.",
+            "enum": [
+              "invited",
+              "already_member",
+              "no_slack_user",
+              "failed"
+            ],
+            "example": "invited",
             "type": "string"
           }
         },
@@ -14082,6 +14190,7 @@
               "channel": "C01234ABCDE",
               "customer_label": "string",
               "deposit_thread": "string",
+              "disclosure_state": "pending",
               "id": "scb_0aBcDeFgHiJkLmNoPqRsTu",
               "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
               "is_ext_shared_cached": true,
@@ -14091,7 +14200,9 @@
               "reply_style": "string",
               "resident_agent": "string",
               "route_kind": "fda",
-              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu"
+              "scope_key": "string",
+              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+              "vendor_admin_channel_access": "invited"
             }
           ],
           "page": 1,
@@ -14912,7 +15023,11 @@
           "id": "string",
           "kind": "Agent",
           "lookup_key": "string",
-          "solution": "id_0aBcDeFgHiJkLmNoPqRsTu"
+          "solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
+          "webhook": {
+            "signing_secret": "string",
+            "url": "https://example.com"
+          }
         },
         "properties": {
           "id": {
@@ -14934,6 +15049,10 @@
             "description": "Solution config ID (`cfg_...`) that was used as the source for this install.",
             "example": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "type": "string"
+          },
+          "webhook": {
+            "$ref": "#/components/schemas/SolutionInstallResponseWebhook",
+            "description": "One-time connection details for a webhook-auth Automation install."
           }
         },
         "required": [
@@ -14943,10 +15062,33 @@
         ],
         "type": "object"
       },
+      "SolutionInstallResponseWebhook": {
+        "description": "One-time connection details for a webhook-auth Automation install.",
+        "example": {
+          "signing_secret": "string",
+          "url": "https://example.com"
+        },
+        "properties": {
+          "signing_secret": {
+            "example": "string",
+            "type": "string"
+          },
+          "url": {
+            "example": "https://example.com",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "signing_secret"
+        ],
+        "type": "object"
+      },
       "SolutionInstance": {
         "description": "A customer-keyed instance stamped from an installed solution template.",
         "example": {
           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "agent_name": "Example Name",
           "attachment_ref": {},
           "created_at": "2024-01-01T00:00:00Z",
           "customer_key": "string",
@@ -14963,6 +15105,11 @@
           "agent": {
             "description": "Materialized agent for this customer (`agi_...`). `null` for a row without an agent.",
             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "agent_name": {
+            "description": "Human-readable display name of the materialized agent. `null` when no agent is visible.",
+            "example": "Example Name",
             "type": "string"
           },
           "attachment_ref": {
@@ -15045,6 +15192,7 @@
           "data": [
             {
               "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+              "agent_name": "Example Name",
               "attachment_ref": {},
               "created_at": "2024-01-01T00:00:00Z",
               "customer_key": "string",
@@ -17152,6 +17300,7 @@
             "replies_before_cursor": "string",
             "reply_count": 1,
             "reply_to": {},
+            "root_message_id": "string",
             "sandbox": "string",
             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
             "thread": "string",
@@ -17698,6 +17847,230 @@
         "required": [
           "id",
           "visibility"
+        ],
+        "type": "object"
+      },
+      "ThreadMessage": {
+        "description": "A single message posted to a thread, as seen from the developer portal. Includes sender information, optional attachments, and scoping identifiers.",
+        "example": {
+          "acl": {
+            "add": [
+              {
+                "actions": [
+                  "read",
+                  "write"
+                ],
+                "principal": "string",
+                "principal_type": "user"
+              }
+            ],
+            "grants": [
+              {
+                "actions": [
+                  "read",
+                  "write"
+                ],
+                "principal": "string",
+                "principal_type": "user"
+              }
+            ],
+            "remove": [
+              {
+                "principal": "string",
+                "principal_type": "user"
+              }
+            ]
+          },
+          "admin": {},
+          "agent": "string",
+          "agent_mode": "cli",
+          "app": "string",
+          "attachments": [
+            {
+              "content_type": "application/json",
+              "description": "An example description.",
+              "filename": "string",
+              "height": 1,
+              "id": "string",
+              "image_height": 1,
+              "image_source": {
+                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                "height": 600,
+                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                "mime_type": "application/json",
+                "refresh_url": "https://example.com",
+                "url": "https://example.com",
+                "width": 800
+              },
+              "image_url": "https://example.com",
+              "image_width": 1,
+              "media_type": "application/json",
+              "name": "Example Name",
+              "object": {},
+              "title": "Example Title",
+              "type": "file",
+              "url": "https://example.com",
+              "variants": [
+                {
+                  "content_type": "application/json",
+                  "created_at": "2024-01-01T00:00:00Z",
+                  "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                  "filename": "string",
+                  "height": 600,
+                  "id": "mvr_0aBcDeFgHiJkLmNoPqRsTu",
+                  "image_source": {
+                    "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                    "height": 600,
+                    "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                    "mime_type": "application/json",
+                    "refresh_url": "https://example.com",
+                    "url": "https://example.com",
+                    "width": 800
+                  },
+                  "updated_at": "2024-01-01T00:00:00Z",
+                  "url": "https://example.com",
+                  "variant_key": "original",
+                  "width": 800
+                }
+              ],
+              "version": 1,
+              "width": 1
+            }
+          ],
+          "content": "Hello! How can I help you today?",
+          "created_at": "2024-01-01T00:00:00Z",
+          "id": "string",
+          "metadata": {
+            "key": "value"
+          },
+          "org": "string",
+          "root_message_id": "string",
+          "sandbox": "string",
+          "sender": "string",
+          "sender_name": "Example Name",
+          "sender_type": "user",
+          "team": "string",
+          "type": "note",
+          "user": "string",
+          "visibility": "default"
+        },
+        "properties": {
+          "acl": {
+            "$ref": "#/components/schemas/Acl",
+            "description": "Access control list for private messages. Only returned to resource owners (and privileged/org-admin viewers); `null` otherwise."
+          },
+          "admin": {
+            "description": "Admin-only diagnostic metadata for the message, including execution trajectory details. Only present in developer portal responses.",
+            "example": {},
+            "type": "object"
+          },
+          "agent": {
+            "description": "Agent ID (`agt_...`) associated with the message. `null` if not agent-scoped.",
+            "example": "string",
+            "type": "string"
+          },
+          "agent_mode": {
+            "description": "Local agent execution mode for this message. One of `cli`, `embedded`, or `null` when the message was not created by a local agent execution path.",
+            "enum": [
+              "cli",
+              "embedded"
+            ],
+            "example": "cli",
+            "type": "string"
+          },
+          "app": {
+            "description": "App ID (`app_...`) that the message belongs to.",
+            "example": "string",
+            "type": "string"
+          },
+          "attachments": {
+            "description": "Files or media attached to the message. Empty array if no attachments are present.",
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            },
+            "type": "array"
+          },
+          "content": {
+            "description": "Text content of the message. `null` if the message contains only attachments.",
+            "example": "Hello! How can I help you today?",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "When the message was posted to the thread (ISO 8601).",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Message ID (`msg_...`).",
+            "example": "string",
+            "type": "string"
+          },
+          "metadata": {
+            "description": "Key-value metadata attached to the message. Always present; defaults to an empty object. The `metadata` query parameter filters on this same object, so a caller can read back the field it selects on.",
+            "example": {
+              "key": "value"
+            },
+            "type": "object"
+          },
+          "org": {
+            "description": "Organization ID (`org_...`) this message is scoped to. `null` if not org-scoped.",
+            "example": "string",
+            "type": "string"
+          },
+          "root_message_id": {
+            "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "sandbox": {
+            "description": "Sandbox ID (`dsb_...`) this message is scoped to. `null` if not sandbox-scoped.",
+            "example": "string",
+            "type": "string"
+          },
+          "sender": {
+            "description": "Public ID of the sender (e.g. `usr_...` or `agt_...`). `null` for system-generated messages.",
+            "example": "string",
+            "type": "string"
+          },
+          "sender_name": {
+            "description": "Display name of the message sender. `null` if unavailable.",
+            "example": "Example Name",
+            "type": "string"
+          },
+          "sender_type": {
+            "description": "Category of entity that sent the message. One of `\"user\"`, `\"agent\"`, or `\"system\"`.",
+            "example": "user",
+            "type": "string"
+          },
+          "team": {
+            "description": "Team ID (`tea_...`) associated with the message. `null` if not team-scoped.",
+            "example": "string",
+            "type": "string"
+          },
+          "type": {
+            "description": "Optional client-defined classification for the message (for example `note` or `status`). Free-form string up to 64 characters. The value `system` is reserved for platform-authored messages and cannot be set by clients. `null` when unset.",
+            "example": "note",
+            "type": "string"
+          },
+          "user": {
+            "description": "User ID (`usr_...`) associated with the message. `null` if not user-scoped.",
+            "example": "string",
+            "type": "string"
+          },
+          "visibility": {
+            "description": "Message-level visibility. `default` follows thread membership; `private` is limited to the sender and ACL `read` grantees.",
+            "enum": [
+              "default",
+              "private"
+            ],
+            "example": "default",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
         ],
         "type": "object"
       },
@@ -28210,6 +28583,16 @@
         "operationId": "get_api_v1_agents__agent_work_items",
         "parameters": [
           {
+            "description": "Agent ID or lookup key injected by the nested route.",
+            "example": "string",
+            "in": "path",
+            "name": "agent",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Optional durable execution ID filter.",
             "example": "string",
             "in": "query",
@@ -33748,6 +34131,34 @@
             "application/json": {
               "schema": {
                 "example": {
+                  "acl": {
+                    "add": [
+                      {
+                        "actions": [
+                          "read",
+                          "write"
+                        ],
+                        "principal": "string",
+                        "principal_type": "user"
+                      }
+                    ],
+                    "grants": [
+                      {
+                        "actions": [
+                          "read",
+                          "write"
+                        ],
+                        "principal": "string",
+                        "principal_type": "user"
+                      }
+                    ],
+                    "remove": [
+                      {
+                        "principal": "string",
+                        "principal_type": "user"
+                      }
+                    ]
+                  },
                   "agent": "string",
                   "fields": {},
                   "org": "string",
@@ -33758,6 +34169,179 @@
                   "user": "string"
                 },
                 "properties": {
+                  "acl": {
+                    "description": "Access control list for the custom object. Supports explicit `read` and `write` grants to users, teams, organizations, organization roles, agents, or everyone.",
+                    "example": {
+                      "add": [
+                        {
+                          "actions": [
+                            "read",
+                            "write"
+                          ],
+                          "principal": "string",
+                          "principal_type": "user"
+                        }
+                      ],
+                      "grants": [
+                        {
+                          "actions": [
+                            "read",
+                            "write"
+                          ],
+                          "principal": "string",
+                          "principal_type": "user"
+                        }
+                      ],
+                      "remove": [
+                        {
+                          "principal": "string",
+                          "principal_type": "user"
+                        }
+                      ]
+                    },
+                    "properties": {
+                      "add": {
+                        "description": "Patch mode: grants to add or merge into the existing list. Cannot be combined with `grants`.",
+                        "example": [
+                          {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "items": {
+                          "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                          "example": {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          },
+                          "properties": {
+                            "actions": {
+                              "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                              "example": [
+                                "read",
+                                "write"
+                              ],
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "principal": {
+                              "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                              "example": "string",
+                              "type": "string"
+                            },
+                            "principal_type": {
+                              "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                              "example": "user",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "principal_type",
+                            "actions"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "grants": {
+                        "description": "Replace mode: the complete new list of grants that replaces all existing entries. Send an empty array (`[]`) to clear all grants. Cannot be combined with `add` or `remove`.",
+                        "example": [
+                          {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "items": {
+                          "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                          "example": {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          },
+                          "properties": {
+                            "actions": {
+                              "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                              "example": [
+                                "read",
+                                "write"
+                              ],
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "principal": {
+                              "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                              "example": "string",
+                              "type": "string"
+                            },
+                            "principal_type": {
+                              "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                              "example": "user",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "principal_type",
+                            "actions"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "remove": {
+                        "description": "Patch mode: principals whose grants should be removed from the existing list. Cannot be combined with `grants`.",
+                        "example": [
+                          {
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "items": {
+                          "description": "Identifies a principal to be removed from an access-control list.",
+                          "example": {
+                            "principal": "string",
+                            "principal_type": "user"
+                          },
+                          "properties": {
+                            "principal": {
+                              "description": "The identifier of the principal to remove. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`. Omit when `principal_type` is `\"everyone\"`.",
+                              "example": "string",
+                              "type": "string"
+                            },
+                            "principal_type": {
+                              "description": "The kind of principal to remove. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                              "example": "user",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "principal_type"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  },
                   "agent": {
                     "description": "Agent user ID to set as the object owner. Used when neither `team` nor `user` is supplied.",
                     "example": "string",
@@ -33828,6 +34412,9 @@
           },
           "404": {
             "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict - an object already occupies this row_key"
           },
           "422": {
             "description": "Validation failed"
@@ -33951,7 +34538,7 @@
         ]
       },
       "put": {
-        "description": "Updates the fields of an existing custom object and returns the updated\nobject along with its new version number. The authenticated viewer must have\npermission to modify the object.\n\nYou may supply `fields` (a full or partial key-value map to merge into the\nobject), `field_ops` (granular array operations per field), or both — but\nthe same field name must not appear in both, which returns 422. Returns 404\nif the object does not exist or has been deleted.\n",
+        "description": "Updates the fields of an existing custom object and returns the updated\nobject along with its new version number. The authenticated viewer must have\npermission to modify the object.\n\nYou may supply `fields` (a full or partial key-value map to merge into the\nobject), `field_ops` (granular array operations per field), `acl`, or any\ncompatible combination. The same field name must not appear in both\n`fields` and `field_ops`, which returns 422. Returns 404 if the object does\nnot exist or has been deleted.\n",
         "operationId": "put_api_v1_custom_objects__object",
         "parameters": [
           {
@@ -33970,11 +34557,212 @@
             "application/json": {
               "schema": {
                 "example": {
+                  "acl": {
+                    "add": [
+                      {
+                        "actions": [
+                          "read",
+                          "write"
+                        ],
+                        "principal": "string",
+                        "principal_type": "user"
+                      }
+                    ],
+                    "grants": [
+                      {
+                        "actions": [
+                          "read",
+                          "write"
+                        ],
+                        "principal": "string",
+                        "principal_type": "user"
+                      }
+                    ],
+                    "remove": [
+                      {
+                        "principal": "string",
+                        "principal_type": "user"
+                      }
+                    ]
+                  },
                   "field_ops": {},
                   "fields": {},
                   "type": "string"
                 },
                 "properties": {
+                  "acl": {
+                    "description": "Updated access control list. Supports full replacement via `grants` or targeted `add`/`remove` operations.",
+                    "example": {
+                      "add": [
+                        {
+                          "actions": [
+                            "read",
+                            "write"
+                          ],
+                          "principal": "string",
+                          "principal_type": "user"
+                        }
+                      ],
+                      "grants": [
+                        {
+                          "actions": [
+                            "read",
+                            "write"
+                          ],
+                          "principal": "string",
+                          "principal_type": "user"
+                        }
+                      ],
+                      "remove": [
+                        {
+                          "principal": "string",
+                          "principal_type": "user"
+                        }
+                      ]
+                    },
+                    "properties": {
+                      "add": {
+                        "description": "Patch mode: grants to add or merge into the existing list. Cannot be combined with `grants`.",
+                        "example": [
+                          {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "items": {
+                          "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                          "example": {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          },
+                          "properties": {
+                            "actions": {
+                              "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                              "example": [
+                                "read",
+                                "write"
+                              ],
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "principal": {
+                              "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                              "example": "string",
+                              "type": "string"
+                            },
+                            "principal_type": {
+                              "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                              "example": "user",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "principal_type",
+                            "actions"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "grants": {
+                        "description": "Replace mode: the complete new list of grants that replaces all existing entries. Send an empty array (`[]`) to clear all grants. Cannot be combined with `add` or `remove`.",
+                        "example": [
+                          {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "items": {
+                          "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                          "example": {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          },
+                          "properties": {
+                            "actions": {
+                              "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                              "example": [
+                                "read",
+                                "write"
+                              ],
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "principal": {
+                              "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                              "example": "string",
+                              "type": "string"
+                            },
+                            "principal_type": {
+                              "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                              "example": "user",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "principal_type",
+                            "actions"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "remove": {
+                        "description": "Patch mode: principals whose grants should be removed from the existing list. Cannot be combined with `grants`.",
+                        "example": [
+                          {
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "items": {
+                          "description": "Identifies a principal to be removed from an access-control list.",
+                          "example": {
+                            "principal": "string",
+                            "principal_type": "user"
+                          },
+                          "properties": {
+                            "principal": {
+                              "description": "The identifier of the principal to remove. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`. Omit when `principal_type` is `\"everyone\"`.",
+                              "example": "string",
+                              "type": "string"
+                            },
+                            "principal_type": {
+                              "description": "The kind of principal to remove. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                              "example": "user",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "principal_type"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  },
                   "field_ops": {
                     "description": "Granular array operations to apply per field (e.g. append, prepend, remove). A field must not appear in both `fields` and `field_ops`.",
                     "example": {},
@@ -33991,9 +34779,6 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "fields"
-                ],
                 "type": "object"
               }
             }
@@ -34008,6 +34793,34 @@
                   "description": "The updated custom object and its new version metadata.",
                   "example": {
                     "data": {
+                      "acl": {
+                        "add": [
+                          {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "grants": [
+                          {
+                            "actions": [
+                              "read",
+                              "write"
+                            ],
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ],
+                        "remove": [
+                          {
+                            "principal": "string",
+                            "principal_type": "user"
+                          }
+                        ]
+                      },
                       "created_at": "2024-01-01T00:00:00Z",
                       "fields": {
                         "key": "value"
@@ -34028,6 +34841,34 @@
                     "data": {
                       "description": "The custom object after the update has been applied.",
                       "example": {
+                        "acl": {
+                          "add": [
+                            {
+                              "actions": [
+                                "read",
+                                "write"
+                              ],
+                              "principal": "string",
+                              "principal_type": "user"
+                            }
+                          ],
+                          "grants": [
+                            {
+                              "actions": [
+                                "read",
+                                "write"
+                              ],
+                              "principal": "string",
+                              "principal_type": "user"
+                            }
+                          ],
+                          "remove": [
+                            {
+                              "principal": "string",
+                              "principal_type": "user"
+                            }
+                          ]
+                        },
                         "created_at": "2024-01-01T00:00:00Z",
                         "fields": {
                           "key": "value"
@@ -34043,6 +34884,179 @@
                         "version": 1
                       },
                       "properties": {
+                        "acl": {
+                          "description": "Access control list governing read and write access to this custom object. Only returned to resource owners and privileged or organization-admin viewers; `null` for everyone else.",
+                          "example": {
+                            "add": [
+                              {
+                                "actions": [
+                                  "read",
+                                  "write"
+                                ],
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ],
+                            "grants": [
+                              {
+                                "actions": [
+                                  "read",
+                                  "write"
+                                ],
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ],
+                            "remove": [
+                              {
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ]
+                          },
+                          "properties": {
+                            "add": {
+                              "description": "Patch mode: grants to add or merge into the existing list. Cannot be combined with `grants`.",
+                              "example": [
+                                {
+                                  "actions": [
+                                    "read",
+                                    "write"
+                                  ],
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                }
+                              ],
+                              "items": {
+                                "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                                "example": {
+                                  "actions": [
+                                    "read",
+                                    "write"
+                                  ],
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                },
+                                "properties": {
+                                  "actions": {
+                                    "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                                    "example": [
+                                      "read",
+                                      "write"
+                                    ],
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "principal": {
+                                    "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "principal_type": {
+                                    "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                                    "example": "user",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "principal_type",
+                                  "actions"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "grants": {
+                              "description": "Replace mode: the complete new list of grants that replaces all existing entries. Send an empty array (`[]`) to clear all grants. Cannot be combined with `add` or `remove`.",
+                              "example": [
+                                {
+                                  "actions": [
+                                    "read",
+                                    "write"
+                                  ],
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                }
+                              ],
+                              "items": {
+                                "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                                "example": {
+                                  "actions": [
+                                    "read",
+                                    "write"
+                                  ],
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                },
+                                "properties": {
+                                  "actions": {
+                                    "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                                    "example": [
+                                      "read",
+                                      "write"
+                                    ],
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "principal": {
+                                    "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "principal_type": {
+                                    "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                                    "example": "user",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "principal_type",
+                                  "actions"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "remove": {
+                              "description": "Patch mode: principals whose grants should be removed from the existing list. Cannot be combined with `grants`.",
+                              "example": [
+                                {
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                }
+                              ],
+                              "items": {
+                                "description": "Identifies a principal to be removed from an access-control list.",
+                                "example": {
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                },
+                                "properties": {
+                                  "principal": {
+                                    "description": "The identifier of the principal to remove. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`. Omit when `principal_type` is `\"everyone\"`.",
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "principal_type": {
+                                    "description": "The kind of principal to remove. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                                    "example": "user",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "principal_type"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "type": "object"
+                        },
                         "created_at": {
                           "description": "When the custom object was created (ISO 8601).",
                           "example": "2024-01-01T00:00:00Z",
@@ -37362,6 +38376,119 @@
         ]
       }
     },
+    "/api/v1/slack_channel_bindings/provision": {
+      "post": {
+        "description": "Opens a Slack Connect channel with a new customer — creating one and sending\nthe invite, or adopting a shared channel you already have — and records who is\nadding whom so the addition can finish once the customer accepts.\n\nThe returned binding is **pending**: nothing mirrors, and no per-customer Team,\nagent, or solution instance exists yet. Acceptance is asynchronous and may\nnever come. When it does, the addition completes in the background under the\nidentity of the admin who called this endpoint, re-checked live at that moment.\nA caller who has since lost their admin role does not get a substitute — the\naddition is refused and a human re-adds the customer.\n\nThe caller must be an admin of the Slack integration's own organization. This\nis the same authority the completion demands, checked here so a customer is\nnever invited into a channel whose addition can never finish.\n\nDeliberately not exposed as a script binding: this sends mail to a person\noutside the org, so it stays a vendor-admin HTTP surface.\n",
+        "operationId": "post_api_v1_slack_channel_bindings_provision",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "channel_name": "Example Name",
+                  "customer_email": "user@example.com",
+                  "customer_key": "string",
+                  "customer_label": "string",
+                  "existing_channel_id": "string",
+                  "inputs": {},
+                  "slack_team_id": "string",
+                  "template_config_id": "string"
+                },
+                "properties": {
+                  "channel_name": {
+                    "description": "Name for a Slack channel to create for this customer. Required unless `existing_channel_id` is given. The channel is created private.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "customer_email": {
+                    "description": "Address the Slack Connect invite is sent to. Required when creating a channel; optional when adopting one the customer is already in. Whoever accepts becomes the verified counterparty.",
+                    "example": "user@example.com",
+                    "type": "string"
+                  },
+                  "customer_key": {
+                    "description": "The vendor's own primary key for this customer (`customer_id` / `account_id` / `tenant_id`). The per-customer agent's data access is locked to it. Immutable once the customer is added: re-targeting means offboarding and re-provisioning.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "customer_label": {
+                    "description": "Human-readable name for the customer (e.g. `Acme, Inc.`). Used for the vendor's own dashboards and as the per-customer Team's name. Not an identity or an access control input.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "existing_channel_id": {
+                    "description": "Adopt this already-shared Slack Connect channel (e.g. `C01234ABCDE`) instead of creating one. Mutually exclusive with `channel_name`.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "inputs": {
+                    "description": "String-keyed values the per-customer solution instance is stamped with. Defaults to an empty map.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "slack_team_id": {
+                    "description": "Slack workspace team ID of the vendor's own Slack installation (e.g. `T01234ABCDE`). The customer's workspace is not known yet — it resolves from whoever accepts.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "template_config_id": {
+                    "description": "Config ID (`cfg_…`) of the org-installed Solution the per-customer instance is stamped from. Must be the organization's own installed copy, not the catalog original — instances stamped from a different config do not appear in the vendor's customer fleet.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slack_team_id",
+                  "customer_label",
+                  "customer_key",
+                  "template_config_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlackChannelBinding"
+                }
+              }
+            },
+            "description": "The pending binding for the customer's channel. `disclosure_state` is `pending` until the customer accepts, and `scope_key` is null until the addition finishes."
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden; Admin role required for this operation; The Slack integration referenced by this binding is not visible to the caller"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "502": {
+            "description": "Provider returned an error"
+          }
+        },
+        "summary": "Start adding a customer over Slack Connect",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/slack_channel_bindings/{channel}": {
       "delete": {
         "description": "Removes the binding between a Slack channel and its associated team. The\nchannel is identified by its Slack channel ID together with the `slack_team_id`\nthat scopes it to a specific Slack workspace. Removing the binding does not\ndelete the bound team or any conversation threads scoped to it; decommission\nthose resources separately if required.\n\nThe caller must have team-manage rights on the team the channel is currently\nbound to. Returning 403 indicates insufficient permission; returning 404\nindicates the binding does not exist or is not visible to the caller.\n\nThe REST endpoint returns 204 No Content on success. The script binding\n(`slack.channel_bindings.delete`) returns a confirmation object so script\ncallers can verify success without an additional fetch. Both paths are\nidempotent — retrying after a partial failure is safe.\n",
@@ -38560,7 +39687,7 @@
             "description": "Solution not found"
           },
           "409": {
-            "description": "Conflict"
+            "description": "Conflict; Solution lookup keys beginning with `designer-` are reserved for Designer Apply"
           },
           "422": {
             "description": "Validation failed"
@@ -38808,6 +39935,7 @@
                     ]
                   },
                   "allow_auto_import": true,
+                  "install_inputs": {},
                   "lookup_key": "string",
                   "lookup_key_suffix": "string",
                   "name": "Example Name",
@@ -39049,6 +40177,11 @@
                       }
                     ]
                   },
+                  "install_inputs": {
+                    "description": "Values applied to parameterized AgentTemplate prose during a root Agent install. Use `{values: {customer_label: \"Acme\"}}`.",
+                    "example": {},
+                    "type": "object"
+                  },
                   "lookup_key": {
                     "description": "Lookup key override for the provisioned resource (for example, the Agent's `agent_key`).",
                     "example": "string",
@@ -39120,7 +40253,7 @@
             "description": "Solution not found"
           },
           "409": {
-            "description": "Conflict"
+            "description": "Conflict; Solution lookup keys beginning with `designer-` are reserved for Designer Apply"
           },
           "422": {
             "description": "Validation failed"
@@ -39818,7 +40951,7 @@
             "description": "Solution not found"
           },
           "409": {
-            "description": "Solution version downgrade is not allowed; Incoming Solution identity does not match the Solution being updated; Solution changed since review; prepare the diff again."
+            "description": "Solution version downgrade is not allowed; Incoming Solution identity does not match the Solution being updated; Solution changed since review; prepare the diff again.; Solution lookup keys beginning with `designer-` are reserved for Designer Apply"
           },
           "422": {
             "description": "Inline-template Solutions cannot be updated; Validation failed"
@@ -41735,6 +42868,34 @@
                   "example": {
                     "data": [
                       {
+                        "acl": {
+                          "add": [
+                            {
+                              "actions": [
+                                "read",
+                                "write"
+                              ],
+                              "principal": "string",
+                              "principal_type": "user"
+                            }
+                          ],
+                          "grants": [
+                            {
+                              "actions": [
+                                "read",
+                                "write"
+                              ],
+                              "principal": "string",
+                              "principal_type": "user"
+                            }
+                          ],
+                          "remove": [
+                            {
+                              "principal": "string",
+                              "principal_type": "user"
+                            }
+                          ]
+                        },
                         "created_at": "2024-01-01T00:00:00Z",
                         "fields": {
                           "key": "value"
@@ -41757,6 +42918,34 @@
                       "description": "Array of custom object records for the current page.",
                       "example": [
                         {
+                          "acl": {
+                            "add": [
+                              {
+                                "actions": [
+                                  "read",
+                                  "write"
+                                ],
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ],
+                            "grants": [
+                              {
+                                "actions": [
+                                  "read",
+                                  "write"
+                                ],
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ],
+                            "remove": [
+                              {
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ]
+                          },
                           "created_at": "2024-01-01T00:00:00Z",
                           "fields": {
                             "key": "value"
@@ -41775,6 +42964,34 @@
                       "items": {
                         "description": "A custom object belonging to an organization. Custom objects store arbitrary structured data defined by a schema type and are scoped to an org, team, or user.",
                         "example": {
+                          "acl": {
+                            "add": [
+                              {
+                                "actions": [
+                                  "read",
+                                  "write"
+                                ],
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ],
+                            "grants": [
+                              {
+                                "actions": [
+                                  "read",
+                                  "write"
+                                ],
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ],
+                            "remove": [
+                              {
+                                "principal": "string",
+                                "principal_type": "user"
+                              }
+                            ]
+                          },
                           "created_at": "2024-01-01T00:00:00Z",
                           "fields": {
                             "key": "value"
@@ -41790,6 +43007,179 @@
                           "version": 1
                         },
                         "properties": {
+                          "acl": {
+                            "description": "Access control list governing read and write access to this custom object. Only returned to resource owners and privileged or organization-admin viewers; `null` for everyone else.",
+                            "example": {
+                              "add": [
+                                {
+                                  "actions": [
+                                    "read",
+                                    "write"
+                                  ],
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                }
+                              ],
+                              "grants": [
+                                {
+                                  "actions": [
+                                    "read",
+                                    "write"
+                                  ],
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                }
+                              ],
+                              "remove": [
+                                {
+                                  "principal": "string",
+                                  "principal_type": "user"
+                                }
+                              ]
+                            },
+                            "properties": {
+                              "add": {
+                                "description": "Patch mode: grants to add or merge into the existing list. Cannot be combined with `grants`.",
+                                "example": [
+                                  {
+                                    "actions": [
+                                      "read",
+                                      "write"
+                                    ],
+                                    "principal": "string",
+                                    "principal_type": "user"
+                                  }
+                                ],
+                                "items": {
+                                  "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                                  "example": {
+                                    "actions": [
+                                      "read",
+                                      "write"
+                                    ],
+                                    "principal": "string",
+                                    "principal_type": "user"
+                                  },
+                                  "properties": {
+                                    "actions": {
+                                      "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                                      "example": [
+                                        "read",
+                                        "write"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
+                                    },
+                                    "principal": {
+                                      "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                                      "example": "string",
+                                      "type": "string"
+                                    },
+                                    "principal_type": {
+                                      "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                                      "example": "user",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "principal_type",
+                                    "actions"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "grants": {
+                                "description": "Replace mode: the complete new list of grants that replaces all existing entries. Send an empty array (`[]`) to clear all grants. Cannot be combined with `add` or `remove`.",
+                                "example": [
+                                  {
+                                    "actions": [
+                                      "read",
+                                      "write"
+                                    ],
+                                    "principal": "string",
+                                    "principal_type": "user"
+                                  }
+                                ],
+                                "items": {
+                                  "description": "A single access-control grant that pairs a principal with the set of actions it is allowed to perform.",
+                                  "example": {
+                                    "actions": [
+                                      "read",
+                                      "write"
+                                    ],
+                                    "principal": "string",
+                                    "principal_type": "user"
+                                  },
+                                  "properties": {
+                                    "actions": {
+                                      "description": "Array of action strings the principal is permitted to perform, e.g. `[\"read\", \"write\"]`. Must contain at least one entry.",
+                                      "example": [
+                                        "read",
+                                        "write"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
+                                    },
+                                    "principal": {
+                                      "description": "The identifier of the principal. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`; omit entirely when `principal_type` is `\"everyone\"`.",
+                                      "example": "string",
+                                      "type": "string"
+                                    },
+                                    "principal_type": {
+                                      "description": "The kind of principal receiving the grant. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                                      "example": "user",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "principal_type",
+                                    "actions"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "remove": {
+                                "description": "Patch mode: principals whose grants should be removed from the existing list. Cannot be combined with `grants`.",
+                                "example": [
+                                  {
+                                    "principal": "string",
+                                    "principal_type": "user"
+                                  }
+                                ],
+                                "items": {
+                                  "description": "Identifies a principal to be removed from an access-control list.",
+                                  "example": {
+                                    "principal": "string",
+                                    "principal_type": "user"
+                                  },
+                                  "properties": {
+                                    "principal": {
+                                      "description": "The identifier of the principal to remove. A string ID for `\"user\"`, `\"team\"`, `\"org\"`, and `\"agent\"` types; one of `\"admin\"`, `\"member\"`, or `\"viewer\"` for `\"org_role\"`. Omit when `principal_type` is `\"everyone\"`.",
+                                      "example": "string",
+                                      "type": "string"
+                                    },
+                                    "principal_type": {
+                                      "description": "The kind of principal to remove. One of `\"user\"`, `\"team\"`, `\"org\"`, `\"org_role\"`, `\"agent\"`, or `\"everyone\"`.",
+                                      "example": "user",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "principal_type"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
                           "created_at": {
                             "description": "When the custom object was created (ISO 8601).",
                             "example": "2024-01-01T00:00:00Z",
@@ -44947,6 +46337,119 @@
         ]
       }
     },
+    "/api/v1/teams/{team}/tasks/metrics": {
+      "get": {
+        "description": "Returns task activity metrics scoped to one team (the Network in ArchAgents).\n`open` counts currently open or in-progress team tasks, `created` counts\ntasks inserted in the UTC-day window, and `completed` counts tasks whose\n`closed_at` falls in that window while still in a closed status. Hard-deleted\ntasks are absent from the projection and therefore omitted. The daily series\nis zero-filled across the requested window and includes reconstructed\nend-of-day `open` stock (from remaining projection rows' inserted_at/closed_at).\n\nAny authenticated team member may read this count-only Network summary.\nRequests from callers without team access return 404 so team existence is\nnot disclosed.\n",
+        "operationId": "get_api_v1_teams__team_tasks_metrics",
+        "parameters": [
+          {
+            "description": "Team ID (`tem_...`) whose task metrics should be returned.",
+            "example": "string",
+            "in": "path",
+            "name": "team",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "UTC-day window. One of 7, 30, 90, or 365; defaults to 30.",
+            "example": 1,
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Network-scoped task activity metrics.",
+                  "example": {
+                    "completed": 1,
+                    "created": 1,
+                    "days": 1,
+                    "end_at": "2024-01-01T00:00:00Z",
+                    "open": 1,
+                    "series": [
+                      {}
+                    ],
+                    "start_at": "2024-01-01T00:00:00Z"
+                  },
+                  "properties": {
+                    "completed": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "created": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "days": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "end_at": {
+                      "example": "2024-01-01T00:00:00Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "open": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "series": {
+                      "description": "Zero-filled UTC-day buckets with `date`, end-of-day `open`, `created`, and `completed`.",
+                      "example": [
+                        {}
+                      ],
+                      "items": {
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "start_at": {
+                      "example": "2024-01-01T00:00:00Z",
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "days",
+                    "start_at",
+                    "end_at",
+                    "open",
+                    "created",
+                    "completed",
+                    "series"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Team not found"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "Get task activity metrics for a team",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/teams/{team}/threads": {
       "get": {
         "description": "Returns all threads owned by the specified team that the authenticated caller\nhas permission to view. The caller must have access to the team; requests\nwithout team access are rejected with 404.\n\nThreads are returned in a single `data` array, ordered with the team's\ndefault thread first, then by most recent activity (newest first). Each\nthread carries a `last_activity` timestamp — the most recent message's\ncreation time, falling back to the thread's own creation time. Use the\nteam-scoped thread endpoints to create, update, or delete individual\nthreads.\n",
@@ -45134,6 +46637,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -45524,6 +47028,7 @@
                             "replies_before_cursor": "string",
                             "reply_count": 1,
                             "reply_to": {},
+                            "root_message_id": "string",
                             "sandbox": "string",
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
@@ -45911,6 +47416,7 @@
                             "replies_before_cursor": "string",
                             "reply_count": 1,
                             "reply_to": {},
+                            "root_message_id": "string",
                             "sandbox": "string",
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
@@ -46464,6 +47970,7 @@
                               "replies_before_cursor": "string",
                               "reply_count": 1,
                               "reply_to": {},
+                              "root_message_id": "string",
                               "sandbox": "string",
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
@@ -47428,6 +48935,7 @@
                                   "replies_before_cursor": "string",
                                   "reply_count": 1,
                                   "reply_to": {},
+                                  "root_message_id": "string",
                                   "sandbox": "string",
                                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                   "thread": "string",
@@ -47436,6 +48944,12 @@
                                   "visibility": "default"
                                 },
                                 "type": "object"
+                              },
+                              "root_message_id": {
+                                "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
                               },
                               "sandbox": {
                                 "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -49846,6 +51360,93 @@
         ]
       }
     },
+    "/api/v1/teams/{team}/threads/metrics": {
+      "get": {
+        "description": "Returns how many **network-public** team threads were created in the UTC-day\nwindow. Counts come from realtime SQL aggregation over append-only\n`network_activity_events` (`thread.created` rows co-committed with create):\nteam- or restricted-visibility threads (plus legacy open-team rows), never\nprivate or mirror. Every Network member sees the same number. Hard-delete\nco-commits a separate `thread.deleted` transition event and does not remove\ncreate events (metric is \"created\", not \"still present\"). Visibility flips\nafter insert are ignored in v1.\n\nAny authenticated team member may read this count-only Network summary.\nRequests from callers without team access return 404 so team existence is\nnot disclosed.\n",
+        "operationId": "get_api_v1_teams__team_threads_metrics",
+        "parameters": [
+          {
+            "description": "Team ID (`tem_...`) whose thread metrics should be returned.",
+            "example": "string",
+            "in": "path",
+            "name": "team",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "UTC-day window. One of 7, 30, 90, or 365; defaults to 30.",
+            "example": 1,
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Network-scoped threads-created count.",
+                  "example": {
+                    "days": 1,
+                    "end_at": "2024-01-01T00:00:00Z",
+                    "opened": 1,
+                    "start_at": "2024-01-01T00:00:00Z"
+                  },
+                  "properties": {
+                    "days": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "end_at": {
+                      "example": "2024-01-01T00:00:00Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "opened": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "start_at": {
+                      "example": "2024-01-01T00:00:00Z",
+                      "format": "date-time",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "days",
+                    "start_at",
+                    "end_at",
+                    "opened"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Team not found"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "Get threads-created count for a team",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/thread_messages/{message}": {
       "delete": {
         "description": "Permanently removes the specified message from its thread. This action\ncannot be undone.\n\nA message may be deleted by its author, an admin of the org the message\nbelongs to, an admin of the team that owns the thread, or the agent that\nsent it. Service-to-service callers with elevated (`all_powerful`) scope\nmay delete any message in a thread they can access. Returns\n`403 Forbidden` when the caller is not permitted to delete the message.\n",
@@ -49880,6 +51481,51 @@
           }
         },
         "summary": "Delete a thread message",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "get": {
+        "description": "Returns a single message by its globally unique message ID. The authenticated\nviewer must be able to read the message and its thread.\n\nThe response includes the message's content, sender information, and any\nattachments that were loaded at creation time. For admin-authenticated\nrequests, an additional `admin` field is returned containing raw metadata\nand the associated trajectory data (LLM input/output messages) if one exists.\nA trajectory belongs to the agent response it produced, so `admin.trajectory`\nis only populated on the response message. On the triggering user message\nthe trajectory is omitted and `admin.response_message` links to the agent\nresponse (where the trajectory is shown), when a response exists.\n\nIf the message is not found or is not visible to the caller, a 404 is\nreturned.\n",
+        "operationId": "get_api_v1_thread_messages__message",
+        "parameters": [
+          {
+            "description": "Globally unique message ID (`msg_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "message",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ThreadMessage"
+                }
+              }
+            },
+            "description": "The requested message, including its content, sender, and attachments."
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "App scope required"
+          },
+          "404": {
+            "description": "Message not found or inaccessible"
+          }
+        },
+        "summary": "Retrieve a message",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -51806,6 +53452,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -51952,6 +53599,7 @@
                             "replies_before_cursor": "string",
                             "reply_count": 1,
                             "reply_to": {},
+                            "root_message_id": "string",
                             "sandbox": "string",
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
@@ -52108,6 +53756,7 @@
                               "replies_before_cursor": "string",
                               "reply_count": 1,
                               "reply_to": {},
+                              "root_message_id": "string",
                               "sandbox": "string",
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
@@ -52373,6 +54022,7 @@
                                 "replies_before_cursor": "string",
                                 "reply_count": 1,
                                 "reply_to": {},
+                                "root_message_id": "string",
                                 "sandbox": "string",
                                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                 "thread": "string",
@@ -52380,6 +54030,7 @@
                                 "user": "string",
                                 "visibility": "default"
                               },
+                              "root_message_id": "string",
                               "sandbox": "string",
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
@@ -53344,6 +54995,7 @@
                                   "replies_before_cursor": "string",
                                   "reply_count": 1,
                                   "reply_to": {},
+                                  "root_message_id": "string",
                                   "sandbox": "string",
                                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                   "thread": "string",
@@ -53352,6 +55004,12 @@
                                   "visibility": "default"
                                 },
                                 "type": "object"
+                              },
+                              "root_message_id": {
+                                "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
                               },
                               "sandbox": {
                                 "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -55240,6 +56898,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -55630,6 +57289,7 @@
                             "replies_before_cursor": "string",
                             "reply_count": 1,
                             "reply_to": {},
+                            "root_message_id": "string",
                             "sandbox": "string",
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
@@ -56017,6 +57677,7 @@
                             "replies_before_cursor": "string",
                             "reply_count": 1,
                             "reply_to": {},
+                            "root_message_id": "string",
                             "sandbox": "string",
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
@@ -56570,6 +58231,7 @@
                               "replies_before_cursor": "string",
                               "reply_count": 1,
                               "reply_to": {},
+                              "root_message_id": "string",
                               "sandbox": "string",
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
@@ -57534,6 +59196,7 @@
                                   "replies_before_cursor": "string",
                                   "reply_count": 1,
                                   "reply_to": {},
+                                  "root_message_id": "string",
                                   "sandbox": "string",
                                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                   "thread": "string",
@@ -57542,6 +59205,12 @@
                                   "visibility": "default"
                                 },
                                 "type": "object"
+                              },
+                              "root_message_id": {
+                                "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
                               },
                               "sandbox": {
                                 "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -63551,6 +65220,7 @@
                     "replies_before_cursor": "string",
                     "reply_count": 1,
                     "reply_to": {},
+                    "root_message_id": "string",
                     "sandbox": "string",
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
@@ -63752,6 +65422,7 @@
                     "replies_before_cursor": "string",
                     "reply_count": 1,
                     "reply_to": {},
+                    "root_message_id": "string",
                     "sandbox": "string",
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
@@ -64181,6 +65852,7 @@
                   "replies_before_cursor": "string",
                   "reply_count": 1,
                   "reply_to": {},
+                  "root_message_id": "string",
                   "sandbox": "string",
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
@@ -64939,6 +66611,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -65140,6 +66813,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -69366,6 +71040,7 @@
                         "replies_before_cursor": "string",
                         "reply_count": 1,
                         "reply_to": {},
+                        "root_message_id": "string",
                         "sandbox": "string",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
@@ -69631,6 +71306,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -69638,6 +71314,7 @@
                           "user": "string",
                           "visibility": "default"
                         },
+                        "root_message_id": "string",
                         "sandbox": "string",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
@@ -70602,6 +72279,7 @@
                             "replies_before_cursor": "string",
                             "reply_count": 1,
                             "reply_to": {},
+                            "root_message_id": "string",
                             "sandbox": "string",
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
@@ -70610,6 +72288,12 @@
                             "visibility": "default"
                           },
                           "type": "object"
+                        },
+                        "root_message_id": {
+                          "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                          "example": "string",
+                          "nullable": true,
+                          "type": "string"
                         },
                         "sandbox": {
                           "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -71098,6 +72782,7 @@
                         "replies_before_cursor": "string",
                         "reply_count": 1,
                         "reply_to": {},
+                        "root_message_id": "string",
                         "sandbox": "string",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
@@ -71651,6 +73336,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -72615,6 +74301,7 @@
                               "replies_before_cursor": "string",
                               "reply_count": 1,
                               "reply_to": {},
+                              "root_message_id": "string",
                               "sandbox": "string",
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
@@ -72623,6 +74310,12 @@
                               "visibility": "default"
                             },
                             "type": "object"
+                          },
+                          "root_message_id": {
+                            "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
                           },
                           "sandbox": {
                             "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -75194,6 +76887,7 @@
                     "replies_before_cursor": "string",
                     "reply_count": 1,
                     "reply_to": {},
+                    "root_message_id": "string",
                     "sandbox": "string",
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
@@ -75747,6 +77441,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -76711,6 +78406,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -76719,6 +78415,12 @@
                           "visibility": "default"
                         },
                         "type": "object"
+                      },
+                      "root_message_id": {
+                        "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                        "example": "string",
+                        "nullable": true,
+                        "type": "string"
                       },
                       "sandbox": {
                         "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -79023,6 +80725,7 @@
                   "replies_before_cursor": "string",
                   "reply_count": 1,
                   "reply_to": {},
+                  "root_message_id": "string",
                   "sandbox": "string",
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
@@ -79164,6 +80867,7 @@
                     "replies_before_cursor": "string",
                     "reply_count": 1,
                     "reply_to": {},
+                    "root_message_id": "string",
                     "sandbox": "string",
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
@@ -79429,6 +81133,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -79436,6 +81141,7 @@
                       "user": "string",
                       "visibility": "default"
                     },
+                    "root_message_id": "string",
                     "sandbox": "string",
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
@@ -80400,6 +82106,7 @@
                         "replies_before_cursor": "string",
                         "reply_count": 1,
                         "reply_to": {},
+                        "root_message_id": "string",
                         "sandbox": "string",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
@@ -80408,6 +82115,12 @@
                         "visibility": "default"
                       },
                       "type": "object"
+                    },
+                    "root_message_id": {
+                      "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
                     },
                     "sandbox": {
                       "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -81009,6 +82722,7 @@
                     "replies_before_cursor": "string",
                     "reply_count": 1,
                     "reply_to": {},
+                    "root_message_id": "string",
                     "sandbox": "string",
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
@@ -81210,6 +82924,7 @@
                     "replies_before_cursor": "string",
                     "reply_count": 1,
                     "reply_to": {},
+                    "root_message_id": "string",
                     "sandbox": "string",
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
@@ -81969,6 +83684,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -82170,6 +83886,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -86396,6 +88113,7 @@
                         "replies_before_cursor": "string",
                         "reply_count": 1,
                         "reply_to": {},
+                        "root_message_id": "string",
                         "sandbox": "string",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
@@ -86661,6 +88379,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -86668,6 +88387,7 @@
                           "user": "string",
                           "visibility": "default"
                         },
+                        "root_message_id": "string",
                         "sandbox": "string",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
@@ -87632,6 +89352,7 @@
                             "replies_before_cursor": "string",
                             "reply_count": 1,
                             "reply_to": {},
+                            "root_message_id": "string",
                             "sandbox": "string",
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
@@ -87640,6 +89361,12 @@
                             "visibility": "default"
                           },
                           "type": "object"
+                        },
+                        "root_message_id": {
+                          "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                          "example": "string",
+                          "nullable": true,
+                          "type": "string"
                         },
                         "sandbox": {
                           "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -88128,6 +89855,7 @@
                         "replies_before_cursor": "string",
                         "reply_count": 1,
                         "reply_to": {},
+                        "root_message_id": "string",
                         "sandbox": "string",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
@@ -88681,6 +90409,7 @@
                           "replies_before_cursor": "string",
                           "reply_count": 1,
                           "reply_to": {},
+                          "root_message_id": "string",
                           "sandbox": "string",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
@@ -89645,6 +91374,7 @@
                               "replies_before_cursor": "string",
                               "reply_count": 1,
                               "reply_to": {},
+                              "root_message_id": "string",
                               "sandbox": "string",
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
@@ -89653,6 +91383,12 @@
                               "visibility": "default"
                             },
                             "type": "object"
+                          },
+                          "root_message_id": {
+                            "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
                           },
                           "sandbox": {
                             "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -91962,6 +93698,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -92101,6 +93838,7 @@
                   "replies_before_cursor": "string",
                   "reply_count": 1,
                   "reply_to": {},
+                  "root_message_id": "string",
                   "sandbox": "string",
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
@@ -93065,6 +94803,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -93073,6 +94812,12 @@
                       "visibility": "default"
                     },
                     "type": "object"
+                  },
+                  "root_message_id": {
+                    "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                    "example": "string",
+                    "nullable": true,
+                    "type": "string"
                   },
                   "sandbox": {
                     "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -93277,6 +95022,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -93416,6 +95162,7 @@
                   "replies_before_cursor": "string",
                   "reply_count": 1,
                   "reply_to": {},
+                  "root_message_id": "string",
                   "sandbox": "string",
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
@@ -94380,6 +96127,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -94388,6 +96136,12 @@
                       "visibility": "default"
                     },
                     "type": "object"
+                  },
+                  "root_message_id": {
+                    "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                    "example": "string",
+                    "nullable": true,
+                    "type": "string"
                   },
                   "sandbox": {
                     "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -94712,6 +96466,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -94860,6 +96615,7 @@
                   "replies_before_cursor": "string",
                   "reply_count": 1,
                   "reply_to": {},
+                  "root_message_id": "string",
                   "sandbox": "string",
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
@@ -95824,6 +97580,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -95832,6 +97589,12 @@
                       "visibility": "default"
                     },
                     "type": "object"
+                  },
+                  "root_message_id": {
+                    "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                    "example": "string",
+                    "nullable": true,
+                    "type": "string"
                   },
                   "sandbox": {
                     "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
@@ -96014,6 +97777,7 @@
                 "replies_before_cursor": "string",
                 "reply_count": 1,
                 "reply_to": {},
+                "root_message_id": "string",
                 "sandbox": "string",
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
@@ -96154,6 +97918,7 @@
                   "replies_before_cursor": "string",
                   "reply_count": 1,
                   "reply_to": {},
+                  "root_message_id": "string",
                   "sandbox": "string",
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
@@ -97118,6 +98883,7 @@
                       "replies_before_cursor": "string",
                       "reply_count": 1,
                       "reply_to": {},
+                      "root_message_id": "string",
                       "sandbox": "string",
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
@@ -97126,6 +98892,12 @@
                       "visibility": "default"
                     },
                     "type": "object"
+                  },
+                  "root_message_id": {
+                    "description": "ID of the root message in this reply chain (`msg_...`). `null` for a top-level message. The value is persisted when the reply is created, so callers can correlate a multi-turn session without walking parent messages.",
+                    "example": "string",
+                    "nullable": true,
+                    "type": "string"
                   },
                   "sandbox": {
                     "description": "ID of the developer sandbox this message belongs to (`dsb_...`). `null` for non-sandbox messages.",
