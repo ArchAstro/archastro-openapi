@@ -204,6 +204,27 @@ async function handleRequest(
     return;
   }
 
+  if (req.method === "POST" && path === "/pushes") {
+    const body = await readJsonBody(req);
+    if (
+      !body ||
+      typeof body !== "object" ||
+      typeof (body as { topic?: unknown }).topic !== "string" ||
+      typeof (body as { event?: unknown }).event !== "string"
+    ) {
+      sendJson(res, 400, { error: "invalid_push" });
+      return;
+    }
+    const { topic, event } = body as { topic: string; event: string };
+    const delivered = server.autoPush(topic, event);
+    if (delivered === 0) {
+      sendJson(res, 404, { error: "subscription_not_found", topic });
+      return;
+    }
+    sendJson(res, 200, { ok: true, delivered });
+    return;
+  }
+
   if (req.method === "POST" && path === "/reset") {
     server.reset();
     sendJson(res, 200, { ok: true });

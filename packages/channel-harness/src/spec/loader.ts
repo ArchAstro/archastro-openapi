@@ -211,7 +211,7 @@ export function pathPatternToRegex(pattern: string): {
 } {
   const vars: string[] = [];
   const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-  const body = escaped.replace(/\\\{([a-zA-Z_][a-zA-Z0-9_]*)\\\}/g, (_, v) => {
+  const body = escaped.replace(/\\\{(.+?)\\\}/g, (_, v) => {
     vars.push(v);
     return "([^/]+)";
   });
@@ -306,12 +306,21 @@ export function topicPatternToRegex(pattern: string): {
   vars: string[];
 } {
   const vars: string[] = [];
-  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-  const body = escaped.replace(/\\\{([a-zA-Z_][a-zA-Z0-9_]*)\\\}/g, (_, v) => {
-    vars.push(v);
-    return "([^:]+)";
-  });
+  const placeholder = /\{([^}]+)\}/g;
+  let body = "";
+  let cursor = 0;
+  for (const match of pattern.matchAll(placeholder)) {
+    body += escapeRegex(pattern.slice(cursor, match.index));
+    body += "([^:]+)";
+    vars.push(match[1]!);
+    cursor = match.index! + match[0].length;
+  }
+  body += escapeRegex(pattern.slice(cursor));
   return { regex: new RegExp(`^${body}$`), vars };
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /** Extract variable bindings from a topic string given a join contract. */

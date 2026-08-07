@@ -32,10 +32,12 @@ Supported `--lang` values:
 - `swift` — emit a typed Swift SDK (Codable models, async resources, channels)
 - `go` — emit a typed Go SDK (structs with JSON tags, context-taking resource
   methods, channel helpers)
+- `elixir` — emit a typed Elixir SDK under `lib/archastro/generated`
 - `contract-tests-ts` — emit TS contract tests that drive the channel harness
 - `contract-tests-py` — emit Python contract tests (pytest + prism mock server)
 - `contract-tests-swift` — emit swift-testing contract tests
 - `contract-tests-go` — emit Go contract tests (`go test`, prism + harness)
+- `contract-tests-elixir` — emit Elixir contract tests (ExUnit + prism + harness)
 
 Other flags:
 

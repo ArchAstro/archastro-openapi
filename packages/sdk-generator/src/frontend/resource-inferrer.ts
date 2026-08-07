@@ -448,9 +448,20 @@ function enrichScopeParams(
     const source = pathParams.find((candidate) =>
       camelCase(candidate.name) === param.name
     );
+    const declarations = pathParams.filter((candidate) =>
+      camelCase(candidate.name) === param.name
+    );
+    const declaredTypes = declarations.map((candidate) => candidate.type);
+    const firstType = declaredTypes[0];
+    const compatibleType = firstType && declaredTypes.every(
+      (type) => JSON.stringify(type) === JSON.stringify(firstType)
+    ) ? firstType : param.type;
     merged.push({
       ...param,
-      type: source?.type ?? param.type,
+      // A scope parameter is shared by every operation beneath the resource,
+      // so its public type is safe only when every declaration agrees. Fall
+      // back to the scalar path-template type for inconsistent specifications.
+      type: compatibleType,
       required: source?.required ?? param.required,
       description: source?.description ?? param.description,
       example: source?.example ?? param.example,

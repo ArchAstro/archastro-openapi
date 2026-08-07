@@ -219,6 +219,15 @@ export class ContractServer {
     );
   }
 
+  /** Emit a contract-valid push to every active subscription for `topic`. */
+  autoPush(topic: string, event: string): number {
+    let delivered = 0;
+    for (const session of this.transports) {
+      if (session.autoPush(topic, event)) delivered += 1;
+    }
+    return delivered;
+  }
+
   /** Internal — called by TransportSession when a scenario handler throws. */
   _recordHandlerError(err: Error): void {
     this._handlerErrors.push(err);
@@ -283,6 +292,13 @@ class TransportSession {
   close(): void {
     this.closed = true;
     this.transport.close();
+  }
+
+  autoPush(topic: string, event: string): boolean {
+    const sub = this.subs.get(topic);
+    if (!sub || this.closed) return false;
+    this.sendAutoPush(sub, event);
+    return true;
   }
 
   private async handleFrame(frame: Frame): Promise<void> {

@@ -201,10 +201,61 @@ describe("inferResourceTree – scope parameter metadata", () => {
     expect(teams?.scopeParams).toContainEqual(
       expect.objectContaining({
         name: "appId",
+        type: { kind: "primitive", type: "string" },
         description: "Application ID.",
         example: "app_123",
         wireName: "app_id",
       })
     );
+  });
+
+  it("keeps shared path scopes scalar when one operation declares an incompatible schema", () => {
+    const operations: ParsedOperation[] = [
+      {
+        ...op("GET", "/api/v1/agents/{agent}/computers", "list_agent_computers"),
+        pathParams: [{
+          name: "agent",
+          type: { kind: "array", items: { kind: "primitive", type: "string" } },
+          required: true,
+        }],
+      },
+      {
+        ...op("POST", "/api/v1/agents/{agent}/computers", "create_agent_computer"),
+        pathParams: [{
+          name: "agent",
+          type: { kind: "primitive", type: "string" },
+          required: true,
+        }],
+      },
+    ];
+
+    const { resources } = inferResourceTree(operations, { apiPrefix: "/api/v1" });
+    const computers = resources[0]?.children.find((resource) => resource.name === "computers");
+    expect(computers?.scopeParams[0]?.type).toEqual({ kind: "primitive", type: "string" });
+  });
+
+  it("preserves a non-string scope type when every operation agrees", () => {
+    const operations: ParsedOperation[] = [
+      {
+        ...op("GET", "/api/v1/accounts/{account}/widgets", "list_widgets"),
+        pathParams: [{
+          name: "account",
+          type: { kind: "primitive", type: "integer" },
+          required: true,
+        }],
+      },
+      {
+        ...op("POST", "/api/v1/accounts/{account}/widgets", "create_widget"),
+        pathParams: [{
+          name: "account",
+          type: { kind: "primitive", type: "integer" },
+          required: true,
+        }],
+      },
+    ];
+
+    const { resources } = inferResourceTree(operations, { apiPrefix: "/api/v1" });
+    const widgets = resources[0]?.children.find((resource) => resource.name === "widgets");
+    expect(widgets?.scopeParams[0]?.type).toEqual({ kind: "primitive", type: "integer" });
   });
 });

@@ -28,6 +28,12 @@ import {
 import { SWIFT_TESTS_DIR } from "./backends/contract-tests/swift-emitter.js";
 import { generateGo, writeGoFiles, GO_PACKAGE_NAME } from "./backends/go/index.js";
 import { GO_TESTS_DIR } from "./backends/contract-tests/go-emitter.js";
+import {
+  generateElixir,
+  writeElixirFiles,
+  ELIXIR_GENERATED_DIR,
+} from "./backends/elixir/index.js";
+import { ELIXIR_TESTS_DIR } from "./backends/contract-tests/elixir-emitter.js";
 import { generateContractTests } from "./backends/contract-tests/index.js";
 import { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.js";
 import { generatePythonSamples } from "./backends/python/sample-emitter.js";
@@ -45,6 +51,7 @@ export { generateTypeScript, writeGeneratedFiles } from "./backends/typescript/i
 export { generatePython, writePythonFiles } from "./backends/python/index.js";
 export { generateSwift, writeSwiftFiles, prepareSwiftSpec } from "./backends/swift/index.js";
 export { generateGo, writeGoFiles, prepareGoSpec } from "./backends/go/index.js";
+export { generateElixir, writeElixirFiles } from "./backends/elixir/index.js";
 export { generateContractTests } from "./backends/contract-tests/index.js";
 export { emitSwiftContractTests } from "./backends/contract-tests/swift-emitter.js";
 export { emitGoContractTests } from "./backends/contract-tests/go-emitter.js";
@@ -92,7 +99,7 @@ function main() {
   const astOnly = args.includes("--ast-only");
 
   if (!specPath) {
-    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|swift|go|contract-tests-ts|contract-tests-py|contract-tests-swift|contract-tests-go] [--out <dir>] [--config <config.json>] [--mode sdk|samples] [--ast-only]");
+    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|swift|go|elixir|contract-tests-ts|contract-tests-py|contract-tests-swift|contract-tests-go|contract-tests-elixir] [--out <dir>] [--config <config.json>] [--mode sdk|samples] [--ast-only]");
     process.exit(1);
   }
 
@@ -216,6 +223,15 @@ function main() {
       console.log(`Go SDK generated at ${resolvedOut} (${Object.keys(files).length} files)`);
       break;
     }
+    case "elixir": {
+      const files = generateElixir(ast, { outDir: resolvedOut });
+      const gen = resolve(resolvedOut, ELIXIR_GENERATED_DIR);
+      // Walk the generated root so removed API-version directories are cleaned
+      // as well as files belonging to versions still present in the AST.
+      writeElixirFiles(files, [gen], true);
+      console.log(`Elixir SDK generated at ${resolvedOut} (${Object.keys(files).length} files)`);
+      break;
+    }
     case "contract-tests-go": {
       const files = generateContractTests(ast, {
         outDir: resolvedOut,
@@ -225,6 +241,12 @@ function main() {
       });
       writeGoFiles(files, [resolve(resolvedOut, GO_TESTS_DIR)]);
       console.log(`Go contract tests generated at ${resolvedOut} (${Object.keys(files).length} files)`);
+      break;
+    }
+    case "contract-tests-elixir": {
+      const files = generateContractTests(ast, { outDir: resolvedOut, lang: "elixir" });
+      writeElixirFiles(files, [resolve(resolvedOut, ELIXIR_TESTS_DIR)], true);
+      console.log(`Elixir contract tests generated at ${resolvedOut} (${Object.keys(files).length} files)`);
       break;
     }
     case "contract-tests-swift": {
@@ -239,7 +261,7 @@ function main() {
       break;
     }
     default:
-      console.error(`Unknown language: ${lang}. Supported: typescript, python, swift, go, contract-tests-ts, contract-tests-py, contract-tests-swift, contract-tests-go`);
+      console.error(`Unknown language: ${lang}. Supported: typescript, python, swift, go, elixir, contract-tests-ts, contract-tests-py, contract-tests-swift, contract-tests-go, contract-tests-elixir`);
       process.exit(1);
   }
 }

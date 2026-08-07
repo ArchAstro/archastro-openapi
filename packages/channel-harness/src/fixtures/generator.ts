@@ -21,23 +21,31 @@ export class FixtureGenerator {
 
   /** Generate a value for a TypeRef. */
   fromTypeRef(typeRef: TypeRef, fieldName?: string): unknown {
+    return this.generateTypeRef(typeRef, fieldName, new Set());
+  }
+
+  private generateTypeRef(typeRef: TypeRef, fieldName: string | undefined, seen: Set<string>): unknown {
     switch (typeRef.kind) {
       case "primitive":
         return primitiveValue(typeRef.type, fieldName);
       case "array":
-        return [this.fromTypeRef(typeRef.items)];
+        return this.containsSeenReference(typeRef.items, seen, new Set())
+          ? []
+          : [this.generateTypeRef(typeRef.items, undefined, seen)];
       case "object":
-        return this.fromFields(typeRef.fields);
+        return this.fromFields(typeRef.fields, seen);
       case "ref":
-        return this.fromSchemaName(typeRef.schema);
+        return this.generateSchema(typeRef.schema, seen);
       case "enum":
         return typeRef.values[0] ?? "unknown";
       case "union":
         return typeRef.variants.length > 0
-          ? this.fromTypeRef(typeRef.variants[0]!, fieldName)
+          ? this.generateTypeRef(typeRef.variants[0]!, fieldName, seen)
           : null;
       case "optional":
-        return this.fromTypeRef(typeRef.inner, fieldName);
+        return this.generateTypeRef(typeRef.inner, fieldName, seen);
+      case "nullable":
+        return null;
       case "map":
         return {};
       case "unknown":
@@ -49,18 +57,62 @@ export class FixtureGenerator {
 
   /** Generate a value for a named schema from the AST. */
   fromSchemaName(name: string): unknown {
-    const schema = this.schemas.get(name);
-    if (!schema) return {};
-    return this.fromFields(schema.fields);
+    return this.generateSchema(name, new Set());
   }
 
-  private fromFields(fields: FieldDef[]): Record<string, unknown> {
+  private generateSchema(name: string, seen: Set<string>): unknown {
+    const schema = this.schemas.get(name);
+    if (!schema) return {};
+    if (seen.has(name)) return {};
+    const nextSeen = new Set(seen).add(name);
+    return schema.unionType
+      ? this.generateTypeRef(schema.unionType, name, nextSeen)
+      : this.fromFields(schema.fields, nextSeen);
+  }
+
+  private fromFields(fields: FieldDef[], seen: Set<string>): Record<string, unknown> {
     const out: Record<string, unknown> = {};
     for (const f of fields) {
       if (!f.required) continue;
-      out[f.name] = this.fromTypeRef(f.type, f.name);
+      out[f.name] = this.generateTypeRef(f.type, f.name, seen);
     }
     return out;
+  }
+
+  private containsSeenReference(
+    typeRef: TypeRef,
+    seen: Set<string>,
+    exploring: Set<string>
+  ): boolean {
+    switch (typeRef.kind) {
+      case "ref": {
+        if (seen.has(typeRef.schema)) return true;
+        if (exploring.has(typeRef.schema)) return false;
+        const schema = this.schemas.get(typeRef.schema);
+        if (!schema) return false;
+        const nextExploring = new Set(exploring).add(typeRef.schema);
+        return schema.unionType
+          ? this.containsSeenReference(schema.unionType, seen, nextExploring)
+          : schema.fields.some((field) =>
+            this.containsSeenReference(field.type, seen, nextExploring)
+          );
+      }
+      case "array":
+        return this.containsSeenReference(typeRef.items, seen, exploring);
+      case "object":
+        return typeRef.fields.some((field) =>
+          this.containsSeenReference(field.type, seen, exploring)
+        );
+      case "nullable":
+      case "optional":
+        return this.containsSeenReference(typeRef.inner, seen, exploring);
+      case "union":
+        return typeRef.variants.some((variant) =>
+          this.containsSeenReference(variant, seen, exploring)
+        );
+      default:
+        return false;
+    }
   }
 }
 
