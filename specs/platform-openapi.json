@@ -11670,6 +11670,45 @@
         },
         "type": "object"
       },
+      "DeviceAuthorizationDetailsResponse": {
+        "description": "User-visible details for a pending OAuth 2.0 device authorization.",
+        "example": {
+          "client_name": "Example Name",
+          "expires_at": "2024-01-01T00:00:00Z",
+          "scopes": [
+            "string"
+          ]
+        },
+        "properties": {
+          "client_name": {
+            "description": "Name of the client requesting authorization.",
+            "example": "Example Name",
+            "type": "string"
+          },
+          "expires_at": {
+            "description": "Expiration time for the pending device authorization.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "scopes": {
+            "description": "Scopes the client is requesting.",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "client_name",
+          "scopes",
+          "expires_at"
+        ],
+        "type": "object"
+      },
       "DeviceAuthorizationResponse": {
         "description": "The initial response from an OAuth 2.0 Device Authorization Grant request, containing the codes and URIs needed to complete device authentication.",
         "example": {
@@ -14518,6 +14557,9 @@
           "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
           "is_ext_shared_cached": true,
           "is_private_cached": true,
+          "mirrors": [
+            "string"
+          ],
           "muted": true,
           "muted_until": "string",
           "reply_style": "string",
@@ -14588,6 +14630,16 @@
             "example": true,
             "type": "boolean"
           },
+          "mirrors": {
+            "description": "IDs of every mirror thread this channel's messages land in (`thr_…` public IDs) that the caller can read, including any legacy peel or chain threads. Empty for a caller with no membership on any of them, and for a channel that has not mirrored anything yet. IDs only: reading a mirror's contents still requires membership on it.",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "muted": {
             "description": "Whether the resident agent is currently muted. A muted resident keeps mirroring the channel (reading) but stops replying. A timed mute expires automatically at `muted_until`; this reflects the effective state as of now. Defaults to `false`.",
             "example": true,
@@ -14604,15 +14656,16 @@
             "type": "string"
           },
           "resident_agent": {
-            "description": "ID of the non-concierge agent selected by Slack ingress. `null` when ingress falls back to the concierge.",
+            "description": "ID of the resident agent selected by Slack ingress. `null` when no resident is attached and the channel is an observer.",
             "example": "string",
             "type": "string"
           },
           "route_kind": {
-            "description": "Effective Slack ingress route: `fda` for a team-bound resident, `resident` for an unbound resident, or `concierge` when no non-concierge agent is attached.",
+            "description": "Effective Slack ingress route. `fda` — a resident on a team-bound channel, replying through the Forward Deployed Agent chain. `resident` — a resident on an internal channel, replying through the channel mirror. `observer` — no resident is attached, so the channel is recorded and nobody replies. `concierge` — no longer returned anywhere; until Track F it was the value for a channel with no resident, meaning the shared concierge agent answered there. The value is retained in this enum so consumers matching on it do not break, and its removal rides a deliberate API change.",
             "enum": [
               "fda",
               "resident",
+              "observer",
               "concierge"
             ],
             "example": "fda",
@@ -14666,6 +14719,9 @@
               "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
               "is_ext_shared_cached": true,
               "is_private_cached": true,
+              "mirrors": [
+                "string"
+              ],
               "muted": true,
               "muted_until": "string",
               "reply_style": "string",
@@ -14716,6 +14772,166 @@
           "per_page",
           "total_count",
           "total_pages"
+        ],
+        "type": "object"
+      },
+      "SlackDeliveryOutcome": {
+        "description": "What happened to one agent message this platform sent to a Slack channel. Lets you confirm delivery, or find out why a reply never arrived, without reading the channel's mirrored conversation.",
+        "example": {
+          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "binding": "scb_0aBcDeFgHiJkLmNoPqRsTu",
+          "channel": "C01234ABCDE",
+          "failure_reason": "slack:channel_not_found",
+          "guard_kind": "RegexMatch",
+          "guard_labels": [
+            "string"
+          ],
+          "id": "sdo_0aBcDeFgHiJkLmNoPqRsTu",
+          "message": "msg_0aBcDeFgHiJkLmNoPqRsTu",
+          "operation": "post",
+          "outcome": "delivered",
+          "recorded_at": "2024-01-01T00:00:00Z",
+          "thread_ts": "string"
+        },
+        "properties": {
+          "agent": {
+            "description": "ID of the agent whose message this was.",
+            "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "binding": {
+            "description": "ID of the Slack channel binding in force for this send. `null` when no binding could be resolved, in which case the send was treated as cross-org and floored on that basis.",
+            "example": "scb_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "channel": {
+            "description": "Slack channel ID the send was addressed to.",
+            "example": "C01234ABCDE",
+            "type": "string"
+          },
+          "failure_reason": {
+            "description": "For a `failed` send, a short machine-readable cause — `slack:<slack_error_code>` when Slack rejected the call, or `floor_config` when the content floor could not be evaluated and the send failed closed.",
+            "example": "slack:channel_not_found",
+            "type": "string"
+          },
+          "guard_kind": {
+            "description": "For a withheld send, the kind of guard that stopped it — `RegexMatch`, `ContainsAny`, `ContainsString`, or `LLMJudge`. `null` when the send was not withheld by a guard.",
+            "example": "RegexMatch",
+            "type": "string"
+          },
+          "guard_labels": {
+            "description": "For a withheld send, the labels of the guards that stopped it (for example `Contains AWS access key ID`). These are the content policy's own descriptions, recorded as they read at the time of the send; they never contain the withheld message.",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Unique identifier for this delivery outcome.",
+            "example": "sdo_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "message": {
+            "description": "ID of the platform message this attempt was carrying. Reading that message still requires access to its thread — this field correlates, it does not grant.",
+            "example": "msg_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "operation": {
+            "description": "Whether the attempt posted a new Slack message or updated an existing one (replacing a thinking placeholder).",
+            "enum": [
+              "post",
+              "update"
+            ],
+            "example": "post",
+            "type": "string"
+          },
+          "outcome": {
+            "description": "What happened to the send. `delivered` — Slack accepted the message. `floored` — a deterministic content guard withheld it, so it never left. `judge_refused` — the cross-org judge decided it was not appropriate for this channel's audience. `failed` — Slack rejected the call, or the content floor could not be evaluated and the send failed closed.",
+            "enum": [
+              "delivered",
+              "floored",
+              "judge_refused",
+              "failed"
+            ],
+            "example": "delivered",
+            "type": "string"
+          },
+          "recorded_at": {
+            "description": "When the send was attempted.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "thread_ts": {
+            "description": "Slack thread timestamp the send targeted, letting attempts be grouped into the conversation they belong to. `null` for a top-level channel post.",
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "outcome",
+          "operation",
+          "channel",
+          "recorded_at"
+        ],
+        "type": "object"
+      },
+      "SlackDeliveryOutcomeListResponse": {
+        "description": "A page of delivery outcomes for one Slack channel, newest first. Page through history with the returned cursors; `since` and `outcome` are filters, not paging controls.",
+        "example": {
+          "after_cursor": "string",
+          "before_cursor": "string",
+          "data": [
+            {
+              "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+              "binding": "scb_0aBcDeFgHiJkLmNoPqRsTu",
+              "channel": "C01234ABCDE",
+              "failure_reason": "slack:channel_not_found",
+              "guard_kind": "RegexMatch",
+              "guard_labels": [
+                "string"
+              ],
+              "id": "sdo_0aBcDeFgHiJkLmNoPqRsTu",
+              "message": "msg_0aBcDeFgHiJkLmNoPqRsTu",
+              "operation": "post",
+              "outcome": "delivered",
+              "recorded_at": "2024-01-01T00:00:00Z",
+              "thread_ts": "string"
+            }
+          ],
+          "has_more": true
+        },
+        "properties": {
+          "after_cursor": {
+            "description": "Opaque cursor for the page of newer outcomes. Pass back as `after_cursor` to poll for attempts recorded since. `null` when the page is empty.",
+            "example": "string",
+            "type": "string"
+          },
+          "before_cursor": {
+            "description": "Opaque cursor for the page of older outcomes. Pass back as `before_cursor` to continue into history. `null` when the page is empty.",
+            "example": "string",
+            "type": "string"
+          },
+          "data": {
+            "description": "Delivery outcomes matching the query, newest attempt first.",
+            "items": {
+              "$ref": "#/components/schemas/SlackDeliveryOutcome"
+            },
+            "type": "array"
+          },
+          "has_more": {
+            "description": "True when more outcomes exist beyond this page.",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "data",
+          "has_more"
         ],
         "type": "object"
       },
@@ -40214,6 +40430,9 @@
           "401": {
             "description": "Unauthorized"
           },
+          "402": {
+            "description": "Payment required"
+          },
           "403": {
             "description": "Forbidden; Admin role required for this operation; The Slack integration referenced by this binding is not visible to the caller"
           },
@@ -40227,7 +40446,7 @@
             "description": "Internal server error"
           },
           "502": {
-            "description": "Provider returned an error"
+            "description": "Provider returned an error; Service unavailable"
           }
         },
         "summary": "Start adding a customer over Slack Connect",
@@ -40360,6 +40579,109 @@
           }
         },
         "summary": "Retrieve a Slack channel binding",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/slack_channel_bindings/{channel}/delivery_outcomes": {
+      "get": {
+        "description": "Returns what happened to each agent message this platform sent to a Slack\nchannel, newest attempt first.\n\nA message that never appears in a Slack channel has several possible causes\nthat look identical from the channel itself: a content guard withheld it, the\ncross-org judge refused it, Slack rejected the call, or nobody asked anything.\nThis endpoint tells them apart. Use it to confirm a reply was delivered, or to\nfind out why one never arrived, without reading the channel's mirrored\nconversation.\n\nOutcomes cover **outbound agent messages only**. They carry no message\ncontent, no author, and nothing about inbound messages. Access follows the\nchannel's binding — the organization and app the channel is bound to — and\nneeds no membership in the mirrored thread.\n\nPaginated with opaque cursors, newest first. When `has_more` is true, pass the\nresponse's `before_cursor` back as `before_cursor` to continue into older\nhistory. `since` and `outcome` narrow the result set; they are filters, not\npaging controls.\n",
+        "operationId": "get_api_v1_slack_channel_bindings__channel_delivery_outcomes",
+        "parameters": [
+          {
+            "description": "Slack channel ID to read delivery outcomes for (e.g. `C01234ABCDE`).",
+            "example": "string",
+            "in": "path",
+            "name": "channel",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only return attempts at or after this ISO 8601 timestamp (e.g. `2026-08-11T00:00:00Z`). Omit to return the most recent attempts regardless of age.",
+            "example": "string",
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only attempts with this outcome. Omit to return every outcome. Use `floored` and `judge_refused` to see only what was withheld.",
+            "example": "delivered",
+            "in": "query",
+            "name": "outcome",
+            "required": false,
+            "schema": {
+              "enum": [
+                "delivered",
+                "floored",
+                "judge_refused",
+                "failed"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of outcomes to return. Defaults to 50; maximum is 200.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor from a previous response; returns outcomes older than it. Cursors are not parseable and are only valid against this endpoint.",
+            "example": "string",
+            "in": "query",
+            "name": "before_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque cursor from a previous response; returns outcomes newer than it. Suited to a UI loading newer entries. To poll for everything recorded since a point in time, prefer `since` with a little overlap and de-duplicate on `id` — `after_cursor` can miss an attempt recorded in the same millisecond as the cursor's own row.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlackDeliveryOutcomeListResponse"
+                }
+              }
+            },
+            "description": "Delivery outcomes for the requested channel, newest first."
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "List delivery outcomes for a Slack channel",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -45479,6 +45801,7 @@
                   "harness": "string",
                   "lease_duration_seconds": 1,
                   "lease_id": "string",
+                  "require_ready": true,
                   "session_id": "string",
                   "session_name": "Example Name"
                 },
@@ -45498,6 +45821,12 @@
                     "description": "Caller-generated lease UUID.",
                     "example": "string",
                     "type": "string"
+                  },
+                  "require_ready": {
+                    "default": false,
+                    "description": "Conservatively reject the claim when the current task projection has unfinished blockers.",
+                    "example": true,
+                    "type": "boolean"
                   },
                   "session_id": {
                     "description": "Caller-generated coding-session UUID.",
@@ -45637,6 +45966,123 @@
           }
         },
         "summary": "Renew a task session lease",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task}/links": {
+      "delete": {
+        "operationId": "delete_api_v1_tasks__task_links",
+        "parameters": [
+          {
+            "description": "Task ID (`tsk_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "task",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "HTTP 204 on success."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Task not found; Resource not found"
+          },
+          "502": {
+            "description": "Service unavailable"
+          }
+        },
+        "summary": "Remove an external link from a task",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "operationId": "post_api_v1_tasks__task_links",
+        "parameters": [
+          {
+            "description": "Task ID (`tsk_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "task",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "external_scope": "string",
+                  "object_id": "string",
+                  "object_type": "string"
+                },
+                "properties": {
+                  "external_scope": {
+                    "description": "External container ID.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "object_id": {
+                    "description": "External object ID.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "object_type": {
+                    "description": "External object type.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "external_scope",
+                  "object_type",
+                  "object_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The created external link."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Task not found"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          },
+          "502": {
+            "description": "Service unavailable"
+          }
+        },
+        "summary": "Add an external link to a task",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -52056,6 +52502,16 @@
             }
           },
           {
+            "description": "When true, return only open tasks with no unfinished blockers and no active session lease. This is a projection snapshot; claim a lease before starting work.",
+            "example": true,
+            "in": "query",
+            "name": "ready",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "description": "Maximum number of tasks to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -53852,6 +54308,824 @@
           }
         },
         "summary": "Get task activity metrics for a team",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/teams/{team}/tasks/ready": {
+      "get": {
+        "description": "Returns open tasks with no unfinished blockers and no active session lease.\nReadiness is calculated by the server from the current task projection. It is\na snapshot, not a reservation; claim a task lease before starting work.\n\nPass `explain=true` to include every open task with a stable readiness reason.\n",
+        "operationId": "get_api_v1_teams__team_tasks_ready",
+        "parameters": [
+          {
+            "description": "Team ID (`tem_...`) owning the tasks.",
+            "example": "string",
+            "in": "path",
+            "name": "team",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "User ID (`usr_...`) owning the tasks.",
+            "example": "string",
+            "in": "query",
+            "name": "user",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional organization context for privileged callers.",
+            "example": "string",
+            "in": "query",
+            "name": "org",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Include blocked and actively leased open tasks with exclusion reasons.",
+            "example": true,
+            "in": "query",
+            "name": "explain",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Only include tasks assigned to the authenticated user.",
+            "example": true,
+            "in": "query",
+            "name": "assigned_to_me",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Maximum number of readiness entries to return. Capped at 100.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous page.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Cursor-paginated readiness results for the owner.",
+                  "example": {
+                    "after_cursor": "string",
+                    "authoritative": true,
+                    "before_cursor": "string",
+                    "data": [
+                      {
+                        "readiness": "ready",
+                        "reason": "open_blockers",
+                        "task": {
+                          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "blocked_by_count": 1,
+                          "closed_at": "2024-01-01T00:00:00Z",
+                          "comments_count": 1,
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "created_by_actor": {
+                            "alias": "alice",
+                            "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                            "name": "Example Name",
+                            "profile_picture": {
+                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                              "height": 600,
+                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                              "mime_type": "application/json",
+                              "refresh_url": "https://example.com",
+                              "url": "https://example.com",
+                              "width": 800
+                            }
+                          },
+                          "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "current_lease": {
+                            "expires_at": "2024-01-01T00:00:00Z",
+                            "harness": "string",
+                            "session_name": "Example Name"
+                          },
+                          "description": "An example description.",
+                          "due_date": "2024-01-01T00:00:00Z",
+                          "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                          "is_blocked": true,
+                          "links": {
+                            "key": "value"
+                          },
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "owner_actor": {
+                            "alias": "alice",
+                            "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                            "name": "Example Name",
+                            "profile_picture": {
+                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                              "height": 600,
+                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                              "mime_type": "application/json",
+                              "refresh_url": "https://example.com",
+                              "url": "https://example.com",
+                              "width": 800
+                            }
+                          },
+                          "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                          "priority": 2,
+                          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "status": "open",
+                          "subtasks_count": 1,
+                          "tags": [
+                            "string"
+                          ],
+                          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                          "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "updated_at": "2024-01-01T00:00:00Z",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                        }
+                      }
+                    ],
+                    "has_more": true
+                  },
+                  "properties": {
+                    "after_cursor": {
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "authoritative": {
+                      "description": "Always false because projections can lag writes and a later claim can race this read.",
+                      "example": true,
+                      "type": "boolean"
+                    },
+                    "before_cursor": {
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "data": {
+                      "example": [
+                        {
+                          "readiness": "ready",
+                          "reason": "open_blockers",
+                          "task": {
+                            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "blocked_by_count": 1,
+                            "closed_at": "2024-01-01T00:00:00Z",
+                            "comments_count": 1,
+                            "created_at": "2024-01-01T00:00:00Z",
+                            "created_by_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "current_lease": {
+                              "expires_at": "2024-01-01T00:00:00Z",
+                              "harness": "string",
+                              "session_name": "Example Name"
+                            },
+                            "description": "An example description.",
+                            "due_date": "2024-01-01T00:00:00Z",
+                            "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "is_blocked": true,
+                            "links": {
+                              "key": "value"
+                            },
+                            "metadata": {
+                              "key": "value"
+                            },
+                            "name": "Example Name",
+                            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "priority": 2,
+                            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "status": "open",
+                            "subtasks_count": 1,
+                            "tags": [
+                              "string"
+                            ],
+                            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                            "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "updated_at": "2024-01-01T00:00:00Z",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                          }
+                        }
+                      ],
+                      "items": {
+                        "description": "A task plus the server-calculated reason it is or is not ready.",
+                        "example": {
+                          "readiness": "ready",
+                          "reason": "open_blockers",
+                          "task": {
+                            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "blocked_by_count": 1,
+                            "closed_at": "2024-01-01T00:00:00Z",
+                            "comments_count": 1,
+                            "created_at": "2024-01-01T00:00:00Z",
+                            "created_by_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "current_lease": {
+                              "expires_at": "2024-01-01T00:00:00Z",
+                              "harness": "string",
+                              "session_name": "Example Name"
+                            },
+                            "description": "An example description.",
+                            "due_date": "2024-01-01T00:00:00Z",
+                            "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "is_blocked": true,
+                            "links": {
+                              "key": "value"
+                            },
+                            "metadata": {
+                              "key": "value"
+                            },
+                            "name": "Example Name",
+                            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "priority": 2,
+                            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "status": "open",
+                            "subtasks_count": 1,
+                            "tags": [
+                              "string"
+                            ],
+                            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                            "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "updated_at": "2024-01-01T00:00:00Z",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                          }
+                        },
+                        "properties": {
+                          "readiness": {
+                            "description": "One of `ready`, `blocked`, or `leased`.",
+                            "enum": [
+                              "ready",
+                              "blocked",
+                              "leased"
+                            ],
+                            "example": "ready",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Stable exclusion reason: `open_blockers` or `active_lease`; omitted when ready.",
+                            "enum": [
+                              "open_blockers",
+                              "active_lease"
+                            ],
+                            "example": "open_blockers",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "task": {
+                            "description": "The task evaluated for readiness.",
+                            "example": {
+                              "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "blocked_by_count": 1,
+                              "closed_at": "2024-01-01T00:00:00Z",
+                              "comments_count": 1,
+                              "created_at": "2024-01-01T00:00:00Z",
+                              "created_by_actor": {
+                                "alias": "alice",
+                                "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                "name": "Example Name",
+                                "profile_picture": {
+                                  "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "height": 600,
+                                  "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "mime_type": "application/json",
+                                  "refresh_url": "https://example.com",
+                                  "url": "https://example.com",
+                                  "width": 800
+                                }
+                              },
+                              "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "current_lease": {
+                                "expires_at": "2024-01-01T00:00:00Z",
+                                "harness": "string",
+                                "session_name": "Example Name"
+                              },
+                              "description": "An example description.",
+                              "due_date": "2024-01-01T00:00:00Z",
+                              "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                              "is_blocked": true,
+                              "links": {
+                                "key": "value"
+                              },
+                              "metadata": {
+                                "key": "value"
+                              },
+                              "name": "Example Name",
+                              "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                              "owner_actor": {
+                                "alias": "alice",
+                                "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                "name": "Example Name",
+                                "profile_picture": {
+                                  "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "height": 600,
+                                  "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "mime_type": "application/json",
+                                  "refresh_url": "https://example.com",
+                                  "url": "https://example.com",
+                                  "width": 800
+                                }
+                              },
+                              "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                              "priority": 2,
+                              "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "status": "open",
+                              "subtasks_count": 1,
+                              "tags": [
+                                "string"
+                              ],
+                              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                              "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "updated_at": "2024-01-01T00:00:00Z",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                            },
+                            "properties": {
+                              "agent": {
+                                "description": "ID of the agent that owns this task (`agi_...`). `null` if the task is scoped to a team or user.",
+                                "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "blocked_by_count": {
+                                "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "closed_at": {
+                                "description": "When the task was marked as done or otherwise closed (ISO 8601). `null` if the task is still open.",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "comments_count": {
+                                "description": "Total number of comments posted on this task.",
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "description": "When the task was created (ISO 8601).",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "created_by_actor": {
+                                "description": "Resolved creator details including `id`, `name`, `alias`, and `profile_picture`. `null` if no creator is set or the creator cannot be resolved (e.g. creating agent was deleted).",
+                                "example": {
+                                  "alias": "alice",
+                                  "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                  "name": "Example Name",
+                                  "profile_picture": {
+                                    "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "height": 600,
+                                    "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "mime_type": "application/json",
+                                    "refresh_url": "https://example.com",
+                                    "url": "https://example.com",
+                                    "width": 800
+                                  }
+                                },
+                                "properties": {
+                                  "alias": {
+                                    "description": "Short handle or alias for the actor, used as an alternate display identifier. `null` if not configured.",
+                                    "example": "alice",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "Composite actor identifier. Format is `\"user-<usr_...>\"` for human users or `\"agent-<agi_...>\"` for agents.",
+                                    "example": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "description": "Display name of the actor shown in the UI. `null` if no name is set.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "profile_picture": {
+                                    "description": "Profile picture for the actor. `null` if the actor has no profile picture.",
+                                    "example": {
+                                      "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "height": 600,
+                                      "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "mime_type": "application/json",
+                                      "refresh_url": "https://example.com",
+                                      "url": "https://example.com",
+                                      "width": 800
+                                    },
+                                    "properties": {
+                                      "file": {
+                                        "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
+                                        "example": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "height": {
+                                        "description": "Height of the image in pixels. `null` if not known.",
+                                        "example": 600,
+                                        "type": "integer"
+                                      },
+                                      "media": {
+                                        "description": "ID of the associated media record (`med_...`). `null` when the image is not linked to a media entity.",
+                                        "example": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "mime_type": {
+                                        "description": "MIME type of the image, e.g. `\"image/png\"` or `\"image/jpeg\"`. `null` if not known.",
+                                        "example": "application/json",
+                                        "type": "string"
+                                      },
+                                      "refresh_url": {
+                                        "description": "Endpoint URL you can call to obtain a fresh signed `url` when the current one has expired. `null` if the URL does not require refreshing.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "url": {
+                                        "description": "Signed or public URL for downloading the image. May be time-limited; use `refresh_url` to obtain a new URL when this one expires.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "width": {
+                                        "description": "Width of the image in pixels. `null` if not known.",
+                                        "example": 800,
+                                        "type": "integer"
+                                      }
+                                    },
+                                    "type": "object"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "created_by_agent": {
+                                "description": "ID of the agent that created this task (`agi_...`). `null` if the task was created by a human user, or if the creating agent was later deleted.",
+                                "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "created_by_user": {
+                                "description": "ID of the user who created this task (`usr_...`). `null` if the task was created by an agent, or if creator provenance was cleared after the creator was deleted.",
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "current_lease": {
+                                "description": "Viewer-safe live coding-session lease summary. `null` when the task is unleased or the projected lease has expired. Fencing identifiers are never included.",
+                                "example": {
+                                  "expires_at": "2024-01-01T00:00:00Z",
+                                  "harness": "string",
+                                  "session_name": "Example Name"
+                                },
+                                "nullable": true,
+                                "properties": {
+                                  "expires_at": {
+                                    "description": "Server-calculated lease expiry in ISO 8601 format.",
+                                    "example": "2024-01-01T00:00:00Z",
+                                    "format": "date-time",
+                                    "type": "string"
+                                  },
+                                  "harness": {
+                                    "description": "Bounded harness identifier for the coding session.",
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "session_name": {
+                                    "description": "Display name supplied by the coding session that holds the lease.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "session_name",
+                                  "harness",
+                                  "expires_at"
+                                ],
+                                "type": "object"
+                              },
+                              "description": {
+                                "description": "Long-form description or notes for the task. `null` if no description has been provided.",
+                                "example": "An example description.",
+                                "type": "string"
+                              },
+                              "due_date": {
+                                "description": "Date and time by which the task should be completed (ISO 8601). `null` if no due date is set.",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "id": {
+                                "description": "Task ID (`tsk_...`).",
+                                "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "is_blocked": {
+                                "description": "`true` while at least one blocking task is not yet done. Informational only — a blocked task can still change status — and derived at read time, so the task un-blocks automatically when its last open blocker completes. Computed on list/show reads; create/update responses report `false` until the next read.",
+                                "example": true,
+                                "type": "boolean"
+                              },
+                              "links": {
+                                "description": "Key-value map of named URLs or references associated with the task. Returns an empty object when no links have been set.",
+                                "example": {
+                                  "key": "value"
+                                },
+                                "type": "object"
+                              },
+                              "metadata": {
+                                "description": "Arbitrary key-value map of application-specific data stored alongside the task. Returns an empty object when no metadata has been set.",
+                                "example": {
+                                  "key": "value"
+                                },
+                                "type": "object"
+                              },
+                              "name": {
+                                "description": "Human-readable title of the task.",
+                                "example": "Example Name",
+                                "type": "string"
+                              },
+                              "org": {
+                                "description": "ID of the organization this task belongs to (`org_...`). `null` for tasks outside an org context.",
+                                "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "owner_actor": {
+                                "description": "Resolved owner details including `id`, `name`, `alias`, and `profile_picture`. `null` if the task is unassigned or the owner cannot be resolved (e.g. assigned agent was deleted).",
+                                "example": {
+                                  "alias": "alice",
+                                  "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                  "name": "Example Name",
+                                  "profile_picture": {
+                                    "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "height": 600,
+                                    "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "mime_type": "application/json",
+                                    "refresh_url": "https://example.com",
+                                    "url": "https://example.com",
+                                    "width": 800
+                                  }
+                                },
+                                "properties": {
+                                  "alias": {
+                                    "description": "Short handle or alias for the actor, used as an alternate display identifier. `null` if not configured.",
+                                    "example": "alice",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "Composite actor identifier. Format is `\"user-<usr_...>\"` for human users or `\"agent-<agi_...>\"` for agents.",
+                                    "example": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "description": "Display name of the actor shown in the UI. `null` if no name is set.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "profile_picture": {
+                                    "description": "Profile picture for the actor. `null` if the actor has no profile picture.",
+                                    "example": {
+                                      "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "height": 600,
+                                      "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "mime_type": "application/json",
+                                      "refresh_url": "https://example.com",
+                                      "url": "https://example.com",
+                                      "width": 800
+                                    },
+                                    "properties": {
+                                      "file": {
+                                        "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
+                                        "example": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "height": {
+                                        "description": "Height of the image in pixels. `null` if not known.",
+                                        "example": 600,
+                                        "type": "integer"
+                                      },
+                                      "media": {
+                                        "description": "ID of the associated media record (`med_...`). `null` when the image is not linked to a media entity.",
+                                        "example": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "mime_type": {
+                                        "description": "MIME type of the image, e.g. `\"image/png\"` or `\"image/jpeg\"`. `null` if not known.",
+                                        "example": "application/json",
+                                        "type": "string"
+                                      },
+                                      "refresh_url": {
+                                        "description": "Endpoint URL you can call to obtain a fresh signed `url` when the current one has expired. `null` if the URL does not require refreshing.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "url": {
+                                        "description": "Signed or public URL for downloading the image. May be time-limited; use `refresh_url` to obtain a new URL when this one expires.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "width": {
+                                        "description": "Width of the image in pixels. `null` if not known.",
+                                        "example": 800,
+                                        "type": "integer"
+                                      }
+                                    },
+                                    "type": "object"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "owner_agent": {
+                                "description": "ID of the agent assigned as owner (`agi_...`). `null` if the owner is a human user, the task is unassigned, or the assigned agent was deleted.",
+                                "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "owner_user": {
+                                "description": "ID of the user assigned as owner (`usr_...`). `null` if the owner is an agent, the task is unassigned, or the assigned agent was deleted.",
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "parent": {
+                                "description": "ID of the parent task when this task is a subtask (`tsk_...`). `null` for top-level tasks. Subtasks nest exactly one level.",
+                                "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "priority": {
+                                "description": "Priority level of the task from `0` (highest) to `4` (lowest). Defaults to `2` (medium) when not explicitly set.",
+                                "example": 2,
+                                "type": "integer"
+                              },
+                              "sandbox": {
+                                "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
+                                "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "status": {
+                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                                "example": "open",
+                                "type": "string"
+                              },
+                              "subtasks_count": {
+                                "description": "Number of subtasks under this task. Computed on list/show reads; create/update responses may report 0 until the next read. Always 0 for subtasks.",
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "tags": {
+                                "description": "Labels for grouping and filtering, stored lowercase and de-duplicated. Empty array when untagged.",
+                                "example": [
+                                  "string"
+                                ],
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "team": {
+                                "description": "ID of the team that owns this task (`tem_...`). `null` if the task is not scoped to a team.",
+                                "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "thread": {
+                                "description": "ID of the thread this task is bound to (`thr_...`) — the conversation it was filed from, or the thread passed at creation. `null` for tasks not tied to a thread.",
+                                "example": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "description": "When the task was last modified (ISO 8601).",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "user": {
+                                "description": "ID of the user that owns this task (`usr_...`). `null` if the task is scoped to a team.",
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "status"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "task",
+                          "readiness"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "authoritative",
+                    "has_more"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Task owner not found"
+          },
+          "422": {
+            "description": "Invalid owner context or pagination cursor"
+          }
+        },
+        "summary": "List an owner's ready tasks",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -64287,7 +65561,11 @@
         "summary": "Retrieve the current user",
         "x-auth": [
           "publishable_key",
-          "bearer"
+          "bearer",
+          "device_flow"
+        ],
+        "x-required-scopes": [
+          "profile"
         ]
       }
     },
@@ -65296,6 +66574,16 @@
             "example": true,
             "in": "query",
             "name": "overdue",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "When true, return only open tasks with no unfinished blockers and no active session lease. This is a projection snapshot; claim a lease before starting work.",
+            "example": true,
+            "in": "query",
+            "name": "ready",
             "required": false,
             "schema": {
               "type": "boolean"
@@ -66985,6 +68273,824 @@
           }
         },
         "summary": "List task blocker cycles",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/users/{user}/tasks/ready": {
+      "get": {
+        "description": "Returns open tasks with no unfinished blockers and no active session lease.\nReadiness is calculated by the server from the current task projection. It is\na snapshot, not a reservation; claim a task lease before starting work.\n\nPass `explain=true` to include every open task with a stable readiness reason.\n",
+        "operationId": "get_api_v1_users__user_tasks_ready",
+        "parameters": [
+          {
+            "description": "Team ID (`tem_...`) owning the tasks.",
+            "example": "string",
+            "in": "query",
+            "name": "team",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "User ID (`usr_...`) owning the tasks.",
+            "example": "string",
+            "in": "path",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional organization context for privileged callers.",
+            "example": "string",
+            "in": "query",
+            "name": "org",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Include blocked and actively leased open tasks with exclusion reasons.",
+            "example": true,
+            "in": "query",
+            "name": "explain",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Only include tasks assigned to the authenticated user.",
+            "example": true,
+            "in": "query",
+            "name": "assigned_to_me",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Maximum number of readiness entries to return. Capped at 100.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous page.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Cursor-paginated readiness results for the owner.",
+                  "example": {
+                    "after_cursor": "string",
+                    "authoritative": true,
+                    "before_cursor": "string",
+                    "data": [
+                      {
+                        "readiness": "ready",
+                        "reason": "open_blockers",
+                        "task": {
+                          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "blocked_by_count": 1,
+                          "closed_at": "2024-01-01T00:00:00Z",
+                          "comments_count": 1,
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "created_by_actor": {
+                            "alias": "alice",
+                            "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                            "name": "Example Name",
+                            "profile_picture": {
+                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                              "height": 600,
+                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                              "mime_type": "application/json",
+                              "refresh_url": "https://example.com",
+                              "url": "https://example.com",
+                              "width": 800
+                            }
+                          },
+                          "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "current_lease": {
+                            "expires_at": "2024-01-01T00:00:00Z",
+                            "harness": "string",
+                            "session_name": "Example Name"
+                          },
+                          "description": "An example description.",
+                          "due_date": "2024-01-01T00:00:00Z",
+                          "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                          "is_blocked": true,
+                          "links": {
+                            "key": "value"
+                          },
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "owner_actor": {
+                            "alias": "alice",
+                            "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                            "name": "Example Name",
+                            "profile_picture": {
+                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                              "height": 600,
+                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                              "mime_type": "application/json",
+                              "refresh_url": "https://example.com",
+                              "url": "https://example.com",
+                              "width": 800
+                            }
+                          },
+                          "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                          "priority": 2,
+                          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "status": "open",
+                          "subtasks_count": 1,
+                          "tags": [
+                            "string"
+                          ],
+                          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                          "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "updated_at": "2024-01-01T00:00:00Z",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                        }
+                      }
+                    ],
+                    "has_more": true
+                  },
+                  "properties": {
+                    "after_cursor": {
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "authoritative": {
+                      "description": "Always false because projections can lag writes and a later claim can race this read.",
+                      "example": true,
+                      "type": "boolean"
+                    },
+                    "before_cursor": {
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "data": {
+                      "example": [
+                        {
+                          "readiness": "ready",
+                          "reason": "open_blockers",
+                          "task": {
+                            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "blocked_by_count": 1,
+                            "closed_at": "2024-01-01T00:00:00Z",
+                            "comments_count": 1,
+                            "created_at": "2024-01-01T00:00:00Z",
+                            "created_by_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "current_lease": {
+                              "expires_at": "2024-01-01T00:00:00Z",
+                              "harness": "string",
+                              "session_name": "Example Name"
+                            },
+                            "description": "An example description.",
+                            "due_date": "2024-01-01T00:00:00Z",
+                            "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "is_blocked": true,
+                            "links": {
+                              "key": "value"
+                            },
+                            "metadata": {
+                              "key": "value"
+                            },
+                            "name": "Example Name",
+                            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "priority": 2,
+                            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "status": "open",
+                            "subtasks_count": 1,
+                            "tags": [
+                              "string"
+                            ],
+                            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                            "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "updated_at": "2024-01-01T00:00:00Z",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                          }
+                        }
+                      ],
+                      "items": {
+                        "description": "A task plus the server-calculated reason it is or is not ready.",
+                        "example": {
+                          "readiness": "ready",
+                          "reason": "open_blockers",
+                          "task": {
+                            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "blocked_by_count": 1,
+                            "closed_at": "2024-01-01T00:00:00Z",
+                            "comments_count": 1,
+                            "created_at": "2024-01-01T00:00:00Z",
+                            "created_by_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "current_lease": {
+                              "expires_at": "2024-01-01T00:00:00Z",
+                              "harness": "string",
+                              "session_name": "Example Name"
+                            },
+                            "description": "An example description.",
+                            "due_date": "2024-01-01T00:00:00Z",
+                            "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "is_blocked": true,
+                            "links": {
+                              "key": "value"
+                            },
+                            "metadata": {
+                              "key": "value"
+                            },
+                            "name": "Example Name",
+                            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_actor": {
+                              "alias": "alice",
+                              "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                              "name": "Example Name",
+                              "profile_picture": {
+                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "height": 600,
+                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "mime_type": "application/json",
+                                "refresh_url": "https://example.com",
+                                "url": "https://example.com",
+                                "width": 800
+                              }
+                            },
+                            "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "priority": 2,
+                            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "status": "open",
+                            "subtasks_count": 1,
+                            "tags": [
+                              "string"
+                            ],
+                            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                            "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "updated_at": "2024-01-01T00:00:00Z",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                          }
+                        },
+                        "properties": {
+                          "readiness": {
+                            "description": "One of `ready`, `blocked`, or `leased`.",
+                            "enum": [
+                              "ready",
+                              "blocked",
+                              "leased"
+                            ],
+                            "example": "ready",
+                            "type": "string"
+                          },
+                          "reason": {
+                            "description": "Stable exclusion reason: `open_blockers` or `active_lease`; omitted when ready.",
+                            "enum": [
+                              "open_blockers",
+                              "active_lease"
+                            ],
+                            "example": "open_blockers",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "task": {
+                            "description": "The task evaluated for readiness.",
+                            "example": {
+                              "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "blocked_by_count": 1,
+                              "closed_at": "2024-01-01T00:00:00Z",
+                              "comments_count": 1,
+                              "created_at": "2024-01-01T00:00:00Z",
+                              "created_by_actor": {
+                                "alias": "alice",
+                                "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                "name": "Example Name",
+                                "profile_picture": {
+                                  "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "height": 600,
+                                  "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "mime_type": "application/json",
+                                  "refresh_url": "https://example.com",
+                                  "url": "https://example.com",
+                                  "width": 800
+                                }
+                              },
+                              "created_by_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "created_by_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "current_lease": {
+                                "expires_at": "2024-01-01T00:00:00Z",
+                                "harness": "string",
+                                "session_name": "Example Name"
+                              },
+                              "description": "An example description.",
+                              "due_date": "2024-01-01T00:00:00Z",
+                              "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                              "is_blocked": true,
+                              "links": {
+                                "key": "value"
+                              },
+                              "metadata": {
+                                "key": "value"
+                              },
+                              "name": "Example Name",
+                              "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                              "owner_actor": {
+                                "alias": "alice",
+                                "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                "name": "Example Name",
+                                "profile_picture": {
+                                  "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "height": 600,
+                                  "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "mime_type": "application/json",
+                                  "refresh_url": "https://example.com",
+                                  "url": "https://example.com",
+                                  "width": 800
+                                }
+                              },
+                              "owner_agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                              "priority": 2,
+                              "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "status": "open",
+                              "subtasks_count": 1,
+                              "tags": [
+                                "string"
+                              ],
+                              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                              "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "updated_at": "2024-01-01T00:00:00Z",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                            },
+                            "properties": {
+                              "agent": {
+                                "description": "ID of the agent that owns this task (`agi_...`). `null` if the task is scoped to a team or user.",
+                                "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "blocked_by_count": {
+                                "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "closed_at": {
+                                "description": "When the task was marked as done or otherwise closed (ISO 8601). `null` if the task is still open.",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "comments_count": {
+                                "description": "Total number of comments posted on this task.",
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "description": "When the task was created (ISO 8601).",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "created_by_actor": {
+                                "description": "Resolved creator details including `id`, `name`, `alias`, and `profile_picture`. `null` if no creator is set or the creator cannot be resolved (e.g. creating agent was deleted).",
+                                "example": {
+                                  "alias": "alice",
+                                  "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                  "name": "Example Name",
+                                  "profile_picture": {
+                                    "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "height": 600,
+                                    "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "mime_type": "application/json",
+                                    "refresh_url": "https://example.com",
+                                    "url": "https://example.com",
+                                    "width": 800
+                                  }
+                                },
+                                "properties": {
+                                  "alias": {
+                                    "description": "Short handle or alias for the actor, used as an alternate display identifier. `null` if not configured.",
+                                    "example": "alice",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "Composite actor identifier. Format is `\"user-<usr_...>\"` for human users or `\"agent-<agi_...>\"` for agents.",
+                                    "example": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "description": "Display name of the actor shown in the UI. `null` if no name is set.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "profile_picture": {
+                                    "description": "Profile picture for the actor. `null` if the actor has no profile picture.",
+                                    "example": {
+                                      "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "height": 600,
+                                      "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "mime_type": "application/json",
+                                      "refresh_url": "https://example.com",
+                                      "url": "https://example.com",
+                                      "width": 800
+                                    },
+                                    "properties": {
+                                      "file": {
+                                        "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
+                                        "example": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "height": {
+                                        "description": "Height of the image in pixels. `null` if not known.",
+                                        "example": 600,
+                                        "type": "integer"
+                                      },
+                                      "media": {
+                                        "description": "ID of the associated media record (`med_...`). `null` when the image is not linked to a media entity.",
+                                        "example": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "mime_type": {
+                                        "description": "MIME type of the image, e.g. `\"image/png\"` or `\"image/jpeg\"`. `null` if not known.",
+                                        "example": "application/json",
+                                        "type": "string"
+                                      },
+                                      "refresh_url": {
+                                        "description": "Endpoint URL you can call to obtain a fresh signed `url` when the current one has expired. `null` if the URL does not require refreshing.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "url": {
+                                        "description": "Signed or public URL for downloading the image. May be time-limited; use `refresh_url` to obtain a new URL when this one expires.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "width": {
+                                        "description": "Width of the image in pixels. `null` if not known.",
+                                        "example": 800,
+                                        "type": "integer"
+                                      }
+                                    },
+                                    "type": "object"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "created_by_agent": {
+                                "description": "ID of the agent that created this task (`agi_...`). `null` if the task was created by a human user, or if the creating agent was later deleted.",
+                                "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "created_by_user": {
+                                "description": "ID of the user who created this task (`usr_...`). `null` if the task was created by an agent, or if creator provenance was cleared after the creator was deleted.",
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "current_lease": {
+                                "description": "Viewer-safe live coding-session lease summary. `null` when the task is unleased or the projected lease has expired. Fencing identifiers are never included.",
+                                "example": {
+                                  "expires_at": "2024-01-01T00:00:00Z",
+                                  "harness": "string",
+                                  "session_name": "Example Name"
+                                },
+                                "nullable": true,
+                                "properties": {
+                                  "expires_at": {
+                                    "description": "Server-calculated lease expiry in ISO 8601 format.",
+                                    "example": "2024-01-01T00:00:00Z",
+                                    "format": "date-time",
+                                    "type": "string"
+                                  },
+                                  "harness": {
+                                    "description": "Bounded harness identifier for the coding session.",
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "session_name": {
+                                    "description": "Display name supplied by the coding session that holds the lease.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "session_name",
+                                  "harness",
+                                  "expires_at"
+                                ],
+                                "type": "object"
+                              },
+                              "description": {
+                                "description": "Long-form description or notes for the task. `null` if no description has been provided.",
+                                "example": "An example description.",
+                                "type": "string"
+                              },
+                              "due_date": {
+                                "description": "Date and time by which the task should be completed (ISO 8601). `null` if no due date is set.",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "id": {
+                                "description": "Task ID (`tsk_...`).",
+                                "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "is_blocked": {
+                                "description": "`true` while at least one blocking task is not yet done. Informational only — a blocked task can still change status — and derived at read time, so the task un-blocks automatically when its last open blocker completes. Computed on list/show reads; create/update responses report `false` until the next read.",
+                                "example": true,
+                                "type": "boolean"
+                              },
+                              "links": {
+                                "description": "Key-value map of named URLs or references associated with the task. Returns an empty object when no links have been set.",
+                                "example": {
+                                  "key": "value"
+                                },
+                                "type": "object"
+                              },
+                              "metadata": {
+                                "description": "Arbitrary key-value map of application-specific data stored alongside the task. Returns an empty object when no metadata has been set.",
+                                "example": {
+                                  "key": "value"
+                                },
+                                "type": "object"
+                              },
+                              "name": {
+                                "description": "Human-readable title of the task.",
+                                "example": "Example Name",
+                                "type": "string"
+                              },
+                              "org": {
+                                "description": "ID of the organization this task belongs to (`org_...`). `null` for tasks outside an org context.",
+                                "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "owner_actor": {
+                                "description": "Resolved owner details including `id`, `name`, `alias`, and `profile_picture`. `null` if the task is unassigned or the owner cannot be resolved (e.g. assigned agent was deleted).",
+                                "example": {
+                                  "alias": "alice",
+                                  "id": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                  "name": "Example Name",
+                                  "profile_picture": {
+                                    "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "height": 600,
+                                    "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "mime_type": "application/json",
+                                    "refresh_url": "https://example.com",
+                                    "url": "https://example.com",
+                                    "width": 800
+                                  }
+                                },
+                                "properties": {
+                                  "alias": {
+                                    "description": "Short handle or alias for the actor, used as an alternate display identifier. `null` if not configured.",
+                                    "example": "alice",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "Composite actor identifier. Format is `\"user-<usr_...>\"` for human users or `\"agent-<agi_...>\"` for agents.",
+                                    "example": "user-usr_01j3k5m7n9p2r4s6t8v0w1x2",
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "description": "Display name of the actor shown in the UI. `null` if no name is set.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "profile_picture": {
+                                    "description": "Profile picture for the actor. `null` if the actor has no profile picture.",
+                                    "example": {
+                                      "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "height": 600,
+                                      "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "mime_type": "application/json",
+                                      "refresh_url": "https://example.com",
+                                      "url": "https://example.com",
+                                      "width": 800
+                                    },
+                                    "properties": {
+                                      "file": {
+                                        "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
+                                        "example": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "height": {
+                                        "description": "Height of the image in pixels. `null` if not known.",
+                                        "example": 600,
+                                        "type": "integer"
+                                      },
+                                      "media": {
+                                        "description": "ID of the associated media record (`med_...`). `null` when the image is not linked to a media entity.",
+                                        "example": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "mime_type": {
+                                        "description": "MIME type of the image, e.g. `\"image/png\"` or `\"image/jpeg\"`. `null` if not known.",
+                                        "example": "application/json",
+                                        "type": "string"
+                                      },
+                                      "refresh_url": {
+                                        "description": "Endpoint URL you can call to obtain a fresh signed `url` when the current one has expired. `null` if the URL does not require refreshing.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "url": {
+                                        "description": "Signed or public URL for downloading the image. May be time-limited; use `refresh_url` to obtain a new URL when this one expires.",
+                                        "example": "https://example.com",
+                                        "type": "string"
+                                      },
+                                      "width": {
+                                        "description": "Width of the image in pixels. `null` if not known.",
+                                        "example": 800,
+                                        "type": "integer"
+                                      }
+                                    },
+                                    "type": "object"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "owner_agent": {
+                                "description": "ID of the agent assigned as owner (`agi_...`). `null` if the owner is a human user, the task is unassigned, or the assigned agent was deleted.",
+                                "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "owner_user": {
+                                "description": "ID of the user assigned as owner (`usr_...`). `null` if the owner is an agent, the task is unassigned, or the assigned agent was deleted.",
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "parent": {
+                                "description": "ID of the parent task when this task is a subtask (`tsk_...`). `null` for top-level tasks. Subtasks nest exactly one level.",
+                                "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "priority": {
+                                "description": "Priority level of the task from `0` (highest) to `4` (lowest). Defaults to `2` (medium) when not explicitly set.",
+                                "example": 2,
+                                "type": "integer"
+                              },
+                              "sandbox": {
+                                "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
+                                "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "status": {
+                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                                "example": "open",
+                                "type": "string"
+                              },
+                              "subtasks_count": {
+                                "description": "Number of subtasks under this task. Computed on list/show reads; create/update responses may report 0 until the next read. Always 0 for subtasks.",
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "tags": {
+                                "description": "Labels for grouping and filtering, stored lowercase and de-duplicated. Empty array when untagged.",
+                                "example": [
+                                  "string"
+                                ],
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "team": {
+                                "description": "ID of the team that owns this task (`tem_...`). `null` if the task is not scoped to a team.",
+                                "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "thread": {
+                                "description": "ID of the thread this task is bound to (`thr_...`) — the conversation it was filed from, or the thread passed at creation. `null` for tasks not tied to a thread.",
+                                "example": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "description": "When the task was last modified (ISO 8601).",
+                                "example": "2024-01-01T00:00:00Z",
+                                "format": "date-time",
+                                "type": "string"
+                              },
+                              "user": {
+                                "description": "ID of the user that owns this task (`usr_...`). `null` if the task is scoped to a team.",
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "name",
+                              "status"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "task",
+                          "readiness"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "authoritative",
+                    "has_more"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Task owner not found"
+          },
+          "422": {
+            "description": "Invalid owner context or pagination cursor"
+          }
+        },
+        "summary": "List an owner's ready tasks",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -73121,6 +75227,43 @@
           }
         },
         "summary": "Approve a device authorization request"
+      }
+    },
+    "/oauth/device/authorization": {
+      "get": {
+        "description": "Returns the client name, requested scopes, and expiration for a pending\ndevice authorization owned by the calling app. The caller must be an\nauthenticated user. This endpoint never approves the request.\n",
+        "operationId": "get_oauth_device_authorization",
+        "parameters": [
+          {
+            "description": "User-facing device authorization code.",
+            "example": "string",
+            "in": "query",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceAuthorizationDetailsResponse"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid or expired code"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Inspect a pending device authorization"
       }
     },
     "/oauth/device/authorize": {
