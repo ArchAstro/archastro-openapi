@@ -63,12 +63,12 @@ function renderChannelFile(
   const contractName = channel.sdkName
     ? exModuleSegment(`${channel.sdkName}Channel`)
     : exModuleSegment(channel.className);
-  cb.line(`defmodule ArchAstro.Contract.Channels.${contractName}Test do`);
+  cb.line(`defmodule ArchAstro.SDK.Contract.Channels.${contractName}Test do`);
   cb.indent();
   cb.line("use ExUnit.Case, async: false");
   cb.line("@moduletag :channel_contract");
 
-  const facade = `ArchAstro.Channels.${exModuleSegment(channel.sdkName ?? channel.className.replace(/Channel$/, ""))}`;
+  const facade = `ArchAstro.SDK.Channels.${exModuleSegment(channel.sdkName ?? channel.className.replace(/Channel$/, ""))}`;
   const memberNames = uniqueExFunctionNames(
     [
       ...channel.joins.map((joinDef, index) =>
@@ -111,7 +111,7 @@ function renderChannelFile(
     cb.indent();
     cb.line("assert :ok =");
     cb.indent();
-    cb.line(`ArchAstro.ContractSupport.verify_channel(${exString(channel.name)}, ${exString(joinDef.topicPattern)}, fn socket, push ->`);
+    cb.line(`ArchAstro.SDK.ContractSupport.verify_channel(${exString(channel.name)}, ${exString(joinDef.topicPattern)}, fn socket, push ->`);
     cb.indent();
     const joinPattern = responsePattern(
       joinDef.returnType,
@@ -123,7 +123,7 @@ function renderChannelFile(
       "%{}",
       schemas
     );
-    cb.line(`assert {:ok, %ArchAstro.Channel{join_response: ${joinPattern}} = channel} = ${facade}.${memberNames[joinIndex]!}(${args.join(", ")})`);
+    cb.line(`assert {:ok, %ArchAstro.SDK.Channel{join_response: ${joinPattern}} = channel} = ${facade}.${memberNames[joinIndex]!}(${args.join(", ")})`);
 
     channel.messages.forEach((message, messageIndex) => {
       const messageArgs = ["channel"];
@@ -200,7 +200,7 @@ function collectTests(
   output: TestCase[]
 ): void {
   const chain = elixirResourceChain(version, ancestry);
-  const moduleName = ["ArchAstro", exModuleSegment(version.sdkName ?? version.version), ...chain.map(exModuleSegment)].join(".");
+  const moduleName = ["ArchAstro", "SDK", exModuleSegment(version.sdkName ?? version.version), ...chain.map(exModuleSegment)].join(".");
   for (const op of resource.operations) {
     const args = ["client"];
     resource.scopeParams.forEach((p) => args.push(generateDummyValue(p.type, p.name, "elixir")));
@@ -266,7 +266,7 @@ function structLiteral(
   fields: ReadonlyArray<{ name: string; type: TypeRef; required: boolean }>,
   schemas: SdkSpec["schemas"]
 ): string {
-  const rootName = moduleName.replace(/^ArchAstro\.Types\./, "");
+  const rootName = moduleName.replace(/^ArchAstro\.SDK\.Types\./, "");
   const hoist = hoistInlineObjects(fields, `${rootName}.Nested.`, "typeddict", {
     hoistUnions: true,
   });
@@ -345,13 +345,13 @@ function renderFile(
   const cb = new CodeBuilder("  ");
   header.trimEnd().split("\n").forEach((line) => cb.line(line));
   cb.line();
-  cb.line(`defmodule ArchAstro.Contract.${exModuleSegment(version.sdkName ?? version.version)}.${exModuleSegment(root.name)}Test do`);
+  cb.line(`defmodule ArchAstro.SDK.Contract.${exModuleSegment(version.sdkName ?? version.version)}.${exModuleSegment(root.name)}Test do`);
   cb.indent();
   cb.line("use ExUnit.Case, async: false");
   cb.line();
   cb.line("setup do");
   cb.indent();
-  cb.line("{:ok, client: ArchAstro.ContractSupport.client()}");
+  cb.line("{:ok, client: ArchAstro.SDK.ContractSupport.client()}");
   cb.dedent();
   cb.line("end");
   for (const test of tests) {
@@ -362,18 +362,18 @@ function renderFile(
     if (test.streaming) {
       cb.line("_ = client");
       const expected = `[${(test.streamEvents ?? []).map((event) => exString(event.name)).join(", ")}]`;
-      cb.line(`assert {:ok, events} = ArchAstro.ContractSupport.verify_stream(${exString(test.streamRoute!)}, ${expected}, fn client ->`);
+      cb.line(`assert {:ok, events} = ArchAstro.SDK.ContractSupport.verify_stream(${exString(test.streamRoute!)}, ${expected}, fn client ->`);
       cb.indent();
       cb.line(`${test.moduleName}.${test.operationName}(${test.args.join(", ")})`);
       cb.dedent();
       cb.line("end)");
       (test.streamEvents ?? []).forEach((event, index) => {
         const data = `event_data_${index}`;
-        cb.line(`assert %ArchAstro.SSE.Event{event: ${exString(event.name)}, data: ${data}} = Enum.at(events, ${index})`);
+        cb.line(`assert %ArchAstro.SDK.SSE.Event{event: ${exString(event.name)}, data: ${data}} = Enum.at(events, ${index})`);
         const predicate = shapePredicate(event.type, data, event.moduleName, schemas);
         if (predicate) cb.line(`assert ${predicate}`);
       });
-      cb.line(`assert :ok = ArchAstro.ContractSupport.verify_stream_error(${exString(test.streamRoute!)}, fn client ->`);
+      cb.line(`assert :ok = ArchAstro.SDK.ContractSupport.verify_stream_error(${exString(test.streamRoute!)}, fn client ->`);
       cb.indent();
       cb.line(`${test.moduleName}.${test.operationName}(${test.args.join(", ")})`);
       cb.dedent();
@@ -388,9 +388,9 @@ function renderFile(
       cb.line();
       cb.line(`test ${exString(`${test.label} returns ${status}`)} do`);
       cb.indent();
-      cb.line(`client = ArchAstro.ContractSupport.error_client(${status})`);
+      cb.line(`client = ArchAstro.SDK.ContractSupport.error_client(${status})`);
       const errorArgs = ["client", ...test.args.slice(1)];
-      cb.line(`assert {:error, %ArchAstro.Error{status: ${status}}} = ${test.moduleName}.${test.operationName}(${errorArgs.join(", ")})`);
+      cb.line(`assert {:error, %ArchAstro.SDK.Error{status: ${status}}} = ${test.moduleName}.${test.operationName}(${errorArgs.join(", ")})`);
       cb.dedent();
       cb.line("end");
     }
@@ -443,7 +443,7 @@ function shapePredicate(
     case "optional":
       return shapePredicate(type.inner, variable, inlineObjectModule, schemas);
     case "union": {
-      const rootName = inlineObjectModule.replace(/^ArchAstro\.Types\./, "");
+      const rootName = inlineObjectModule.replace(/^ArchAstro\.SDK\.Types\./, "");
       const hoist = hoistInlineObjects(
         [{ name: "value", type, required: true }],
         `${rootName}.Nested.`,

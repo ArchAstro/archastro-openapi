@@ -65,11 +65,12 @@ describe("elixir backend", () => {
   it("emits structs, resources, auth, and Slipstream-facing channel facades", () => {
     const output = Object.values(generateElixir(ast(), { outDir: "sdk" })).join("\n");
 
-    expect(output).toContain("defmodule ArchAstro.Types.");
-    expect(output).toContain("ArchAstro.HTTP.request");
-    expect(output).toContain("defmodule ArchAstro.Auth do");
-    expect(output).toContain("ArchAstro.Channel.join");
-    expect(output).toContain("ArchAstro.Channel.push");
+    expect(output).toContain("defmodule ArchAstro.SDK.Types.");
+    expect(output).toContain("ArchAstro.SDK.HTTP.request");
+    expect(output).toContain("defmodule ArchAstro.SDK.Auth do");
+    expect(output).toContain("ArchAstro.SDK.Channel.join");
+    expect(output).toContain("ArchAstro.SDK.Channel.push");
+    expect(output).not.toMatch(/ArchAstro\.(?!SDK(?:\.|\b))/);
   });
 
   it("types every generated public function and uses structs at API boundaries", () => {
@@ -78,8 +79,8 @@ describe("elixir backend", () => {
     const specs = output.match(/^ {2}@spec /gm) ?? [];
 
     expect(specs).toHaveLength(publicDefs.length);
-    expect(output).toContain("ArchAstro.Client.t()");
-    expect(output).toContain("ArchAstro.JSON.t()");
+    expect(output).toContain("ArchAstro.SDK.Client.t()");
+    expect(output).toContain("ArchAstro.SDK.JSON.t()");
     expect(output).toContain("Params.t()");
     expect(output).toContain("Input.t()");
     expect(output).not.toContain("term()");
@@ -111,10 +112,10 @@ describe("elixir backend", () => {
 
     const sdk = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
-    expect(sdk).toContain("defmodule ArchAstro.V1.");
-    expect(sdk).toContain("defmodule ArchAstro.V12.");
-    expect(contracts).toContain("defmodule ArchAstro.Contract.V1.");
-    expect(contracts).toContain("defmodule ArchAstro.Contract.V12.");
+    expect(sdk).toContain("defmodule ArchAstro.SDK.V1.");
+    expect(sdk).toContain("defmodule ArchAstro.SDK.V12.");
+    expect(contracts).toContain("defmodule ArchAstro.SDK.Contract.V1.");
+    expect(contracts).toContain("defmodule ArchAstro.SDK.Contract.V12.");
   });
 
   it("serializes query structs with OpenAPI wire names", () => {
@@ -158,7 +159,7 @@ describe("elixir backend", () => {
 
     const output = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
     expect(output).toContain(
-      '"/parents/#{ArchAstro.Path.encode(id)}/children/#{ArchAstro.Path.encode(id)}"'
+      '"/parents/#{ArchAstro.SDK.Path.encode(id)}/children/#{ArchAstro.SDK.Path.encode(id)}"'
     );
     expect(output).toContain('"room:#{id}:mirror:#{id}"');
     expect(output).not.toMatch(/def \w+\(socket, id, id_2/);
@@ -220,9 +221,9 @@ describe("elixir backend", () => {
     };
 
     const output = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
-    expect(output).toMatch(/defmodule ArchAstro\.Types\..*ChoiceVariant1 do/);
-    expect(output).toMatch(/defmodule ArchAstro\.Types\..*ChoiceVariant2 do/);
-    expect(output).toMatch(/choice: ArchAstro\.Types\..*ChoiceVariant1\.t\(\) \| ArchAstro\.Types\..*ChoiceVariant2\.t\(\)/);
+    expect(output).toMatch(/defmodule ArchAstro\.SDK\.Types\..*ChoiceVariant1 do/);
+    expect(output).toMatch(/defmodule ArchAstro\.SDK\.Types\..*ChoiceVariant2 do/);
+    expect(output).toMatch(/choice: ArchAstro\.SDK\.Types\..*ChoiceVariant1\.t\(\) \| ArchAstro\.SDK\.Types\..*ChoiceVariant2\.t\(\)/);
   });
 
   it("hoists top-level inline union response variants into strict structs", () => {
@@ -256,10 +257,10 @@ describe("elixir backend", () => {
     };
 
     const output = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
-    expect(output).toMatch(/defmodule ArchAstro\.Types\..*Response\.Nested\.ValueVariant1 do/);
+    expect(output).toMatch(/defmodule ArchAstro\.SDK\.Types\..*Response\.Nested\.ValueVariant1 do/);
     expect(output).toContain(
-      ":: {:ok, ArchAstro.Types.Operations.ListAgents.Response.Nested.ValueVariant1.t() | " +
-      "ArchAstro.Types.Operations.ListAgents.Response.Nested.ValueVariant2.t()}"
+      ":: {:ok, ArchAstro.SDK.Types.Operations.ListAgents.Response.Nested.ValueVariant1.t() | " +
+      "ArchAstro.SDK.Types.Operations.ListAgents.Response.Nested.ValueVariant2.t()}"
     );
   });
 
@@ -275,14 +276,14 @@ describe("elixir backend", () => {
 
     const sdk = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
-    expect(sdk).toContain("defmodule ArchAstro.Channels.Foo do");
-    expect(sdk).toContain("defmodule ArchAstro.Channels.Foo2 do");
-    expect(sdk).toContain("defmodule ArchAstro.Types.ChannelPayloads.FooChannel.");
-    expect(sdk).toContain("defmodule ArchAstro.Types.ChannelPayloads.Foo2Channel.");
-    expect(contracts).toContain("ArchAstro.Channels.Foo.");
-    expect(contracts).toContain("ArchAstro.Channels.Foo2.");
-    expect(contracts).toContain("defmodule ArchAstro.Contract.Channels.FooChannelTest do");
-    expect(contracts).toContain("defmodule ArchAstro.Contract.Channels.Foo2ChannelTest do");
+    expect(sdk).toContain("defmodule ArchAstro.SDK.Channels.Foo do");
+    expect(sdk).toContain("defmodule ArchAstro.SDK.Channels.Foo2 do");
+    expect(sdk).toContain("defmodule ArchAstro.SDK.Types.ChannelPayloads.FooChannel.");
+    expect(sdk).toContain("defmodule ArchAstro.SDK.Types.ChannelPayloads.Foo2Channel.");
+    expect(contracts).toContain("ArchAstro.SDK.Channels.Foo.");
+    expect(contracts).toContain("ArchAstro.SDK.Channels.Foo2.");
+    expect(contracts).toContain("defmodule ArchAstro.SDK.Contract.Channels.FooChannelTest do");
+    expect(contracts).toContain("defmodule ArchAstro.SDK.Contract.Channels.Foo2ChannelTest do");
   });
 
   it("preserves raw-response and typed channel-response semantics", () => {
@@ -298,7 +299,7 @@ describe("elixir backend", () => {
 
     expect(output).toContain("raw: true");
     expect(output).toContain("{:ok, Req.Response.t()}");
-    expect(output).toMatch(/ArchAstro\.Channel\.join\([\s\S]*\{:ref, ArchAstro\.Types\./);
+    expect(output).toMatch(/ArchAstro\.SDK\.Channel\.join\([\s\S]*\{:ref, ArchAstro\.SDK\.Types\./);
   });
 
   it("generates ExUnit REST and channel contract suites", () => {
@@ -308,14 +309,14 @@ describe("elixir backend", () => {
 
     expect(paths.every((path) => path.startsWith("sdk/test/contract/"))).toBe(true);
     expect(output).toContain("use ExUnit.Case, async: false");
-    expect(output).toContain("ArchAstro.ContractSupport.client()");
-    expect(output).toContain("ArchAstro.ContractSupport.verify_channel");
+    expect(output).toContain("ArchAstro.SDK.ContractSupport.client()");
+    expect(output).toContain("ArchAstro.SDK.ContractSupport.verify_channel");
     expect(output).toContain("fn socket, push ->");
-    expect(output).toContain("assert {:ok, %ArchAstro.Channel{join_response:");
-    expect(output).toContain("assert :ok = ArchAstro.Channels.");
+    expect(output).toContain("assert {:ok, %ArchAstro.SDK.Channel{join_response:");
+    expect(output).toContain("assert :ok = ArchAstro.SDK.Channels.");
     expect(output).toContain('assert :ok = push.(channel.topic, "message_added")');
     expect(output).toContain('assert_receive {:archastro_channel, ^channel, "message_added"');
-    expect(output).toContain("%ArchAstro.Types.Operations.");
+    expect(output).toContain("%ArchAstro.SDK.Types.Operations.");
   });
 
   it("constructs required referenced structs in contract inputs", () => {
@@ -338,7 +339,7 @@ describe("elixir backend", () => {
 
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
     expect(contracts).toMatch(
-      /%ArchAstro\.Types\.Operations\..*\.Input\{team: %ArchAstro\.Types\.Team\{id: "test-id", name: "test-name"\}\}/
+      /%ArchAstro\.SDK\.Types\.Operations\..*\.Input\{team: %ArchAstro\.SDK\.Types\.Team\{id: "test-id", name: "test-name"\}\}/
     );
   });
 
@@ -363,8 +364,8 @@ describe("elixir backend", () => {
     operation.body = { schema: "Node", contentType: "application/json" };
 
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
-    expect(contracts).toContain("%ArchAstro.Types.Node{children: []}");
-    expect(contracts).not.toContain("%ArchAstro.Types.Node{}");
+    expect(contracts).toContain("%ArchAstro.SDK.Types.Node{children: []}");
+    expect(contracts).not.toContain("%ArchAstro.SDK.Types.Node{}");
   });
 
   it("accepts nil or a struct for nullable structured responses", () => {
@@ -383,7 +384,7 @@ describe("elixir backend", () => {
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
     expect(contracts).toContain("assert {:ok, value} =");
     expect(contracts).toContain(
-      "assert is_nil(value) or is_struct(value, ArchAstro.Types.Team)"
+      "assert is_nil(value) or is_struct(value, ArchAstro.SDK.Types.Team)"
     );
   });
 
@@ -409,8 +410,8 @@ describe("elixir backend", () => {
     operation.body = { schema: union.name, contentType: "application/json" };
 
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
-    expect(contracts).toContain("%ArchAstro.Types.UnionInputVariant{}");
-    expect(contracts).not.toContain("%ArchAstro.Types.UnionInput{}");
+    expect(contracts).toContain("%ArchAstro.SDK.Types.UnionInputVariant{}");
+    expect(contracts).not.toContain("%ArchAstro.SDK.Types.UnionInput{}");
   });
 
   it("uses the emitted hoisted module for inline named-union request variants", () => {
@@ -442,9 +443,9 @@ describe("elixir backend", () => {
 
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
     expect(contracts).toContain(
-      "%ArchAstro.Types.InlineUnionInput.Nested.VariantVariant1{value: \"test-value\"}"
+      "%ArchAstro.SDK.Types.InlineUnionInput.Nested.VariantVariant1{value: \"test-value\"}"
     );
-    expect(contracts).not.toContain("%ArchAstro.Types.InlineUnionInput.Nested{");
+    expect(contracts).not.toContain("%ArchAstro.SDK.Types.InlineUnionInput.Nested{");
   });
 
   it("checks named-union push payloads against their hoisted variant module", () => {
@@ -470,10 +471,10 @@ describe("elixir backend", () => {
 
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
     expect(contracts).toContain(
-      "is_struct(push_payload_0, ArchAstro.Types.PushUnion.Nested.VariantVariant1)"
+      "is_struct(push_payload_0, ArchAstro.SDK.Types.PushUnion.Nested.VariantVariant1)"
     );
     expect(contracts).not.toContain(
-      "is_struct(push_payload_0, ArchAstro.Types.ChannelPayloads.ChatChannel.MessageAdded.Payload)"
+      "is_struct(push_payload_0, ArchAstro.SDK.Types.ChannelPayloads.ChatChannel.MessageAdded.Payload)"
     );
   });
 
@@ -494,7 +495,7 @@ describe("elixir backend", () => {
     spec.channels[0]!.messages[0]!.returnType = { kind: "ref", schema: union.name };
 
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
-    expect(contracts).not.toContain("%ArchAstro.Types.ChannelUnion{}");
+    expect(contracts).not.toContain("%ArchAstro.SDK.Types.ChannelUnion{}");
     expect(contracts).toContain("join_response: _value");
   });
 
@@ -527,7 +528,7 @@ describe("elixir backend", () => {
     spec.authOperations = [operation];
 
     const sdk = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
-    expect(sdk).toContain("body: ArchAstro.Types.AuthUnionInput.t()");
+    expect(sdk).toContain("body: ArchAstro.SDK.Types.AuthUnionInput.t()");
     expect(sdk).toContain("body = input.body");
     expect(sdk).toContain("body: body");
   });
@@ -588,10 +589,10 @@ describe("elixir backend", () => {
 
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
     expect(contracts).toContain(
-      "is_struct(value, ArchAstro.Types.Operations.ListAgents.Response.Nested.ValueVariant1)"
+      "is_struct(value, ArchAstro.SDK.Types.Operations.ListAgents.Response.Nested.ValueVariant1)"
     );
     expect(contracts).not.toContain(
-      "is_struct(value, ArchAstro.Types.Operations.ListAgents.Response)"
+      "is_struct(value, ArchAstro.SDK.Types.Operations.ListAgents.Response)"
     );
   });
 
@@ -615,10 +616,10 @@ describe("elixir backend", () => {
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
     expect(contracts).toContain('["team", "count", "created"], fn client ->');
     expect(contracts).toContain('event: "team", data: event_data_0');
-    expect(contracts).toContain("assert is_struct(event_data_0, ArchAstro.Types.Team)");
+    expect(contracts).toContain("assert is_struct(event_data_0, ArchAstro.SDK.Types.Team)");
     expect(contracts).toContain("assert is_integer(event_data_1)");
     expect(contracts).toContain("assert is_struct(event_data_2, DateTime)");
-    expect(contracts).toContain("ArchAstro.ContractSupport.verify_stream_error");
+    expect(contracts).toContain("ArchAstro.SDK.ContractSupport.verify_stream_error");
   });
 
   it("escapes OpenAPI interpolation syntax in source and contract-test literals", () => {
@@ -690,8 +691,8 @@ describe("elixir backend", () => {
     expect(output).toMatch(/def sign_in_2\(/);
     expect(output).toContain(".ItemAdded.Input do");
     expect(output).toContain(".ItemAdded2.Input do");
-    expect(output).toContain('ArchAstro.Channel.push(channel, "item-added"');
-    expect(output).toContain('ArchAstro.Channel.push(channel, "item_added"');
+    expect(output).toContain('ArchAstro.SDK.Channel.push(channel, "item-added"');
+    expect(output).toContain('ArchAstro.SDK.Channel.push(channel, "item_added"');
   });
 
   it("types channel topic arguments from their declared schemas", () => {
@@ -740,8 +741,8 @@ describe("elixir backend", () => {
     spec.schemaGroups.discriminator_regression = [cat, dog, pet];
 
     const output = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
-    expect(output).toContain('"foo-bar" => ArchAstro.Types.FooBar');
-    expect(output).toContain('"dog_type" => ArchAstro.Types.DogType');
+    expect(output).toContain('"foo-bar" => ArchAstro.SDK.Types.FooBar');
+    expect(output).toContain('"dog_type" => ArchAstro.SDK.Types.DogType');
 
     const operation = spec.versions
       .flatMap((version) => version.resources)
@@ -752,8 +753,8 @@ describe("elixir backend", () => {
     operation.returnType = { kind: "ref", schema: "pet_union" };
     const contracts = Object.values(emitElixirContractTests(spec, "sdk")).join("\n");
     expect(contracts).toContain("assert {:ok, value} =");
-    expect(contracts).toContain("is_struct(value, ArchAstro.Types.FooBar)");
-    expect(contracts).not.toContain("%ArchAstro.Types.PetUnion{}");
+    expect(contracts).toContain("is_struct(value, ArchAstro.SDK.Types.FooBar)");
+    expect(contracts).not.toContain("%ArchAstro.SDK.Types.PetUnion{}");
   });
 
   it("marks non-required object descriptors optional and disambiguates nested models", () => {
@@ -799,7 +800,7 @@ describe("elixir backend", () => {
     spec.schemaGroups.auth_regression = [tokens];
 
     const output = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
-    expect(output).toContain("defimpl Inspect, for: ArchAstro.Types.AuthTokens do");
+    expect(output).toContain("defimpl Inspect, for: ArchAstro.SDK.Types.AuthTokens do");
     expect(output).toContain("<[REDACTED]>");
   });
 
@@ -835,11 +836,11 @@ describe("elixir backend", () => {
     expect(output).toContain("path_credential:");
     expect(output).toContain("query_credential:");
     expect(output).toContain("body_credential:");
-    expect(output).toContain("ArchAstro.Path.encode(input.path_credential)");
+    expect(output).toContain("ArchAstro.SDK.Path.encode(input.path_credential)");
     expect(output).toContain('put_optional("credential", input.query_credential)');
     expect(output).toContain('put_optional("credential", input.body_credential)');
     expect(output).toContain(
-      "defimpl Inspect, for: ArchAstro.Types.Operations.AuthenticateCollision.AuthInput"
+      "defimpl Inspect, for: ArchAstro.SDK.Types.Operations.AuthenticateCollision.AuthInput"
     );
   });
 
