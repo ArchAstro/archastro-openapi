@@ -289,19 +289,19 @@ function emitUnionSchema(cb: CodeBuilder, schema: SchemaDef): void {
     emitStruct(cb, typeModule(child.name), child.fields, child.description);
     cb.line();
   }
-  const moduleName = `ArchAstro.Types.${exModuleSegment(schema.name)}`;
+  const moduleName = `ArchAstro.SDK.Types.${exModuleSegment(schema.name)}`;
   const union = hoist.fields[0]!.type;
   cb.line(`defmodule ${moduleName} do`);
   cb.indent();
   cb.line(`@moduledoc ${heredoc(schema.description ?? `${schema.name} API union.`)}`);
   cb.line(`@type t :: ${typeSpec(union)}`);
   cb.line(`@descriptor ${descriptor(union)}`);
-  cb.line("@spec from_map(ArchAstro.JSON.t()) :: t()");
-  cb.line("def from_map(value), do: ArchAstro.Codec.decode(value, @descriptor)");
-  cb.line("@spec to_map(t()) :: ArchAstro.JSON.t()");
-  cb.line("def to_map(value), do: ArchAstro.Codec.encode(value)");
-  cb.line("@spec matches?(ArchAstro.JSON.t()) :: boolean()");
-  cb.line("def matches?(value), do: ArchAstro.Codec.matches?(value, @descriptor)");
+  cb.line("@spec from_map(ArchAstro.SDK.JSON.t()) :: t()");
+  cb.line("def from_map(value), do: ArchAstro.SDK.Codec.decode(value, @descriptor)");
+  cb.line("@spec to_map(t()) :: ArchAstro.SDK.JSON.t()");
+  cb.line("def to_map(value), do: ArchAstro.SDK.Codec.encode(value)");
+  cb.line("@spec matches?(ArchAstro.SDK.JSON.t()) :: boolean()");
+  cb.line("def matches?(value), do: ArchAstro.SDK.Codec.matches?(value, @descriptor)");
   cb.dedent();
   cb.line("end");
 }
@@ -333,7 +333,7 @@ function emitStruct(
   cb.indent();
   fields.forEach((field, index) => {
     const suffix = index === fields.length - 1 ? "" : ",";
-    const optional = field.required ? "" : " | ArchAstro.Unset.t()";
+    const optional = field.required ? "" : " | ArchAstro.SDK.Unset.t()";
     cb.line(`${fieldNames[index]!}: ${typeSpec(field.type)}${optional}${suffix}`);
   });
   cb.dedent();
@@ -343,12 +343,12 @@ function emitStruct(
     `${fieldNames[index]!}: {${exString(wireNames.get(field.name) ?? field.wireName ?? field.name)}, ${fieldDescriptor(field)}}`
   );
   cb.line(`@fields [${descriptors.join(", ")}]`);
-  cb.line("@spec from_map(ArchAstro.JSON.object()) :: t()");
-  cb.line("def from_map(data), do: ArchAstro.Codec.struct_from_map(__MODULE__, data, @fields)");
-  cb.line("@spec to_map(t()) :: ArchAstro.JSON.object()");
-  cb.line("def to_map(value), do: ArchAstro.Codec.struct_to_map(value, @fields)");
-  cb.line("@spec matches?(ArchAstro.JSON.t()) :: boolean()");
-  cb.line("def matches?(value), do: ArchAstro.Codec.matches?(value, {:object, Keyword.values(@fields)})");
+  cb.line("@spec from_map(ArchAstro.SDK.JSON.object()) :: t()");
+  cb.line("def from_map(data), do: ArchAstro.SDK.Codec.struct_from_map(__MODULE__, data, @fields)");
+  cb.line("@spec to_map(t()) :: ArchAstro.SDK.JSON.object()");
+  cb.line("def to_map(value), do: ArchAstro.SDK.Codec.struct_to_map(value, @fields)");
+  cb.line("@spec matches?(ArchAstro.SDK.JSON.t()) :: boolean()");
+  cb.line("def matches?(value), do: ArchAstro.SDK.Codec.matches?(value, {:object, Keyword.values(@fields)})");
   cb.dedent();
   cb.line("end");
   if (redactInspect || fields.some((field) => Boolean(field.sdkRole))) {
@@ -403,7 +403,7 @@ function emitNestedTypeStructs(
 }
 
 export function typeModule(name: string): string {
-  return `ArchAstro.Types.${name.split(".").map(exModuleSegment).join(".")}`;
+  return `ArchAstro.SDK.Types.${name.split(".").map(exModuleSegment).join(".")}`;
 }
 
 function operationTypeRoot(op: OperationDef, suffix: string): string {
@@ -481,7 +481,7 @@ function walkResource(
   ancestry: ResourceDef[]
 ): void {
   if (resource.operations.length > 0) {
-    const moduleName = ["ArchAstro", exModuleSegment(version.sdkName ?? version.version), ...chain.map(exModuleSegment)].join(".");
+    const moduleName = ["ArchAstro", "SDK", exModuleSegment(version.sdkName ?? version.version), ...chain.map(exModuleSegment)].join(".");
     cb.line(`defmodule ${moduleName} do`);
     cb.indent();
     cb.line(`@moduledoc ${heredoc(resource.description ?? `${resource.className.replace(/Resource$/, "")} API resource.`)}`);
@@ -509,7 +509,7 @@ export function elixirResourceChain(version: VersionedResourceSet, resources: Re
 function emitOperation(cb: CodeBuilder, op: OperationDef, resource: ResourceDef): void {
   const name = exFunctionName(op.sdkName ?? op.name);
   const args: string[] = ["client"];
-  const argSpecs: string[] = ["ArchAstro.Client.t()"];
+  const argSpecs: string[] = ["ArchAstro.SDK.Client.t()"];
   const pathParams = [...resource.scopeParams, ...op.pathParams];
   const pathArgNames = uniqueExFunctionNames(
     pathParams.map((param) => param.name),
@@ -547,11 +547,11 @@ function emitOperation(cb: CodeBuilder, op: OperationDef, resource: ResourceDef)
   if (op.body) options.push("body: input");
   if (op.streaming) {
     options.push(`decode_event: &${typeModule(streamEventName(op))}.decode/1`);
-    cb.line(`ArchAstro.SSE.stream(client, :${op.method.toLowerCase()}, path, [${options.join(", ")}])`);
+    cb.line(`ArchAstro.SDK.SSE.stream(client, :${op.method.toLowerCase()}, path, [${options.join(", ")}])`);
   } else {
     if (op.rawResponse) options.push("raw: true");
     else options.push(`decode: ${operationDescriptor(op)}`);
-    cb.line(`ArchAstro.HTTP.request(client, :${op.method.toLowerCase()}, path, [${options.join(", ")}])`);
+    cb.line(`ArchAstro.SDK.HTTP.request(client, :${op.method.toLowerCase()}, path, [${options.join(", ")}])`);
   }
   cb.dedent();
   cb.line("end");
@@ -560,13 +560,13 @@ function emitOperation(cb: CodeBuilder, op: OperationDef, resource: ResourceDef)
 function bodyTypeSpec(op: OperationDef): string {
   if (op.body?.fields) return `${typeModule(inlineBodyName(op))}.t()`;
   if (op.body?.schema && op.body.schema !== "inline") return `${typeModule(op.body.schema)}.t()`;
-  return "ArchAstro.JSON.object()";
+  return "ArchAstro.SDK.JSON.object()";
 }
 
 function operationResultSpec(op: OperationDef): string {
-  if (op.streaming) return `ArchAstro.SSE.Stream.t(${typeModule(streamEventName(op))}.t())`;
+  if (op.streaming) return `ArchAstro.SDK.SSE.Stream.t(${typeModule(streamEventName(op))}.t())`;
   const success = op.rawResponse ? "Req.Response.t()" : operationTypeSpec(op);
-  return `{:ok, ${success}} | {:error, ArchAstro.Error.reason()}`;
+  return `{:ok, ${success}} | {:error, ArchAstro.SDK.Error.reason()}`;
 }
 
 function streamEventName(op: OperationDef): string {
@@ -602,19 +602,19 @@ function emitStreamingTypes(cb: CodeBuilder, op: OperationDef): void {
   cb.indent();
   cb.line(`@moduledoc ${heredoc(`${op.summary ?? op.name} server-sent events.`)}`);
   const dataTypes = events.length > 0
-    ? `${events.map((event) => streamEventDataTypeSpec(op, event)).join(" | ")} | ArchAstro.JSON.t()`
-    : "ArchAstro.JSON.t()";
-  cb.line(`@type t :: %ArchAstro.SSE.Event{data: ${dataTypes}}`);
-  cb.line("@spec decode(ArchAstro.SSE.Event.t()) :: t()");
+    ? `${events.map((event) => streamEventDataTypeSpec(op, event)).join(" | ")} | ArchAstro.SDK.JSON.t()`
+    : "ArchAstro.SDK.JSON.t()";
+  cb.line(`@type t :: %ArchAstro.SDK.SSE.Event{data: ${dataTypes}}`);
+  cb.line("@spec decode(ArchAstro.SDK.SSE.Event.t()) :: t()");
   if (events.length === 0) {
     cb.line("def decode(event), do: event");
   } else {
     for (const event of events) {
       const eventName = exString(event.event);
       const eventDescriptor = streamEventDataDescriptor(op, event);
-      cb.line(`def decode(%ArchAstro.SSE.Event{event: ${eventName}} = value),`);
+      cb.line(`def decode(%ArchAstro.SDK.SSE.Event{event: ${eventName}} = value),`);
       cb.indent();
-      cb.line(`do: %ArchAstro.SSE.Event{value | data: ArchAstro.Codec.decode(value.data, ${eventDescriptor})}`);
+      cb.line(`do: %ArchAstro.SDK.SSE.Event{value | data: ArchAstro.SDK.Codec.decode(value.data, ${eventDescriptor})}`);
       cb.dedent();
     }
     cb.line("def decode(event), do: event");
@@ -658,7 +658,7 @@ function pathExpression(path: string, params: ParamDef[], localNames: string[]):
     const wire = param.wireName ?? param.name;
     replacements.push({
       patterns: [...new Set([`{${wire}}`, `{${param.name}}`])],
-      expression: `ArchAstro.Path.encode(${local})`,
+      expression: `ArchAstro.SDK.Path.encode(${local})`,
     });
   }
   return interpolatedString(path, replacements);
@@ -683,7 +683,7 @@ function emitAuth(spec: SdkSpec): string {
       );
     }
   }
-  cb.line("defmodule ArchAstro.Auth do");
+  cb.line("defmodule ArchAstro.SDK.Auth do");
   cb.indent();
   cb.line('@moduledoc "Authentication operations generated from x-token-flows."');
   for (const op of spec.authOperations ?? []) {
@@ -791,7 +791,7 @@ function emitAuthOperation(
   const entries = authInputEntries(op, schemas);
   const fields = entries.map((entry) => entry.field);
   const args = ["client"];
-  const specs = ["ArchAstro.Client.t()"];
+  const specs = ["ArchAstro.SDK.Client.t()"];
   if (fields.length > 0) {
     args.push("input");
     specs.push(`${typeModule(authInputName(op))}.t()`);
@@ -807,7 +807,7 @@ function emitAuthOperation(
     cb.indent();
     cb.line("%{}");
     entries.filter((entry) => entry.location === "query").forEach((entry) => {
-      cb.line(`|> ArchAstro.Codec.put_optional(${exString(entry.wireName)}, input.${exFieldName(entry.field.name)})`);
+      cb.line(`|> ArchAstro.SDK.Codec.put_optional(${exString(entry.wireName)}, input.${exFieldName(entry.field.name)})`);
     });
     cb.dedent();
     options.push("query: query");
@@ -821,7 +821,7 @@ function emitAuthOperation(
       cb.indent();
       cb.line("%{}");
       entries.filter((entry) => entry.location === "body").forEach((entry) => {
-        cb.line(`|> ArchAstro.Codec.put_optional(${exString(entry.wireName)}, input.${exFieldName(entry.field.name)})`);
+        cb.line(`|> ArchAstro.SDK.Codec.put_optional(${exString(entry.wireName)}, input.${exFieldName(entry.field.name)})`);
       });
       cb.dedent();
     }
@@ -829,7 +829,7 @@ function emitAuthOperation(
   }
   if (op.rawResponse) options.push("raw: true");
   else options.push(`decode: ${operationDescriptor(op)}`);
-  cb.line(`ArchAstro.HTTP.request(client, :${op.method.toLowerCase()}, path, [${options.join(", ")}])`);
+  cb.line(`ArchAstro.SDK.HTTP.request(client, :${op.method.toLowerCase()}, path, [${options.join(", ")}])`);
   cb.dedent();
   cb.line("end");
 }
@@ -844,7 +844,7 @@ function authPathExpression(op: OperationDef, schemas: ReadonlyArray<SchemaDef>)
     const local = `input.${exFieldName(entry.field.name)}`;
     replacements.push({
       patterns: [...new Set([`{${param.wireName ?? param.name}}`, `{${param.name}}`])],
-      expression: `ArchAstro.Path.encode(${local})`,
+      expression: `ArchAstro.SDK.Path.encode(${local})`,
     });
   }
   return interpolatedString(op.path, replacements);
@@ -853,7 +853,7 @@ function authPathExpression(op: OperationDef, schemas: ReadonlyArray<SchemaDef>)
 function emitClient(spec: SdkSpec): string {
   const cb = new CodeBuilder("  ");
   beginFile(cb);
-  cb.line("defmodule ArchAstro.GeneratedClient do");
+  cb.line("defmodule ArchAstro.SDK.GeneratedClient do");
   cb.indent();
   cb.line('@moduledoc false');
   cb.line(`@default_base_url ${exString(spec.baseUrl)}`);
@@ -951,7 +951,7 @@ function emitChannel(channel: ChannelDef): string {
     }
   }
 
-  const moduleName = `ArchAstro.Channels.${exModuleSegment(channel.sdkName ?? channel.className.replace(/Channel$/, ""))}`;
+  const moduleName = `ArchAstro.SDK.Channels.${exModuleSegment(channel.sdkName ?? channel.className.replace(/Channel$/, ""))}`;
   cb.line(`defmodule ${moduleName} do`);
   cb.indent();
   cb.line(`@moduledoc ${heredoc(channel.description ?? `${channel.name} Phoenix channel.`)}`);
@@ -978,8 +978,8 @@ function emitChannel(channel: ChannelDef): string {
     )
   );
   cb.line();
-  cb.line("@spec leave(ArchAstro.Channel.t()) :: :ok | {:error, ArchAstro.Error.reason()}");
-  cb.line("def leave(channel), do: ArchAstro.Channel.leave(channel)");
+  cb.line("@spec leave(ArchAstro.SDK.Channel.t()) :: :ok | {:error, ArchAstro.SDK.Error.reason()}");
+  cb.line("def leave(channel), do: ArchAstro.SDK.Channel.leave(channel)");
   cb.dedent();
   cb.line("end");
   return cb.toString();
@@ -1026,7 +1026,7 @@ function emitChannelJoin(
     specs.push(`${type}.t()`);
   }
   cb.line();
-  cb.line(`@spec ${name}(${specs.join(", ")}) :: {:ok, ArchAstro.Channel.t()} | {:error, ArchAstro.Error.reason()}`);
+  cb.line(`@spec ${name}(${specs.join(", ")}) :: {:ok, ArchAstro.SDK.Channel.t()} | {:error, ArchAstro.SDK.Error.reason()}`);
   cb.line(`def ${name}(${args.join(", ")}) do`);
   cb.indent();
   const topic = interpolatedString(
@@ -1037,7 +1037,7 @@ function emitChannelJoin(
     }))
   );
   cb.line(`topic = ${topic}`);
-  cb.line(`ArchAstro.Channel.join(socket, topic, ${payload}, ${moduleName}, ${channelTypeDescriptor(joinDef.returnType, joinResponseName(channel, joinDef, index))})`);
+  cb.line(`ArchAstro.SDK.Channel.join(socket, topic, ${payload}, ${moduleName}, ${channelTypeDescriptor(joinDef.returnType, joinResponseName(channel, joinDef, index))})`);
   cb.dedent();
   cb.line("end");
 }
@@ -1049,7 +1049,7 @@ function emitChannelMessage(
   name: string
 ): void {
   const args = ["channel"];
-  const specs = ["ArchAstro.Channel.t()"];
+  const specs = ["ArchAstro.SDK.Channel.t()"];
   let payload = "%{}";
   if (message.params.length > 0) {
     const type = typeModule(messageInputName(channel, message));
@@ -1061,10 +1061,10 @@ function emitChannelMessage(
   specs.push("timeout()");
   const responseType = channelTypeSpec(message.returnType, messageResponseName(channel, message));
   cb.line();
-  cb.line(`@spec ${name}(${specs.join(", ")}) :: {:ok, ${responseType}} | {:error, ArchAstro.Error.reason()}`);
+  cb.line(`@spec ${name}(${specs.join(", ")}) :: {:ok, ${responseType}} | {:error, ArchAstro.SDK.Error.reason()}`);
   cb.line(`def ${name}(${args.join(", ")}) do`);
   cb.indent();
-  cb.line(`ArchAstro.Channel.push(channel, ${exString(message.event)}, ${payload}, ${channelTypeDescriptor(message.returnType, messageResponseName(channel, message))}, timeout)`);
+  cb.line(`ArchAstro.SDK.Channel.push(channel, ${exString(message.event)}, ${payload}, ${channelTypeDescriptor(message.returnType, messageResponseName(channel, message))}, timeout)`);
   cb.dedent();
   cb.line("end");
 }
@@ -1076,17 +1076,17 @@ function emitChannelPush(
   name: string
 ): void {
   cb.line();
-  cb.line(`@spec ${name}(ArchAstro.Channel.t(), pid()) :: :ok`);
+  cb.line(`@spec ${name}(ArchAstro.SDK.Channel.t(), pid()) :: :ok`);
   cb.line(`def ${name}(channel, subscriber \\\\ self()) do`);
   cb.indent();
-  cb.line(`ArchAstro.Channel.subscribe(channel, ${exString(push.event)}, subscriber, ${channelTypeDescriptor(push.payloadType, pushPayloadName(channel, push))})`);
+  cb.line(`ArchAstro.SDK.Channel.subscribe(channel, ${exString(push.event)}, subscriber, ${channelTypeDescriptor(push.payloadType, pushPayloadName(channel, push))})`);
   cb.dedent();
   cb.line("end");
 }
 
 function channelTypeSpec(type: TypeRef, inlineName: string): string {
   if (type.kind === "object" && type.fields.length > 0) return `${typeModule(inlineName)}.t()`;
-  if (type.kind === "object") return "ArchAstro.JSON.object() | :ok";
+  if (type.kind === "object") return "ArchAstro.SDK.JSON.object() | :ok";
   return typeSpec(type);
 }
 
@@ -1100,23 +1100,23 @@ function typeSpec(type: TypeRef): string {
       return type.type === "string" ? "String.t()" : type.type === "integer" ? "integer()" :
         type.type === "float" ? "number()" : type.type === "boolean" ? "boolean()" : "DateTime.t()";
     case "array": return `[${typeSpec(type.items)}]`;
-    case "object": return type.fields.length === 0 ? "ArchAstro.JSON.object()" : objectMapSpec(type.fields);
+    case "object": return type.fields.length === 0 ? "ArchAstro.SDK.JSON.object()" : objectMapSpec(type.fields);
     case "ref": return `${typeModule(type.schema)}.t()`;
     // Elixir typespecs do not support singleton binary literals. Keep the
     // wire representation honest instead of claiming these decode as atoms.
     case "enum": return "String.t()";
-    case "union": return type.variants.map(typeSpec).join(" | ") || "ArchAstro.JSON.t()";
+    case "union": return type.variants.map(typeSpec).join(" | ") || "ArchAstro.SDK.JSON.t()";
     case "nullable": return `${typeSpec(type.inner)} | nil`;
     case "optional": return typeSpec(type.inner);
     case "map": return `%{optional(${typeSpec(type.keyType)}) => ${typeSpec(type.valueType)}}`;
     case "void": return ":ok";
-    case "unknown": return "ArchAstro.JSON.t()";
+    case "unknown": return "ArchAstro.SDK.JSON.t()";
   }
 }
 
 function objectMapSpec(fields: ReadonlyArray<FieldDef>): string {
   const values = [...new Set(fields.map((field) => typeSpec(field.type)))];
-  return `%{optional(String.t()) => ${values.join(" | ") || "ArchAstro.JSON.t()"}}`;
+  return `%{optional(String.t()) => ${values.join(" | ") || "ArchAstro.SDK.JSON.t()"}}`;
 }
 
 function descriptor(type: TypeRef): string {

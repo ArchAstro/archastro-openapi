@@ -147,10 +147,10 @@ describe("Elixir SSE streaming emission", () => {
   it("decodes declared event payloads and safely passes through unknown events", () => {
     const output = Object.values(generateElixir(ast, { outDir: "sdk" })).join("\n");
 
-    expect(output).toContain("ArchAstro.SSE.Stream.t(");
-    expect(output).toContain("def decode(%ArchAstro.SSE.Event{event:");
+    expect(output).toContain("ArchAstro.SDK.SSE.Stream.t(");
+    expect(output).toContain("def decode(%ArchAstro.SDK.SSE.Event{event:");
     expect(output).toContain("def decode(event), do: event");
-    expect(output).toContain("| ArchAstro.JSON.t()}");
+    expect(output).toContain("| ArchAstro.SDK.JSON.t()}");
   });
 
   it("keeps colliding normalized inline event payload modules distinct", () => {
