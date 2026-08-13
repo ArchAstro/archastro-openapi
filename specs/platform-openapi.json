@@ -2438,6 +2438,7 @@
                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                   "org_name": "Example Name",
                   "org_role": "member",
+                  "org_slug": "example-slug",
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                   "sandbox_name": "Example Name"
                 },
@@ -2497,6 +2498,11 @@
                   "org_role": {
                     "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                     "example": "member",
+                    "type": "string"
+                  },
+                  "org_slug": {
+                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                    "example": "example-slug",
                     "type": "string"
                   },
                   "sandbox": {
@@ -6301,6 +6307,7 @@
             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
             "org_name": "Example Name",
             "org_role": "member",
+            "org_slug": "example-slug",
             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
             "sandbox_name": "Example Name"
           }
@@ -7081,6 +7088,7 @@
                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                   "org_name": "Example Name",
                   "org_role": "member",
+                  "org_slug": "example-slug",
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                   "sandbox_name": "Example Name"
                 }
@@ -7443,6 +7451,7 @@
                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                   "org_name": "Example Name",
                   "org_role": "member",
+                  "org_slug": "example-slug",
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                   "sandbox_name": "Example Name"
                 }
@@ -7873,6 +7882,7 @@
                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                 "org_name": "Example Name",
                 "org_role": "member",
+                "org_slug": "example-slug",
                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                 "sandbox_name": "Example Name"
               }
@@ -8491,6 +8501,7 @@
                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                   "org_name": "Example Name",
                   "org_role": "member",
+                  "org_slug": "example-slug",
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                   "sandbox_name": "Example Name"
                 }
@@ -8853,6 +8864,7 @@
                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                   "org_name": "Example Name",
                   "org_role": "member",
+                  "org_slug": "example-slug",
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                   "sandbox_name": "Example Name"
                 }
@@ -9294,6 +9306,7 @@
             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
             "org_name": "Example Name",
             "org_role": "member",
+            "org_slug": "example-slug",
             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
             "sandbox_name": "Example Name"
           }
@@ -10016,6 +10029,7 @@
                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                 "org_name": "Example Name",
                 "org_role": "member",
+                "org_slug": "example-slug",
                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                 "sandbox_name": "Example Name"
               }
@@ -10378,6 +10392,7 @@
                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                 "org_name": "Example Name",
                 "org_role": "member",
+                "org_slug": "example-slug",
                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                 "sandbox_name": "Example Name"
               }
@@ -13743,6 +13758,7 @@
             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
             "org_name": "Example Name",
             "org_role": "member",
+            "org_slug": "example-slug",
             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
             "sandbox_name": "Example Name"
           }
@@ -16839,6 +16855,7 @@
             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
             "org_name": "Example Name",
             "org_role": "member",
+            "org_slug": "example-slug",
             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
             "sandbox_name": "Example Name"
           }
@@ -16965,6 +16982,69 @@
           "user": {
             "description": "ID of the user that owns this file (`user_...`). `null` if not user-owned.",
             "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "SystemAccessToken": {
+        "description": "A long-lived API credential associated with a system account, used to authenticate server-to-server requests.",
+        "example": {
+          "created_at": "2024-01-01T00:00:00Z",
+          "expires_at": "2024-01-01T00:00:00Z",
+          "id": "sat_0aBcDeFgHiJkLmNoPqRsTu",
+          "last_used_at": "2024-01-01T00:00:00Z",
+          "name": "Example Name",
+          "revoked_at": "2024-01-01T00:00:00Z",
+          "scopes": "string",
+          "token": "string"
+        },
+        "properties": {
+          "created_at": {
+            "description": "When this token was created (ISO 8601).",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "expires_at": {
+            "description": "When the token expires. `null` on legacy rows that predate stored expiry.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Token ID (`sat_...`).",
+            "example": "sat_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "last_used_at": {
+            "description": "When this token was last used to authenticate a request. `null` if the token has never been used.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human-readable label assigned to this token at creation time.",
+            "example": "Example Name",
+            "type": "string"
+          },
+          "revoked_at": {
+            "description": "When this token was revoked. `null` if the token is still active.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "scopes": {
+            "description": "Space-separated OAuth scopes stamped on the token. `null` on legacy rows; treat as `full_access`.",
+            "example": "string",
+            "type": "string"
+          },
+          "token": {
+            "description": "Raw bearer token string. Present only in the response to the create request; never returned again after that.",
+            "example": "string",
             "type": "string"
           }
         },
@@ -17756,6 +17836,7 @@
             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
             "org_name": "Example Name",
             "org_role": "member",
+            "org_slug": "example-slug",
             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
             "sandbox_name": "Example Name"
           }
@@ -18049,6 +18130,7 @@
                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                 "org_name": "Example Name",
                 "org_role": "member",
+                "org_slug": "example-slug",
                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                 "sandbox_name": "Example Name"
               }
@@ -18281,6 +18363,7 @@
               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
               "org_name": "Example Name",
               "org_role": "member",
+              "org_slug": "example-slug",
               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
               "sandbox_name": "Example Name"
             }
@@ -18527,6 +18610,7 @@
                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                   "org_name": "Example Name",
                   "org_role": "member",
+                  "org_slug": "example-slug",
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                   "sandbox_name": "Example Name"
                 },
@@ -18586,6 +18670,11 @@
                   "org_role": {
                     "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                     "example": "member",
+                    "type": "string"
+                  },
+                  "org_slug": {
+                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                    "example": "example-slug",
                     "type": "string"
                   },
                   "sandbox": {
@@ -19218,6 +19307,7 @@
           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
           "org_name": "Example Name",
           "org_role": "member",
+          "org_slug": "example-slug",
           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
           "sandbox_name": "Example Name"
         },
@@ -19277,6 +19367,11 @@
           "org_role": {
             "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
             "example": "member",
+            "type": "string"
+          },
+          "org_slug": {
+            "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+            "example": "example-slug",
             "type": "string"
           },
           "sandbox": {
@@ -21941,6 +22036,7 @@
                                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                                   "org_name": "Example Name",
                                   "org_role": "member",
+                                  "org_slug": "example-slug",
                                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                                   "sandbox_name": "Example Name"
                                 },
@@ -22000,6 +22096,11 @@
                                   "org_role": {
                                     "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                     "example": "member",
+                                    "type": "string"
+                                  },
+                                  "org_slug": {
+                                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                    "example": "example-slug",
                                     "type": "string"
                                   },
                                   "sandbox": {
@@ -31908,6 +32009,7 @@
                   "full_name": "Example Name",
                   "invite_code": "string",
                   "password": "string",
+                  "set_org": true,
                   "team_invite": "string",
                   "timezone": "America/New_York"
                 },
@@ -31936,6 +32038,11 @@
                     "description": "Password for the new account. Required for standard (non-team-invite) registration.",
                     "example": "string",
                     "type": "string"
+                  },
+                  "set_org": {
+                    "description": "Create or reuse an organization from the work-email domain and stamp the new user into it.",
+                    "example": true,
+                    "type": "boolean"
                   },
                   "team_invite": {
                     "description": "Team invite ID. When provided, the user is added to the team on registration.",
@@ -32004,6 +32111,7 @@
                   "email": "user@example.com",
                   "full_name": "Example Name",
                   "redirect_uri": "https://example.com",
+                  "set_org": true,
                   "timezone": "America/New_York"
                 },
                 "properties": {
@@ -32026,6 +32134,11 @@
                     "description": "URL the user is redirected to after clicking the registration link. The token is appended as a query parameter.",
                     "example": "https://example.com",
                     "type": "string"
+                  },
+                  "set_org": {
+                    "description": "Create or reuse an organization from the work-email domain during confirmation.",
+                    "example": true,
+                    "type": "boolean"
                   },
                   "timezone": {
                     "description": "IANA timezone name for the new account, e.g. `\"America/New_York\"`.",
@@ -32074,7 +32187,8 @@
               "schema": {
                 "example": {
                   "email": "user@example.com",
-                  "redirect_uri": "https://example.com"
+                  "redirect_uri": "https://example.com",
+                  "set_org": true
                 },
                 "properties": {
                   "email": {
@@ -32086,6 +32200,11 @@
                     "description": "URL the user is redirected to after clicking the magic link. Must be registered with the app.",
                     "example": "https://example.com",
                     "type": "string"
+                  },
+                  "set_org": {
+                    "description": "For a new user, create or reuse an organization from the work-email domain during confirmation.",
+                    "example": true,
+                    "type": "boolean"
                   }
                 },
                 "type": "object"
@@ -49614,6 +49733,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         }
@@ -49840,6 +49960,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           }
@@ -50063,6 +50184,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           }
@@ -51844,6 +51966,7 @@
                               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                               "org_name": "Example Name",
                               "org_role": "member",
+                              "org_slug": "example-slug",
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                               "sandbox_name": "Example Name"
                             },
@@ -51903,6 +52026,11 @@
                               "org_role": {
                                 "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                 "example": "member",
+                                "type": "string"
+                              },
+                              "org_slug": {
+                                "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                "example": "example-slug",
                                 "type": "string"
                               },
                               "sandbox": {
@@ -56113,6 +56241,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           }
@@ -56504,6 +56633,7 @@
                               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                               "org_name": "Example Name",
                               "org_role": "member",
+                              "org_slug": "example-slug",
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                               "sandbox_name": "Example Name"
                             }
@@ -56892,6 +57022,7 @@
                               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                               "org_name": "Example Name",
                               "org_role": "member",
+                              "org_slug": "example-slug",
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                               "sandbox_name": "Example Name"
                             }
@@ -57138,6 +57269,7 @@
                                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                                   "org_name": "Example Name",
                                   "org_role": "member",
+                                  "org_slug": "example-slug",
                                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                                   "sandbox_name": "Example Name"
                                 },
@@ -57197,6 +57329,11 @@
                                   "org_role": {
                                     "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                     "example": "member",
+                                    "type": "string"
+                                  },
+                                  "org_slug": {
+                                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                    "example": "example-slug",
                                     "type": "string"
                                   },
                                   "sandbox": {
@@ -58468,6 +58605,7 @@
                                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                                 "org_name": "Example Name",
                                 "org_role": "member",
+                                "org_slug": "example-slug",
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                                 "sandbox_name": "Example Name"
                               }
@@ -58488,6 +58626,7 @@
                                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                                 "org_name": "Example Name",
                                 "org_role": "member",
+                                "org_slug": "example-slug",
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                                 "sandbox_name": "Example Name"
                               },
@@ -58547,6 +58686,11 @@
                                 "org_role": {
                                   "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                   "example": "member",
+                                  "type": "string"
+                                },
+                                "org_slug": {
+                                  "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                  "example": "example-slug",
                                   "type": "string"
                                 },
                                 "sandbox": {
@@ -70125,6 +70269,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           }
@@ -70516,6 +70661,7 @@
                               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                               "org_name": "Example Name",
                               "org_role": "member",
+                              "org_slug": "example-slug",
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                               "sandbox_name": "Example Name"
                             }
@@ -70904,6 +71050,7 @@
                               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                               "org_name": "Example Name",
                               "org_role": "member",
+                              "org_slug": "example-slug",
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                               "sandbox_name": "Example Name"
                             }
@@ -71150,6 +71297,7 @@
                                   "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                                   "org_name": "Example Name",
                                   "org_role": "member",
+                                  "org_slug": "example-slug",
                                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                                   "sandbox_name": "Example Name"
                                 },
@@ -71209,6 +71357,11 @@
                                   "org_role": {
                                     "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                     "example": "member",
+                                    "type": "string"
+                                  },
+                                  "org_slug": {
+                                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                    "example": "example-slug",
                                     "type": "string"
                                   },
                                   "sandbox": {
@@ -72480,6 +72633,7 @@
                                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                                 "org_name": "Example Name",
                                 "org_role": "member",
+                                "org_slug": "example-slug",
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                                 "sandbox_name": "Example Name"
                               }
@@ -72500,6 +72654,7 @@
                                 "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                                 "org_name": "Example Name",
                                 "org_role": "member",
+                                "org_slug": "example-slug",
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                                 "sandbox_name": "Example Name"
                               },
@@ -72559,6 +72714,11 @@
                                 "org_role": {
                                   "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                   "example": "member",
+                                  "type": "string"
+                                },
+                                "org_slug": {
+                                  "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                  "example": "example-slug",
                                   "type": "string"
                                 },
                                 "sandbox": {
@@ -74816,6 +74976,284 @@
           }
         },
         "summary": "Create a thread for a user",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/users/{user}/tokens": {
+      "get": {
+        "description": "Returns all access tokens associated with the authenticated user, including\nactive and revoked tokens. Tokens are returned without their raw JWT values\n— the plaintext JWT is only available at creation time.\n\nThe caller must be the user identified by `user` and must present a\nfirst-party session (or a `full_access` access token).\n",
+        "operationId": "get_api_v1_users__user_tokens",
+        "parameters": [
+          {
+            "description": "User ID (`usr_...`) or `me` for the authenticated user.",
+            "example": "string",
+            "in": "path",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Collection of access tokens for the user.",
+                  "example": {
+                    "data": [
+                      {
+                        "created_at": "2024-01-01T00:00:00Z",
+                        "expires_at": "2024-01-01T00:00:00Z",
+                        "id": "sat_0aBcDeFgHiJkLmNoPqRsTu",
+                        "last_used_at": "2024-01-01T00:00:00Z",
+                        "name": "Example Name",
+                        "revoked_at": "2024-01-01T00:00:00Z",
+                        "scopes": "string",
+                        "token": "string"
+                      }
+                    ]
+                  },
+                  "properties": {
+                    "data": {
+                      "description": "Array of access token objects. Raw JWT values are not included.",
+                      "example": [
+                        {
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "expires_at": "2024-01-01T00:00:00Z",
+                          "id": "sat_0aBcDeFgHiJkLmNoPqRsTu",
+                          "last_used_at": "2024-01-01T00:00:00Z",
+                          "name": "Example Name",
+                          "revoked_at": "2024-01-01T00:00:00Z",
+                          "scopes": "string",
+                          "token": "string"
+                        }
+                      ],
+                      "items": {
+                        "description": "A long-lived API credential associated with a system account, used to authenticate server-to-server requests.",
+                        "example": {
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "expires_at": "2024-01-01T00:00:00Z",
+                          "id": "sat_0aBcDeFgHiJkLmNoPqRsTu",
+                          "last_used_at": "2024-01-01T00:00:00Z",
+                          "name": "Example Name",
+                          "revoked_at": "2024-01-01T00:00:00Z",
+                          "scopes": "string",
+                          "token": "string"
+                        },
+                        "properties": {
+                          "created_at": {
+                            "description": "When this token was created (ISO 8601).",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "expires_at": {
+                            "description": "When the token expires. `null` on legacy rows that predate stored expiry.",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "Token ID (`sat_...`).",
+                            "example": "sat_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "last_used_at": {
+                            "description": "When this token was last used to authenticate a request. `null` if the token has never been used.",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "name": {
+                            "description": "Human-readable label assigned to this token at creation time.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "revoked_at": {
+                            "description": "When this token was revoked. `null` if the token is still active.",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "scopes": {
+                            "description": "Space-separated OAuth scopes stamped on the token. `null` on legacy rows; treat as `full_access`.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "token": {
+                            "description": "Raw bearer token string. Present only in the response to the create request; never returned again after that.",
+                            "example": "string",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "summary": "List personal access tokens",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "description": "Issues a new long-lived access token for the authenticated user. The raw\nJWT is returned in the `token` field of the response exactly once and\ncannot be retrieved again — store it securely immediately after creation.\n\n`scopes` is optional. When omitted the token receives `full_access`.\nKnown catalog scopes (for example `profile`) restrict the token through\nthe same `ScopeGuard` used by OAuth.\n\n`expires_in_days` is optional and must be one of `7`, `30`, `60`, `90`,\nor `365`. When omitted the token lasts 30 days. Each user may hold at\nmost 50 active tokens; exceeding that limit returns 429.\n\nThe caller must be the user identified by `user` and must present a\nfirst-party session (or a `full_access` access token). A restricted\naccess token cannot mint another token.\n",
+        "operationId": "post_api_v1_users__user_tokens",
+        "parameters": [
+          {
+            "description": "User ID (`usr_...`) or `me` for the authenticated user.",
+            "example": "string",
+            "in": "path",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "expires_in_days": 1,
+                  "name": "Example Name",
+                  "scopes": [
+                    "string"
+                  ]
+                },
+                "properties": {
+                  "expires_in_days": {
+                    "description": "Lifetime in days. One of `7`, `30`, `60`, `90`, or `365`. Defaults to `30`.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "description": "Human-readable label for the token (e.g. `\"Codex MCP\"`). Stored as metadata only.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "scopes": {
+                    "description": "Optional OAuth scopes to stamp on the token. Omit for `full_access`.",
+                    "example": [
+                      "string"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemAccessToken"
+                }
+              }
+            },
+            "description": "The newly created access token. The `token` field contains the raw JWT and is present only in this response — it is not stored and cannot be retrieved later."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Invalid scopes, expiration, or user is a system user"
+          },
+          "429": {
+            "description": "Token limit reached"
+          }
+        },
+        "summary": "Create a personal access token",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/users/{user}/tokens/{token}": {
+      "delete": {
+        "description": "Permanently revokes the specified access token belonging to the\nauthenticated user. Once revoked, the token is immediately rejected by\nall API endpoints and cannot be reinstated. The token record is retained\nand returned in the response with `revoked_at` populated.\n\nThe caller must be the user identified by `user` and must present a\nfirst-party session (or a `full_access` access token). Returns 404 if\nthe token does not exist or does not belong to the caller.\n",
+        "operationId": "delete_api_v1_users__user_tokens__token",
+        "parameters": [
+          {
+            "description": "User ID (`usr_...`) or `me` for the authenticated user.",
+            "example": "string",
+            "in": "path",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Access token ID (`sat_...`). Must belong to the authenticated user.",
+            "example": "string",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemAccessToken"
+                }
+              }
+            },
+            "description": "The revoked access token. The `revoked_at` field is populated with the time of revocation."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Token not found"
+          }
+        },
+        "summary": "Revoke a personal access token",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -77509,6 +77947,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           },
@@ -77568,6 +78007,11 @@
                             "org_role": {
                               "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                               "example": "member",
+                              "type": "string"
+                            },
+                            "org_slug": {
+                              "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                              "example": "example-slug",
                               "type": "string"
                             },
                             "sandbox": {
@@ -78324,6 +78768,7 @@
                       "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                       "org_name": "Example Name",
                       "org_role": "member",
+                      "org_slug": "example-slug",
                       "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                       "sandbox_name": "Example Name"
                     }
@@ -78686,6 +79131,7 @@
                       "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                       "org_name": "Example Name",
                       "org_role": "member",
+                      "org_slug": "example-slug",
                       "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                       "sandbox_name": "Example Name"
                     }
@@ -79116,6 +79562,7 @@
                     "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                     "org_name": "Example Name",
                     "org_role": "member",
+                    "org_slug": "example-slug",
                     "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                     "sandbox_name": "Example Name"
                   }
@@ -79715,6 +80162,7 @@
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "org_name": "Example Name",
                         "org_role": "member",
+                        "org_slug": "example-slug",
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox_name": "Example Name"
                       }
@@ -80077,6 +80525,7 @@
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "org_name": "Example Name",
                         "org_role": "member",
+                        "org_slug": "example-slug",
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox_name": "Example Name"
                       }
@@ -82166,6 +82615,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         }
@@ -82371,6 +82821,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         }
@@ -84062,6 +84513,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           },
@@ -84121,6 +84573,11 @@
                             "org_role": {
                               "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                               "example": "member",
+                              "type": "string"
+                            },
+                            "org_slug": {
+                              "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                              "example": "example-slug",
                               "type": "string"
                             },
                             "sandbox": {
@@ -86046,6 +86503,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         }
@@ -86292,6 +86750,7 @@
                               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                               "org_name": "Example Name",
                               "org_role": "member",
+                              "org_slug": "example-slug",
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                               "sandbox_name": "Example Name"
                             },
@@ -86351,6 +86810,11 @@
                               "org_role": {
                                 "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                 "example": "member",
+                                "type": "string"
+                              },
+                              "org_slug": {
+                                "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                "example": "example-slug",
                                 "type": "string"
                               },
                               "sandbox": {
@@ -87622,6 +88086,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           }
@@ -87642,6 +88107,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           },
@@ -87701,6 +88167,11 @@
                             "org_role": {
                               "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                               "example": "member",
+                              "type": "string"
+                            },
+                            "org_slug": {
+                              "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                              "example": "example-slug",
                               "type": "string"
                             },
                             "sandbox": {
@@ -90151,6 +90622,7 @@
                       "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                       "org_name": "Example Name",
                       "org_role": "member",
+                      "org_slug": "example-slug",
                       "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                       "sandbox_name": "Example Name"
                     }
@@ -90397,6 +90869,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         },
@@ -90456,6 +90929,11 @@
                           "org_role": {
                             "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                             "example": "member",
+                            "type": "string"
+                          },
+                          "org_slug": {
+                            "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "example-slug",
                             "type": "string"
                           },
                           "sandbox": {
@@ -91727,6 +92205,7 @@
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "org_name": "Example Name",
                         "org_role": "member",
+                        "org_slug": "example-slug",
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox_name": "Example Name"
                       }
@@ -91747,6 +92226,7 @@
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "org_name": "Example Name",
                         "org_role": "member",
+                        "org_slug": "example-slug",
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox_name": "Example Name"
                       },
@@ -91806,6 +92286,11 @@
                         "org_role": {
                           "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                           "example": "member",
+                          "type": "string"
+                        },
+                        "org_slug": {
+                          "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                          "example": "example-slug",
                           "type": "string"
                         },
                         "sandbox": {
@@ -95826,6 +96311,7 @@
                       "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                       "org_name": "Example Name",
                       "org_role": "member",
+                      "org_slug": "example-slug",
                       "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                       "sandbox_name": "Example Name"
                     }
@@ -96188,6 +96674,7 @@
                       "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                       "org_name": "Example Name",
                       "org_role": "member",
+                      "org_slug": "example-slug",
                       "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                       "sandbox_name": "Example Name"
                     }
@@ -96788,6 +97275,7 @@
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "org_name": "Example Name",
                         "org_role": "member",
+                        "org_slug": "example-slug",
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox_name": "Example Name"
                       }
@@ -97150,6 +97638,7 @@
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "org_name": "Example Name",
                         "org_role": "member",
+                        "org_slug": "example-slug",
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox_name": "Example Name"
                       }
@@ -99239,6 +99728,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         }
@@ -99444,6 +99934,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         }
@@ -101135,6 +101626,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           },
@@ -101194,6 +101686,11 @@
                             "org_role": {
                               "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                               "example": "member",
+                              "type": "string"
+                            },
+                            "org_slug": {
+                              "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                              "example": "example-slug",
                               "type": "string"
                             },
                             "sandbox": {
@@ -103119,6 +103616,7 @@
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "org_name": "Example Name",
                           "org_role": "member",
+                          "org_slug": "example-slug",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox_name": "Example Name"
                         }
@@ -103365,6 +103863,7 @@
                               "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                               "org_name": "Example Name",
                               "org_role": "member",
+                              "org_slug": "example-slug",
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                               "sandbox_name": "Example Name"
                             },
@@ -103424,6 +103923,11 @@
                               "org_role": {
                                 "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                                 "example": "member",
+                                "type": "string"
+                              },
+                              "org_slug": {
+                                "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                "example": "example-slug",
                                 "type": "string"
                               },
                               "sandbox": {
@@ -104695,6 +105199,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           }
@@ -104715,6 +105220,7 @@
                             "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                             "org_name": "Example Name",
                             "org_role": "member",
+                            "org_slug": "example-slug",
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                             "sandbox_name": "Example Name"
                           },
@@ -104774,6 +105280,11 @@
                             "org_role": {
                               "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
                               "example": "member",
+                              "type": "string"
+                            },
+                            "org_slug": {
+                              "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                              "example": "example-slug",
                               "type": "string"
                             },
                             "sandbox": {
