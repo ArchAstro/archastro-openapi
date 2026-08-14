@@ -4,7 +4,7 @@ OpenAPI tooling for the ArchAstro platform. Two tools live here:
 
 | Package | What it does | Install / run |
 | --- | --- | --- |
-| [`@archastro/sdk-generator`](./packages/sdk-generator) | Reads an OpenAPI spec and emits typed TypeScript / Python / Swift / Go SDKs plus cross-language contract tests. | `npx @archastro/sdk-generator` / `sdk-generator` |
+| [`@archastro/sdk-generator`](./packages/sdk-generator) | Reads an OpenAPI spec and emits typed TypeScript / Python / Swift / Go / Elixir / Rust SDKs plus cross-language contract tests. | `npx @archastro/sdk-generator` / `sdk-generator` |
 | [`@archastro/channel-harness`](./packages/channel-harness) | Runtime contract-testing harness for Phoenix `x-channels` declared in the spec. Exposes a WebSocket + HTTP control API so TS, Python, (or any other) test suites can drive the same server. | `npx @archastro/channel-harness` / `channel-harness` |
 
 ---
@@ -33,11 +33,13 @@ Supported `--lang` values:
 - `go` — emit a typed Go SDK (structs with JSON tags, context-taking resource
   methods, channel helpers)
 - `elixir` — emit a typed Elixir SDK under `lib/archastro/generated`
+- `rust` — emit typed Rust models, async/blocking resources, SSE, auth, and channel facades
 - `contract-tests-ts` — emit TS contract tests that drive the channel harness
 - `contract-tests-py` — emit Python contract tests (pytest + prism mock server)
 - `contract-tests-swift` — emit swift-testing contract tests
 - `contract-tests-go` — emit Go contract tests (`go test`, prism + harness)
 - `contract-tests-elixir` — emit Elixir contract tests (ExUnit + prism + harness)
+- `contract-tests-rust` — emit Rust integration contracts (cargo test + Prism + harness)
 
 Other flags:
 

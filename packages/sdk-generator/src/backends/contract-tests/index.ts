@@ -4,12 +4,13 @@ import { emitPythonContractTests } from "./python-emitter.js";
 import { emitSwiftContractTests } from "./swift-emitter.js";
 import { emitGoContractTests } from "./go-emitter.js";
 import { emitElixirContractTests } from "./elixir-emitter.js";
+import { emitRustContractTests } from "./rust-emitter.js";
 
 export type GeneratedFiles = Record<string, string>;
 
 export interface ContractTestOptions {
   outDir: string;
-  lang: "typescript" | "python" | "swift" | "go" | "elixir";
+  lang: "typescript" | "python" | "swift" | "go" | "elixir" | "rust";
   /** Go only: import path of the generated SDK package. */
   goImportPath?: string;
   /** Go only: package alias the generated tests reference the SDK through. */
@@ -39,6 +40,8 @@ export function generateContractTests(
     });
   } else if (options.lang === "elixir") {
     return emitElixirContractTests(spec, options.outDir);
+  } else if (options.lang === "rust") {
+    return emitRustContractTests(spec, options.outDir);
   } else {
     return emitPythonContractTests(spec, options);
   }
