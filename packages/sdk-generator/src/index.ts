@@ -34,6 +34,12 @@ import {
   ELIXIR_GENERATED_DIR,
 } from "./backends/elixir/index.js";
 import { ELIXIR_TESTS_DIR } from "./backends/contract-tests/elixir-emitter.js";
+import {
+  generateRust,
+  writeRustFiles,
+  RUST_GENERATED_DIR,
+} from "./backends/rust/index.js";
+import { RUST_TESTS_DIR } from "./backends/contract-tests/rust-emitter.js";
 import { generateContractTests } from "./backends/contract-tests/index.js";
 import { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.js";
 import { generatePythonSamples } from "./backends/python/sample-emitter.js";
@@ -52,7 +58,9 @@ export { generatePython, writePythonFiles } from "./backends/python/index.js";
 export { generateSwift, writeSwiftFiles, prepareSwiftSpec } from "./backends/swift/index.js";
 export { generateGo, writeGoFiles, prepareGoSpec } from "./backends/go/index.js";
 export { generateElixir, writeElixirFiles } from "./backends/elixir/index.js";
+export { generateRust, writeRustFiles } from "./backends/rust/index.js";
 export { generateContractTests } from "./backends/contract-tests/index.js";
+export { emitRustContractTests } from "./backends/contract-tests/rust-emitter.js";
 export { emitSwiftContractTests } from "./backends/contract-tests/swift-emitter.js";
 export { emitGoContractTests } from "./backends/contract-tests/go-emitter.js";
 export { generateTypeScriptSamples } from "./backends/typescript/sample-emitter.js";
@@ -99,7 +107,7 @@ function main() {
   const astOnly = args.includes("--ast-only");
 
   if (!specPath) {
-    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|swift|go|elixir|contract-tests-ts|contract-tests-py|contract-tests-swift|contract-tests-go|contract-tests-elixir] [--out <dir>] [--config <config.json>] [--mode sdk|samples] [--ast-only]");
+    console.error("Usage: sdk-generator --spec <openapi.json> [--lang typescript|python|swift|go|elixir|rust|contract-tests-ts|contract-tests-py|contract-tests-swift|contract-tests-go|contract-tests-elixir|contract-tests-rust] [--out <dir>] [--config <config.json>] [--mode sdk|samples] [--ast-only]");
     process.exit(1);
   }
 
@@ -232,6 +240,12 @@ function main() {
       console.log(`Elixir SDK generated at ${resolvedOut} (${Object.keys(files).length} files)`);
       break;
     }
+    case "rust": {
+      const files = generateRust(ast, { outDir: resolvedOut });
+      writeRustFiles(files, [resolve(resolvedOut, RUST_GENERATED_DIR)]);
+      console.log(`Rust SDK generated at ${resolvedOut} (${Object.keys(files).length} files)`);
+      break;
+    }
     case "contract-tests-go": {
       const files = generateContractTests(ast, {
         outDir: resolvedOut,
@@ -249,6 +263,12 @@ function main() {
       console.log(`Elixir contract tests generated at ${resolvedOut} (${Object.keys(files).length} files)`);
       break;
     }
+    case "contract-tests-rust": {
+      const files = generateContractTests(ast, { outDir: resolvedOut, lang: "rust" });
+      writeRustFiles(files, [resolve(resolvedOut, RUST_TESTS_DIR)]);
+      console.log(`Rust contract tests generated at ${resolvedOut} (${Object.keys(files).length} files)`);
+      break;
+    }
     case "contract-tests-swift": {
       const files = generateContractTests(ast, { outDir: resolvedOut, lang: "swift" });
       const tests = resolve(resolvedOut, SWIFT_TESTS_DIR);
@@ -261,7 +281,7 @@ function main() {
       break;
     }
     default:
-      console.error(`Unknown language: ${lang}. Supported: typescript, python, swift, go, elixir, contract-tests-ts, contract-tests-py, contract-tests-swift, contract-tests-go, contract-tests-elixir`);
+      console.error(`Unknown language: ${lang}. Supported: typescript, python, swift, go, elixir, rust, contract-tests-ts, contract-tests-py, contract-tests-swift, contract-tests-go, contract-tests-elixir, contract-tests-rust`);
       process.exit(1);
   }
 }
