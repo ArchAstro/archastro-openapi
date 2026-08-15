@@ -7228,7 +7228,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               }
             ],
@@ -7430,7 +7430,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               },
               "participant": [
@@ -7861,7 +7861,7 @@
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
               "type": "note",
-              "user": "string",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
               "visibility": "default"
             },
             "participant": [
@@ -8641,7 +8641,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               }
             ],
@@ -8843,7 +8843,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               },
               "participant": [
@@ -9473,7 +9473,7 @@
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
               "type": "note",
-              "user": "string",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
               "visibility": "default"
             }
           ]
@@ -9628,7 +9628,7 @@
             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
             "thread": "string",
             "type": "note",
-            "user": "string",
+            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
             "visibility": "default"
           }
         },
@@ -10169,7 +10169,7 @@
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
               "type": "note",
-              "user": "string",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
               "visibility": "default"
             }
           ],
@@ -10371,7 +10371,7 @@
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
               "type": "note",
-              "user": "string",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
               "visibility": "default"
             },
             "participant": [
@@ -13207,7 +13207,7 @@
             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
             "thread": "string",
             "type": "note",
-            "user": "string",
+            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
             "visibility": "default"
           },
           "root_message_id": "string",
@@ -13215,7 +13215,7 @@
           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
           "thread": "string",
           "type": "note",
-          "user": "string",
+          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
           "visibility": "default"
         },
         "properties": {
@@ -13476,7 +13476,7 @@
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
               "type": "note",
-              "user": "string",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
               "visibility": "default"
             },
             "type": "object"
@@ -13509,8 +13509,111 @@
           },
           "user": {
             "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-            "example": "string",
-            "type": "string"
+            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                "example": {
+                  "alias": "jdoe",
+                  "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                  "app_name": "Example Name",
+                  "email": "user@example.com",
+                  "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                  "is_system_user": true,
+                  "metadata": {
+                    "key": "value"
+                  },
+                  "name": "Example Name",
+                  "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                  "org_name": "Example Name",
+                  "org_role": "member",
+                  "org_slug": "example-slug",
+                  "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                  "sandbox_name": "Example Name"
+                },
+                "properties": {
+                  "alias": {
+                    "description": "Short handle or alias for the user. `null` if not set.",
+                    "example": "jdoe",
+                    "type": "string"
+                  },
+                  "app": {
+                    "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                    "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                    "type": "string"
+                  },
+                  "app_name": {
+                    "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "email": {
+                    "description": "Email address of the user.",
+                    "example": "user@example.com",
+                    "type": "string"
+                  },
+                  "id": {
+                    "description": "User ID (`usr_...`).",
+                    "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                    "type": "string"
+                  },
+                  "is_system_user": {
+                    "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "metadata": {
+                    "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                    "example": {
+                      "key": "value"
+                    },
+                    "type": "object"
+                  },
+                  "name": {
+                    "description": "Full display name of the user. `null` if the user has not set a name.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "org": {
+                    "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                    "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                    "type": "string"
+                  },
+                  "org_name": {
+                    "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "org_role": {
+                    "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                    "example": "member",
+                    "type": "string"
+                  },
+                  "org_slug": {
+                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                    "example": "example-slug",
+                    "type": "string"
+                  },
+                  "sandbox": {
+                    "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                    "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                    "type": "string"
+                  },
+                  "sandbox_name": {
+                    "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                    "example": "Example Name",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            ]
           },
           "visibility": {
             "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -13944,7 +14047,7 @@
               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
               "thread": "string",
               "type": "note",
-              "user": "string",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
               "visibility": "default"
             }
           ],
@@ -14254,6 +14357,83 @@
           "total_pages",
           "has_next",
           "has_prev"
+        ],
+        "type": "object"
+      },
+      "ProductKnowledgeReconcileFailure": {
+        "description": "One stamped customer whose product-knowledge tool update did not converge.",
+        "example": {
+          "customer_key": "string",
+          "error": "string",
+          "retryable": true
+        },
+        "properties": {
+          "customer_key": {
+            "description": "Stable vendor-defined key for the customer whose agent did not converge.",
+            "example": "string",
+            "type": "string"
+          },
+          "error": {
+            "description": "Stable failure reason for operator and vendor feedback.",
+            "example": "string",
+            "type": "string"
+          },
+          "retryable": {
+            "description": "Whether rerunning the desired-state reconciliation is safe.",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "customer_key",
+          "retryable",
+          "error"
+        ],
+        "type": "object"
+      },
+      "ProductKnowledgeReconcileResponse": {
+        "description": "Desired-state reconciliation result for a CM install's stamped agents.",
+        "example": {
+          "complete": true,
+          "failures": [
+            {
+              "customer_key": "string",
+              "error": "string",
+              "retryable": true
+            }
+          ],
+          "reconciled_customers": [
+            "string"
+          ]
+        },
+        "properties": {
+          "complete": {
+            "description": "True when every stamped customer agent now has the desired source allowlist.",
+            "example": true,
+            "type": "boolean"
+          },
+          "failures": {
+            "description": "Per-customer failures. Empty when reconciliation is complete.",
+            "items": {
+              "$ref": "#/components/schemas/ProductKnowledgeReconcileFailure"
+            },
+            "type": "array"
+          },
+          "reconciled_customers": {
+            "description": "Customer keys whose agent tool config is converged.",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "complete",
+          "reconciled_customers",
+          "failures"
         ],
         "type": "object"
       },
@@ -14856,9 +15036,10 @@
             "type": "string"
           },
           "operation": {
-            "description": "Whether the attempt posted a new Slack message or updated an existing one (replacing a thinking placeholder).",
+            "description": "Which Slack call the attempt made. `post` — a new message in the channel, visible to everyone in it. `post_ephemeral` — a message only one named channel member could see; Slack returns no durable timestamp for one, so it has no `thread_ts` to correlate and cannot be found in the channel's history afterwards. `update` — replacing an existing message (typically a thinking placeholder).",
             "enum": [
               "post",
+              "post_ephemeral",
               "update"
             ],
             "example": "post",
@@ -18342,7 +18523,7 @@
             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
             "thread": "string",
             "type": "note",
-            "user": "string",
+            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
             "visibility": "default"
           },
           "participant": [
@@ -30897,6 +31078,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden — app scope required"
           }
         },
         "summary": "List available AI models",
@@ -38138,6 +38322,9 @@
           },
           "422": {
             "description": "Invalid parameters; Validation failed"
+          },
+          "502": {
+            "description": "Service unavailable"
           }
         },
         "summary": "Create a knowledge source",
@@ -38327,7 +38514,10 @@
             "description": "Knowledge source not found"
           },
           "422": {
-            "description": "Validation failed"
+            "description": "Invalid parameters; Validation failed"
+          },
+          "502": {
+            "description": "Service unavailable"
           }
         },
         "summary": "Update a knowledge source",
@@ -42511,6 +42701,56 @@
           }
         },
         "summary": "Retrieve a Solution README or asset"
+      }
+    },
+    "/api/v1/solutions/{solution}/reconcile_product_knowledge": {
+      "post": {
+        "description": "Recomputes every stamped customer's knowledge-search source allowlist\nfrom the template-resolved customer refs plus the install's current marked\nproduct-knowledge sources. Safe to retry; partial failures are returned by\ncustomer key rather than hidden behind an aggregate success.\n",
+        "operationId": "post_api_v1_solutions__solution_reconcile_product_knowledge",
+        "parameters": [
+          {
+            "description": "Installed Customer Management Solution config (`cfg_...`) to reconcile.",
+            "example": "string",
+            "in": "path",
+            "name": "solution",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductKnowledgeReconcileResponse"
+                }
+              }
+            },
+            "description": "Per-customer convergence result for this installed solution."
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Solution not found"
+          },
+          "502": {
+            "description": "Service unavailable"
+          }
+        },
+        "summary": "Reconcile Customer Management product knowledge",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
       }
     },
     "/api/v1/solutions/{solution}/upgrade": {
@@ -56220,7 +56460,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         },
                         "participant": [
@@ -56612,7 +56852,7 @@
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
                             "type": "note",
-                            "user": "string",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                             "visibility": "default"
                           },
                           "participant": [
@@ -57001,7 +57241,7 @@
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
                             "type": "note",
-                            "user": "string",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                             "visibility": "default"
                           },
                           "participant": [
@@ -57562,7 +57802,7 @@
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
                               "type": "note",
-                              "user": "string",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                               "visibility": "default"
                             },
                             "properties": {
@@ -58527,7 +58767,7 @@
                                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                   "thread": "string",
                                   "type": "note",
-                                  "user": "string",
+                                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                                   "visibility": "default"
                                 },
                                 "type": "object"
@@ -58560,8 +58800,111 @@
                               },
                               "user": {
                                 "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                                "example": "string",
-                                "type": "string"
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "oneOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                                    "example": {
+                                      "alias": "jdoe",
+                                      "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "app_name": "Example Name",
+                                      "email": "user@example.com",
+                                      "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "is_system_user": true,
+                                      "metadata": {
+                                        "key": "value"
+                                      },
+                                      "name": "Example Name",
+                                      "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "org_name": "Example Name",
+                                      "org_role": "member",
+                                      "org_slug": "example-slug",
+                                      "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "sandbox_name": "Example Name"
+                                    },
+                                    "properties": {
+                                      "alias": {
+                                        "description": "Short handle or alias for the user. `null` if not set.",
+                                        "example": "jdoe",
+                                        "type": "string"
+                                      },
+                                      "app": {
+                                        "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                        "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "app_name": {
+                                        "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "email": {
+                                        "description": "Email address of the user.",
+                                        "example": "user@example.com",
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "description": "User ID (`usr_...`).",
+                                        "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "is_system_user": {
+                                        "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                        "example": true,
+                                        "type": "boolean"
+                                      },
+                                      "metadata": {
+                                        "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                        "example": {
+                                          "key": "value"
+                                        },
+                                        "type": "object"
+                                      },
+                                      "name": {
+                                        "description": "Full display name of the user. `null` if the user has not set a name.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "org": {
+                                        "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                        "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "org_name": {
+                                        "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "org_role": {
+                                        "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                        "example": "member",
+                                        "type": "string"
+                                      },
+                                      "org_slug": {
+                                        "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                        "example": "example-slug",
+                                        "type": "string"
+                                      },
+                                      "sandbox": {
+                                        "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                        "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "sandbox_name": {
+                                        "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
                               },
                               "visibility": {
                                 "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -63067,7 +63410,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         }
                       ]
@@ -63214,7 +63557,7 @@
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
                             "type": "note",
-                            "user": "string",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                             "visibility": "default"
                           }
                         ]
@@ -63371,7 +63714,7 @@
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
                               "type": "note",
-                              "user": "string",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                               "visibility": "default"
                             }
                           ],
@@ -63637,7 +63980,7 @@
                                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                 "thread": "string",
                                 "type": "note",
-                                "user": "string",
+                                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                                 "visibility": "default"
                               },
                               "root_message_id": "string",
@@ -63645,7 +63988,7 @@
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
                               "type": "note",
-                              "user": "string",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                               "visibility": "default"
                             },
                             "properties": {
@@ -64610,7 +64953,7 @@
                                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                   "thread": "string",
                                   "type": "note",
-                                  "user": "string",
+                                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                                   "visibility": "default"
                                 },
                                 "type": "object"
@@ -64643,8 +64986,111 @@
                               },
                               "user": {
                                 "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                                "example": "string",
-                                "type": "string"
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "oneOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                                    "example": {
+                                      "alias": "jdoe",
+                                      "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "app_name": "Example Name",
+                                      "email": "user@example.com",
+                                      "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "is_system_user": true,
+                                      "metadata": {
+                                        "key": "value"
+                                      },
+                                      "name": "Example Name",
+                                      "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "org_name": "Example Name",
+                                      "org_role": "member",
+                                      "org_slug": "example-slug",
+                                      "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "sandbox_name": "Example Name"
+                                    },
+                                    "properties": {
+                                      "alias": {
+                                        "description": "Short handle or alias for the user. `null` if not set.",
+                                        "example": "jdoe",
+                                        "type": "string"
+                                      },
+                                      "app": {
+                                        "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                        "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "app_name": {
+                                        "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "email": {
+                                        "description": "Email address of the user.",
+                                        "example": "user@example.com",
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "description": "User ID (`usr_...`).",
+                                        "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "is_system_user": {
+                                        "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                        "example": true,
+                                        "type": "boolean"
+                                      },
+                                      "metadata": {
+                                        "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                        "example": {
+                                          "key": "value"
+                                        },
+                                        "type": "object"
+                                      },
+                                      "name": {
+                                        "description": "Full display name of the user. `null` if the user has not set a name.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "org": {
+                                        "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                        "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "org_name": {
+                                        "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "org_role": {
+                                        "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                        "example": "member",
+                                        "type": "string"
+                                      },
+                                      "org_slug": {
+                                        "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                        "example": "example-slug",
+                                        "type": "string"
+                                      },
+                                      "sandbox": {
+                                        "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                        "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "sandbox_name": {
+                                        "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
                               },
                               "visibility": {
                                 "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -70248,7 +70694,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         },
                         "participant": [
@@ -70640,7 +71086,7 @@
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
                             "type": "note",
-                            "user": "string",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                             "visibility": "default"
                           },
                           "participant": [
@@ -71029,7 +71475,7 @@
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
                             "type": "note",
-                            "user": "string",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                             "visibility": "default"
                           },
                           "participant": [
@@ -71590,7 +72036,7 @@
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
                               "type": "note",
-                              "user": "string",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                               "visibility": "default"
                             },
                             "properties": {
@@ -72555,7 +73001,7 @@
                                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                                   "thread": "string",
                                   "type": "note",
-                                  "user": "string",
+                                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                                   "visibility": "default"
                                 },
                                 "type": "object"
@@ -72588,8 +73034,111 @@
                               },
                               "user": {
                                 "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                                "example": "string",
-                                "type": "string"
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "oneOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                                    "example": {
+                                      "alias": "jdoe",
+                                      "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "app_name": "Example Name",
+                                      "email": "user@example.com",
+                                      "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "is_system_user": true,
+                                      "metadata": {
+                                        "key": "value"
+                                      },
+                                      "name": "Example Name",
+                                      "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "org_name": "Example Name",
+                                      "org_role": "member",
+                                      "org_slug": "example-slug",
+                                      "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                      "sandbox_name": "Example Name"
+                                    },
+                                    "properties": {
+                                      "alias": {
+                                        "description": "Short handle or alias for the user. `null` if not set.",
+                                        "example": "jdoe",
+                                        "type": "string"
+                                      },
+                                      "app": {
+                                        "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                        "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "app_name": {
+                                        "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "email": {
+                                        "description": "Email address of the user.",
+                                        "example": "user@example.com",
+                                        "type": "string"
+                                      },
+                                      "id": {
+                                        "description": "User ID (`usr_...`).",
+                                        "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "is_system_user": {
+                                        "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                        "example": true,
+                                        "type": "boolean"
+                                      },
+                                      "metadata": {
+                                        "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                        "example": {
+                                          "key": "value"
+                                        },
+                                        "type": "object"
+                                      },
+                                      "name": {
+                                        "description": "Full display name of the user. `null` if the user has not set a name.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "org": {
+                                        "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                        "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "org_name": {
+                                        "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      },
+                                      "org_role": {
+                                        "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                        "example": "member",
+                                        "type": "string"
+                                      },
+                                      "org_slug": {
+                                        "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                        "example": "example-slug",
+                                        "type": "string"
+                                      },
+                                      "sandbox": {
+                                        "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                        "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                        "type": "string"
+                                      },
+                                      "sandbox_name": {
+                                        "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                        "example": "Example Name",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id"
+                                    ],
+                                    "type": "object"
+                                  }
+                                ]
                               },
                               "visibility": {
                                 "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -78908,7 +79457,7 @@
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
                     "type": "note",
-                    "user": "string",
+                    "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                     "visibility": "default"
                   }
                 ],
@@ -79110,7 +79659,7 @@
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
                     "type": "note",
-                    "user": "string",
+                    "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                     "visibility": "default"
                   },
                   "participant": [
@@ -79541,7 +80090,7 @@
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
                   "type": "note",
-                  "user": "string",
+                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                   "visibility": "default"
                 },
                 "participant": [
@@ -80302,7 +80851,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     }
                   ],
@@ -80504,7 +81053,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "participant": [
@@ -84740,7 +85289,7 @@
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
                         "type": "note",
-                        "user": "string",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "visibility": "default"
                       }
                     ],
@@ -85006,7 +85555,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         },
                         "root_message_id": "string",
@@ -85014,7 +85563,7 @@
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
                         "type": "note",
-                        "user": "string",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "visibility": "default"
                       },
                       "properties": {
@@ -85979,7 +86528,7 @@
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
                             "type": "note",
-                            "user": "string",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                             "visibility": "default"
                           },
                           "type": "object"
@@ -86012,8 +86561,111 @@
                         },
                         "user": {
                           "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                          "example": "string",
-                          "type": "string"
+                          "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "oneOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                              "example": {
+                                "alias": "jdoe",
+                                "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                "app_name": "Example Name",
+                                "email": "user@example.com",
+                                "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "is_system_user": true,
+                                "metadata": {
+                                  "key": "value"
+                                },
+                                "name": "Example Name",
+                                "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                "org_name": "Example Name",
+                                "org_role": "member",
+                                "org_slug": "example-slug",
+                                "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "sandbox_name": "Example Name"
+                              },
+                              "properties": {
+                                "alias": {
+                                  "description": "Short handle or alias for the user. `null` if not set.",
+                                  "example": "jdoe",
+                                  "type": "string"
+                                },
+                                "app": {
+                                  "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                  "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "app_name": {
+                                  "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                },
+                                "email": {
+                                  "description": "Email address of the user.",
+                                  "example": "user@example.com",
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "description": "User ID (`usr_...`).",
+                                  "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "is_system_user": {
+                                  "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                  "example": true,
+                                  "type": "boolean"
+                                },
+                                "metadata": {
+                                  "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                  "example": {
+                                    "key": "value"
+                                  },
+                                  "type": "object"
+                                },
+                                "name": {
+                                  "description": "Full display name of the user. `null` if the user has not set a name.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                },
+                                "org": {
+                                  "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                  "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "org_name": {
+                                  "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                },
+                                "org_role": {
+                                  "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                  "example": "member",
+                                  "type": "string"
+                                },
+                                "org_slug": {
+                                  "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                  "example": "example-slug",
+                                  "type": "string"
+                                },
+                                "sandbox": {
+                                  "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                  "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "sandbox_name": {
+                                  "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ],
+                              "type": "object"
+                            }
+                          ]
                         },
                         "visibility": {
                           "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -86482,7 +87134,7 @@
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
                         "type": "note",
-                        "user": "string",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "visibility": "default"
                       },
                       "participant": [
@@ -87043,7 +87695,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         },
                         "properties": {
@@ -88008,7 +88660,7 @@
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
                               "type": "note",
-                              "user": "string",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                               "visibility": "default"
                             },
                             "type": "object"
@@ -88041,8 +88693,111 @@
                           },
                           "user": {
                             "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                            "example": "string",
-                            "type": "string"
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "oneOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                                "example": {
+                                  "alias": "jdoe",
+                                  "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "app_name": "Example Name",
+                                  "email": "user@example.com",
+                                  "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "is_system_user": true,
+                                  "metadata": {
+                                    "key": "value"
+                                  },
+                                  "name": "Example Name",
+                                  "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "org_name": "Example Name",
+                                  "org_role": "member",
+                                  "org_slug": "example-slug",
+                                  "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "sandbox_name": "Example Name"
+                                },
+                                "properties": {
+                                  "alias": {
+                                    "description": "Short handle or alias for the user. `null` if not set.",
+                                    "example": "jdoe",
+                                    "type": "string"
+                                  },
+                                  "app": {
+                                    "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                    "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "app_name": {
+                                    "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "email": {
+                                    "description": "Email address of the user.",
+                                    "example": "user@example.com",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "User ID (`usr_...`).",
+                                    "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "is_system_user": {
+                                    "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                    "example": true,
+                                    "type": "boolean"
+                                  },
+                                  "metadata": {
+                                    "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                    "example": {
+                                      "key": "value"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "name": {
+                                    "description": "Full display name of the user. `null` if the user has not set a name.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "org": {
+                                    "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                    "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "org_name": {
+                                    "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "org_role": {
+                                    "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                    "example": "member",
+                                    "type": "string"
+                                  },
+                                  "org_slug": {
+                                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                    "example": "example-slug",
+                                    "type": "string"
+                                  },
+                                  "sandbox": {
+                                    "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                    "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "sandbox_name": {
+                                    "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
                           "visibility": {
                             "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -90601,7 +91356,7 @@
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
                     "type": "note",
-                    "user": "string",
+                    "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                     "visibility": "default"
                   },
                   "participant": [
@@ -91162,7 +91917,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "properties": {
@@ -92127,7 +92882,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         },
                         "type": "object"
@@ -92160,8 +92915,111 @@
                       },
                       "user": {
                         "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                        "example": "string",
-                        "type": "string"
+                        "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                            "example": {
+                              "alias": "jdoe",
+                              "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                              "app_name": "Example Name",
+                              "email": "user@example.com",
+                              "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "is_system_user": true,
+                              "metadata": {
+                                "key": "value"
+                              },
+                              "name": "Example Name",
+                              "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                              "org_name": "Example Name",
+                              "org_role": "member",
+                              "org_slug": "example-slug",
+                              "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "sandbox_name": "Example Name"
+                            },
+                            "properties": {
+                              "alias": {
+                                "description": "Short handle or alias for the user. `null` if not set.",
+                                "example": "jdoe",
+                                "type": "string"
+                              },
+                              "app": {
+                                "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "app_name": {
+                                "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                "example": "Example Name",
+                                "type": "string"
+                              },
+                              "email": {
+                                "description": "Email address of the user.",
+                                "example": "user@example.com",
+                                "type": "string"
+                              },
+                              "id": {
+                                "description": "User ID (`usr_...`).",
+                                "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "is_system_user": {
+                                "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                "example": true,
+                                "type": "boolean"
+                              },
+                              "metadata": {
+                                "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                "example": {
+                                  "key": "value"
+                                },
+                                "type": "object"
+                              },
+                              "name": {
+                                "description": "Full display name of the user. `null` if the user has not set a name.",
+                                "example": "Example Name",
+                                "type": "string"
+                              },
+                              "org": {
+                                "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "org_name": {
+                                "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                "example": "Example Name",
+                                "type": "string"
+                              },
+                              "org_role": {
+                                "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                "example": "member",
+                                "type": "string"
+                              },
+                              "org_slug": {
+                                "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                "example": "example-slug",
+                                "type": "string"
+                              },
+                              "sandbox": {
+                                "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "type": "string"
+                              },
+                              "sandbox_name": {
+                                "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                "example": "Example Name",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id"
+                            ],
+                            "type": "object"
+                          }
+                        ]
                       },
                       "visibility": {
                         "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -94453,7 +95311,7 @@
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
                   "type": "note",
-                  "user": "string",
+                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                   "visibility": "default"
                 }
               ]
@@ -94595,7 +95453,7 @@
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
                     "type": "note",
-                    "user": "string",
+                    "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                     "visibility": "default"
                   }
                 ],
@@ -94861,7 +95719,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "root_message_id": "string",
@@ -94869,7 +95727,7 @@
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
                     "type": "note",
-                    "user": "string",
+                    "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                     "visibility": "default"
                   },
                   "properties": {
@@ -95834,7 +96692,7 @@
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
                         "type": "note",
-                        "user": "string",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "visibility": "default"
                       },
                       "type": "object"
@@ -95867,8 +96725,111 @@
                     },
                     "user": {
                       "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                      "example": "string",
-                      "type": "string"
+                      "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                          "example": {
+                            "alias": "jdoe",
+                            "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                            "app_name": "Example Name",
+                            "email": "user@example.com",
+                            "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "is_system_user": true,
+                            "metadata": {
+                              "key": "value"
+                            },
+                            "name": "Example Name",
+                            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "org_name": "Example Name",
+                            "org_role": "member",
+                            "org_slug": "example-slug",
+                            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "sandbox_name": "Example Name"
+                          },
+                          "properties": {
+                            "alias": {
+                              "description": "Short handle or alias for the user. `null` if not set.",
+                              "example": "jdoe",
+                              "type": "string"
+                            },
+                            "app": {
+                              "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                              "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                              "type": "string"
+                            },
+                            "app_name": {
+                              "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                              "example": "Example Name",
+                              "type": "string"
+                            },
+                            "email": {
+                              "description": "Email address of the user.",
+                              "example": "user@example.com",
+                              "type": "string"
+                            },
+                            "id": {
+                              "description": "User ID (`usr_...`).",
+                              "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                              "type": "string"
+                            },
+                            "is_system_user": {
+                              "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                              "example": true,
+                              "type": "boolean"
+                            },
+                            "metadata": {
+                              "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                              "example": {
+                                "key": "value"
+                              },
+                              "type": "object"
+                            },
+                            "name": {
+                              "description": "Full display name of the user. `null` if the user has not set a name.",
+                              "example": "Example Name",
+                              "type": "string"
+                            },
+                            "org": {
+                              "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                              "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                              "type": "string"
+                            },
+                            "org_name": {
+                              "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                              "example": "Example Name",
+                              "type": "string"
+                            },
+                            "org_role": {
+                              "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                              "example": "member",
+                              "type": "string"
+                            },
+                            "org_slug": {
+                              "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                              "example": "example-slug",
+                              "type": "string"
+                            },
+                            "sandbox": {
+                              "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                              "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "type": "string"
+                            },
+                            "sandbox_name": {
+                              "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                              "example": "Example Name",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "type": "object"
+                        }
+                      ]
                     },
                     "visibility": {
                       "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -96451,7 +97412,7 @@
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
                     "type": "note",
-                    "user": "string",
+                    "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                     "visibility": "default"
                   }
                 ],
@@ -96653,7 +97614,7 @@
                     "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                     "thread": "string",
                     "type": "note",
-                    "user": "string",
+                    "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                     "visibility": "default"
                   },
                   "participant": [
@@ -97415,7 +98376,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     }
                   ],
@@ -97617,7 +98578,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "participant": [
@@ -101853,7 +102814,7 @@
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
                         "type": "note",
-                        "user": "string",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "visibility": "default"
                       }
                     ],
@@ -102119,7 +103080,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         },
                         "root_message_id": "string",
@@ -102127,7 +103088,7 @@
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
                         "type": "note",
-                        "user": "string",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "visibility": "default"
                       },
                       "properties": {
@@ -103092,7 +104053,7 @@
                             "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                             "thread": "string",
                             "type": "note",
-                            "user": "string",
+                            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                             "visibility": "default"
                           },
                           "type": "object"
@@ -103125,8 +104086,111 @@
                         },
                         "user": {
                           "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                          "example": "string",
-                          "type": "string"
+                          "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "oneOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                              "example": {
+                                "alias": "jdoe",
+                                "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                "app_name": "Example Name",
+                                "email": "user@example.com",
+                                "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                "is_system_user": true,
+                                "metadata": {
+                                  "key": "value"
+                                },
+                                "name": "Example Name",
+                                "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                "org_name": "Example Name",
+                                "org_role": "member",
+                                "org_slug": "example-slug",
+                                "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "sandbox_name": "Example Name"
+                              },
+                              "properties": {
+                                "alias": {
+                                  "description": "Short handle or alias for the user. `null` if not set.",
+                                  "example": "jdoe",
+                                  "type": "string"
+                                },
+                                "app": {
+                                  "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                  "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "app_name": {
+                                  "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                },
+                                "email": {
+                                  "description": "Email address of the user.",
+                                  "example": "user@example.com",
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "description": "User ID (`usr_...`).",
+                                  "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "is_system_user": {
+                                  "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                  "example": true,
+                                  "type": "boolean"
+                                },
+                                "metadata": {
+                                  "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                  "example": {
+                                    "key": "value"
+                                  },
+                                  "type": "object"
+                                },
+                                "name": {
+                                  "description": "Full display name of the user. `null` if the user has not set a name.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                },
+                                "org": {
+                                  "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                  "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "org_name": {
+                                  "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                },
+                                "org_role": {
+                                  "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                  "example": "member",
+                                  "type": "string"
+                                },
+                                "org_slug": {
+                                  "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                  "example": "example-slug",
+                                  "type": "string"
+                                },
+                                "sandbox": {
+                                  "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                  "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "type": "string"
+                                },
+                                "sandbox_name": {
+                                  "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                  "example": "Example Name",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id"
+                              ],
+                              "type": "object"
+                            }
+                          ]
                         },
                         "visibility": {
                           "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -103595,7 +104659,7 @@
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "string",
                         "type": "note",
-                        "user": "string",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "visibility": "default"
                       },
                       "participant": [
@@ -104156,7 +105220,7 @@
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "string",
                           "type": "note",
-                          "user": "string",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "visibility": "default"
                         },
                         "properties": {
@@ -105121,7 +106185,7 @@
                               "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                               "thread": "string",
                               "type": "note",
-                              "user": "string",
+                              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                               "visibility": "default"
                             },
                             "type": "object"
@@ -105154,8 +106218,111 @@
                           },
                           "user": {
                             "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                            "example": "string",
-                            "type": "string"
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "oneOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                                "example": {
+                                  "alias": "jdoe",
+                                  "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "app_name": "Example Name",
+                                  "email": "user@example.com",
+                                  "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "is_system_user": true,
+                                  "metadata": {
+                                    "key": "value"
+                                  },
+                                  "name": "Example Name",
+                                  "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "org_name": "Example Name",
+                                  "org_role": "member",
+                                  "org_slug": "example-slug",
+                                  "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "sandbox_name": "Example Name"
+                                },
+                                "properties": {
+                                  "alias": {
+                                    "description": "Short handle or alias for the user. `null` if not set.",
+                                    "example": "jdoe",
+                                    "type": "string"
+                                  },
+                                  "app": {
+                                    "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                                    "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "app_name": {
+                                    "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "email": {
+                                    "description": "Email address of the user.",
+                                    "example": "user@example.com",
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "description": "User ID (`usr_...`).",
+                                    "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "is_system_user": {
+                                    "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                                    "example": true,
+                                    "type": "boolean"
+                                  },
+                                  "metadata": {
+                                    "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                                    "example": {
+                                      "key": "value"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "name": {
+                                    "description": "Full display name of the user. `null` if the user has not set a name.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "org": {
+                                    "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                                    "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "org_name": {
+                                    "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "org_role": {
+                                    "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                                    "example": "member",
+                                    "type": "string"
+                                  },
+                                  "org_slug": {
+                                    "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                                    "example": "example-slug",
+                                    "type": "string"
+                                  },
+                                  "sandbox": {
+                                    "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                                    "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                    "type": "string"
+                                  },
+                                  "sandbox_name": {
+                                    "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
                           "visibility": {
                             "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -107452,7 +108619,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               }
             },
@@ -107592,7 +108759,7 @@
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
                   "type": "note",
-                  "user": "string",
+                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                   "visibility": "default"
                 },
                 "properties": {
@@ -108557,7 +109724,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "type": "object"
@@ -108590,8 +109757,111 @@
                   },
                   "user": {
                     "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                    "example": "string",
-                    "type": "string"
+                    "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                        "example": {
+                          "alias": "jdoe",
+                          "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                          "app_name": "Example Name",
+                          "email": "user@example.com",
+                          "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "is_system_user": true,
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "org_name": "Example Name",
+                          "org_role": "member",
+                          "org_slug": "example-slug",
+                          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "sandbox_name": "Example Name"
+                        },
+                        "properties": {
+                          "alias": {
+                            "description": "Short handle or alias for the user. `null` if not set.",
+                            "example": "jdoe",
+                            "type": "string"
+                          },
+                          "app": {
+                            "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                            "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "app_name": {
+                            "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "email": {
+                            "description": "Email address of the user.",
+                            "example": "user@example.com",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "User ID (`usr_...`).",
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "is_system_user": {
+                            "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                            "example": true,
+                            "type": "boolean"
+                          },
+                          "metadata": {
+                            "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                            "example": {
+                              "key": "value"
+                            },
+                            "type": "object"
+                          },
+                          "name": {
+                            "description": "Full display name of the user. `null` if the user has not set a name.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org": {
+                            "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "org_name": {
+                            "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org_role": {
+                            "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                            "example": "member",
+                            "type": "string"
+                          },
+                          "org_slug": {
+                            "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "example-slug",
+                            "type": "string"
+                          },
+                          "sandbox": {
+                            "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "sandbox_name": {
+                            "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "type": "object"
+                      }
+                    ]
                   },
                   "visibility": {
                     "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -108776,7 +110046,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               }
             },
@@ -108916,7 +110186,7 @@
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
                   "type": "note",
-                  "user": "string",
+                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                   "visibility": "default"
                 },
                 "properties": {
@@ -109881,7 +111151,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "type": "object"
@@ -109914,8 +111184,111 @@
                   },
                   "user": {
                     "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                    "example": "string",
-                    "type": "string"
+                    "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                        "example": {
+                          "alias": "jdoe",
+                          "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                          "app_name": "Example Name",
+                          "email": "user@example.com",
+                          "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "is_system_user": true,
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "org_name": "Example Name",
+                          "org_role": "member",
+                          "org_slug": "example-slug",
+                          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "sandbox_name": "Example Name"
+                        },
+                        "properties": {
+                          "alias": {
+                            "description": "Short handle or alias for the user. `null` if not set.",
+                            "example": "jdoe",
+                            "type": "string"
+                          },
+                          "app": {
+                            "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                            "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "app_name": {
+                            "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "email": {
+                            "description": "Email address of the user.",
+                            "example": "user@example.com",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "User ID (`usr_...`).",
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "is_system_user": {
+                            "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                            "example": true,
+                            "type": "boolean"
+                          },
+                          "metadata": {
+                            "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                            "example": {
+                              "key": "value"
+                            },
+                            "type": "object"
+                          },
+                          "name": {
+                            "description": "Full display name of the user. `null` if the user has not set a name.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org": {
+                            "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "org_name": {
+                            "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org_role": {
+                            "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                            "example": "member",
+                            "type": "string"
+                          },
+                          "org_slug": {
+                            "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "example-slug",
+                            "type": "string"
+                          },
+                          "sandbox": {
+                            "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "sandbox_name": {
+                            "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "type": "object"
+                      }
+                    ]
                   },
                   "visibility": {
                     "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -110220,7 +111593,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               },
               "thread_id": "string"
@@ -110369,7 +111742,7 @@
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
                   "type": "note",
-                  "user": "string",
+                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                   "visibility": "default"
                 },
                 "properties": {
@@ -111334,7 +112707,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "type": "object"
@@ -111367,8 +112740,111 @@
                   },
                   "user": {
                     "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                    "example": "string",
-                    "type": "string"
+                    "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                        "example": {
+                          "alias": "jdoe",
+                          "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                          "app_name": "Example Name",
+                          "email": "user@example.com",
+                          "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "is_system_user": true,
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "org_name": "Example Name",
+                          "org_role": "member",
+                          "org_slug": "example-slug",
+                          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "sandbox_name": "Example Name"
+                        },
+                        "properties": {
+                          "alias": {
+                            "description": "Short handle or alias for the user. `null` if not set.",
+                            "example": "jdoe",
+                            "type": "string"
+                          },
+                          "app": {
+                            "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                            "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "app_name": {
+                            "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "email": {
+                            "description": "Email address of the user.",
+                            "example": "user@example.com",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "User ID (`usr_...`).",
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "is_system_user": {
+                            "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                            "example": true,
+                            "type": "boolean"
+                          },
+                          "metadata": {
+                            "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                            "example": {
+                              "key": "value"
+                            },
+                            "type": "object"
+                          },
+                          "name": {
+                            "description": "Full display name of the user. `null` if the user has not set a name.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org": {
+                            "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "org_name": {
+                            "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org_role": {
+                            "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                            "example": "member",
+                            "type": "string"
+                          },
+                          "org_slug": {
+                            "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "example-slug",
+                            "type": "string"
+                          },
+                          "sandbox": {
+                            "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "sandbox_name": {
+                            "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "type": "object"
+                      }
+                    ]
                   },
                   "visibility": {
                     "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
@@ -111531,7 +113007,7 @@
                 "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                 "thread": "string",
                 "type": "note",
-                "user": "string",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                 "visibility": "default"
               },
               "thread_id": "string"
@@ -111672,7 +113148,7 @@
                   "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                   "thread": "string",
                   "type": "note",
-                  "user": "string",
+                  "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                   "visibility": "default"
                 },
                 "properties": {
@@ -112637,7 +114113,7 @@
                       "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                       "thread": "string",
                       "type": "note",
-                      "user": "string",
+                      "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                       "visibility": "default"
                     },
                     "type": "object"
@@ -112670,8 +114146,111 @@
                   },
                   "user": {
                     "description": "The human user who sent this message. Returns a public ID string (`usr_...`) when the association is not preloaded, or an expanded user object when it is. `null` for messages sent by agents.",
-                    "example": "string",
-                    "type": "string"
+                    "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "description": "A platform user account. Represents a human or system actor that can own threads, belong to an organization, and interact with the API.",
+                        "example": {
+                          "alias": "jdoe",
+                          "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                          "app_name": "Example Name",
+                          "email": "user@example.com",
+                          "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "is_system_user": true,
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "org_name": "Example Name",
+                          "org_role": "member",
+                          "org_slug": "example-slug",
+                          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "sandbox_name": "Example Name"
+                        },
+                        "properties": {
+                          "alias": {
+                            "description": "Short handle or alias for the user. `null` if not set.",
+                            "example": "jdoe",
+                            "type": "string"
+                          },
+                          "app": {
+                            "description": "ID of the app this user (and their access token) is scoped to (`dap_...`). `null` if the user is not scoped to an app.",
+                            "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "app_name": {
+                            "description": "Display name of the user's app. `null` when the app association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "email": {
+                            "description": "Email address of the user.",
+                            "example": "user@example.com",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "User ID (`usr_...`).",
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "is_system_user": {
+                            "description": "`true` if this account is an internal system user rather than a human. System users are created automatically by the platform.",
+                            "example": true,
+                            "type": "boolean"
+                          },
+                          "metadata": {
+                            "description": "Arbitrary key-value metadata attached to the user. Defaults to an empty object.",
+                            "example": {
+                              "key": "value"
+                            },
+                            "type": "object"
+                          },
+                          "name": {
+                            "description": "Full display name of the user. `null` if the user has not set a name.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org": {
+                            "description": "ID of the organization this user belongs to (`org_...`). `null` if the user is not a member of any organization.",
+                            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "org_name": {
+                            "description": "Display name of the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org_role": {
+                            "description": "Role of the user within their organization. One of `\"admin\"`, `\"member\"`, or `\"viewer\"`. `null` when the user is not a member of any organization.",
+                            "example": "member",
+                            "type": "string"
+                          },
+                          "org_slug": {
+                            "description": "Stable workspace slug for the user's organization. `null` when the user is not in an org, or when the org association was not preloaded by the caller.",
+                            "example": "example-slug",
+                            "type": "string"
+                          },
+                          "sandbox": {
+                            "description": "ID of the sandbox environment this user is scoped to (`sbx_...`). `null` for production users.",
+                            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "sandbox_name": {
+                            "description": "Display name of the user's sandbox environment. `null` for production users, or when the sandbox association was not preloaded by the caller.",
+                            "example": "Example Name",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "type": "object"
+                      }
+                    ]
                   },
                   "visibility": {
                     "description": "Message-level visibility. `default` is visible to anyone who can see the parent thread. `private` is restricted to the sender and explicit ACL `read` grantees.",
