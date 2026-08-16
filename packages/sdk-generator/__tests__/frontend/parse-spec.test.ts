@@ -638,3 +638,116 @@ describe("parseOpenApiSpec plain oneOf (no discriminator)", () => {
     expect(shape.refDeps).toContain("Square");
   });
 });
+
+describe("nullable on composite schemas", () => {
+  // OpenAPI 3.0 marks nullability with `nullable: true`, which legitimately
+  // appears without a sibling `type` on ref, union, and enum fields. Each
+  // shape must wrap in {kind: "nullable"} exactly like scalar nullables do.
+  const nullableSpec = {
+    openapi: "3.0.0",
+    info: { title: "Nullable API", version: "1.0.0" },
+    paths: {
+      "/api/v1/messages": {
+        get: {
+          operationId: "list_messages",
+          responses: {
+            "200": {
+              description: "ok",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/Message" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        Acl: {
+          type: "object",
+          properties: { grants: { type: "array", items: { type: "string" } } },
+        },
+        Badge: {
+          type: "object",
+          properties: { label: { type: "string" } },
+        },
+        Message: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string" },
+            // nullable allOf + component ref (the Message.acl idiom)
+            acl: {
+              allOf: [{ $ref: "#/components/schemas/Acl" }],
+              nullable: true,
+            },
+            // nullable oneOf union (the Message.user idiom)
+            user: {
+              nullable: true,
+              oneOf: [{ type: "string" }, { $ref: "#/components/schemas/Badge" }],
+            },
+            // nullable enum (the Message.agent_mode idiom)
+            agent_mode: { enum: ["default", "plan"], nullable: true },
+            // non-nullable controls for each shape
+            badge: { allOf: [{ $ref: "#/components/schemas/Badge" }] },
+            target: {
+              oneOf: [{ type: "string" }, { $ref: "#/components/schemas/Badge" }],
+            },
+            mode: { enum: ["a", "b"] },
+          },
+        },
+      },
+    },
+  };
+
+  const ast = parseOpenApiSpec(nullableSpec, {
+    name: "nullable-sdk",
+    version: "0.1.0",
+    baseUrl: "https://example.com",
+    apiBase: "/api",
+    defaultVersion: "v1",
+  });
+  const message = ast.schemas.find((s) => s.name === "Message")!;
+  const field = (name: string) => message.fields.find((f) => f.name === name)!.type;
+
+  it("wraps a nullable allOf-ref in nullable", () => {
+    expect(field("acl")).toEqual({
+      kind: "optional",
+      inner: { kind: "nullable", inner: { kind: "ref", schema: "Acl" } },
+    });
+  });
+
+  it("wraps a nullable oneOf union in nullable", () => {
+    const type = field("user");
+    expect(type.kind).toBe("optional");
+    const inner = (type as { inner: { kind: string; inner?: unknown } }).inner;
+    expect(inner.kind).toBe("nullable");
+    expect((inner.inner as { kind: string }).kind).toBe("union");
+  });
+
+  it("wraps a nullable enum in nullable", () => {
+    expect(field("agent_mode")).toEqual({
+      kind: "optional",
+      inner: {
+        kind: "nullable",
+        inner: { kind: "enum", values: ["default", "plan"] },
+      },
+    });
+  });
+
+  it("does not wrap non-nullable composites", () => {
+    expect(field("badge")).toEqual({
+      kind: "optional",
+      inner: { kind: "ref", schema: "Badge" },
+    });
+    expect((field("target") as { inner: { kind: string } }).inner.kind).toBe(
+      "union"
+    );
+    expect(field("mode")).toEqual({
+      kind: "optional",
+      inner: { kind: "enum", values: ["a", "b"] },
+    });
+  });
+});

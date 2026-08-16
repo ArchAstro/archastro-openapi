@@ -80,6 +80,15 @@ export function parseSchemas(components: OpenApiComponents): {
  * Convert a JSON Schema into our TypeRef representation.
  */
 export function jsonSchemaToTypeRef(schema: JsonSchema): TypeRef {
+  // Nullability must be peeled off before any shape branch: OpenAPI 3.0 puts
+  // `nullable: true` alongside $ref/allOf refs, oneOf unions, and enums just
+  // as legitimately as alongside scalar types, and the early returns below
+  // would otherwise silently drop it for every composite shape.
+  if (schema.nullable) {
+    const inner = jsonSchemaToTypeRef({ ...schema, nullable: undefined });
+    return { kind: "nullable", inner };
+  }
+
   if (schema.$ref) {
     return { kind: "ref", schema: extractRefName(schema.$ref) };
   }
@@ -116,11 +125,6 @@ export function jsonSchemaToTypeRef(schema: JsonSchema): TypeRef {
     if (fields.length > 0) return { kind: "object", fields };
     // If allOf contains only refs, return the first one
     return jsonSchemaToTypeRef(schema.allOf[0]!);
-  }
-
-  if (schema.nullable) {
-    const inner = jsonSchemaToTypeRef({ ...schema, nullable: undefined });
-    return { kind: "nullable", inner };
   }
 
   switch (schema.type) {
