@@ -1565,12 +1565,13 @@
                                       },
                                       "properties": {
                                         "automation_type": {
-                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                           "example": "string",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "invoke_contract": {
-                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                           "example": {
                                             "input_schema": {},
                                             "participants": [
@@ -1586,10 +1587,12 @@
                                               "payload": {}
                                             }
                                           },
+                                          "nullable": true,
                                           "properties": {
                                             "input_schema": {
                                               "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                               "example": {},
+                                              "nullable": true,
                                               "type": "object"
                                             },
                                             "participants": {
@@ -1610,10 +1613,12 @@
                                                   "required": true,
                                                   "type": "agent_user"
                                                 },
+                                                "nullable": true,
                                                 "properties": {
                                                   "description": {
                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                     "example": "An example description.",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "name": {
@@ -1639,6 +1644,7 @@
                                                 ],
                                                 "type": "object"
                                               },
+                                              "nullable": true,
                                               "type": "array"
                                             },
                                             "prefills": {
@@ -2086,12 +2092,13 @@
                                       },
                                       "properties": {
                                         "automation_type": {
-                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                           "example": "string",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "invoke_contract": {
-                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                           "example": {
                                             "input_schema": {},
                                             "participants": [
@@ -2107,10 +2114,12 @@
                                               "payload": {}
                                             }
                                           },
+                                          "nullable": true,
                                           "properties": {
                                             "input_schema": {
                                               "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                               "example": {},
+                                              "nullable": true,
                                               "type": "object"
                                             },
                                             "participants": {
@@ -2131,10 +2140,12 @@
                                                   "required": true,
                                                   "type": "agent_user"
                                                 },
+                                                "nullable": true,
                                                 "properties": {
                                                   "description": {
                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                     "example": "An example description.",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "name": {
@@ -2160,6 +2171,7 @@
                                                 ],
                                                 "type": "object"
                                               },
+                                              "nullable": true,
                                               "type": "array"
                                             },
                                             "prefills": {
@@ -2303,11 +2315,13 @@
                           "description": {
                             "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                             "example": "An example description.",
+                            "nullable": true,
                             "type": "string"
                           },
                           "display_name": {
                             "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                             "example": "Example Name",
+                            "nullable": true,
                             "type": "string"
                           },
                           "id": {
@@ -2323,11 +2337,13 @@
                           "lookup_key": {
                             "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                             "example": "string",
+                            "nullable": true,
                             "type": "string"
                           },
                           "name": {
                             "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                             "example": "Example Name",
+                            "nullable": true,
                             "type": "string"
                           },
                           "updated_at": {
@@ -2339,6 +2355,7 @@
                           "virtual_path": {
                             "description": "Virtual filesystem path for this template config. `null` if not set.",
                             "example": "string",
+                            "nullable": true,
                             "type": "string"
                           }
                         },
@@ -6753,6 +6770,7 @@
           "description": {
             "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
             "example": "An example description.",
+            "nullable": true,
             "type": "string"
           },
           "name": {
@@ -13318,6 +13336,7 @@
           "content_type": {
             "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
             "example": "application/json",
+            "nullable": true,
             "type": "string"
           },
           "created_at": {
@@ -13334,11 +13353,13 @@
           "filename": {
             "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
             "example": "string",
+            "nullable": true,
             "type": "string"
           },
           "height": {
             "description": "Height of this variant in pixels. `null` if not recorded.",
             "example": 600,
+            "nullable": true,
             "type": "integer"
           },
           "id": {
@@ -13347,8 +13368,22 @@
             "type": "string"
           },
           "image_source": {
-            "$ref": "#/components/schemas/ImageSource",
-            "description": "Resolved image delivery metadata for this variant, including dimensions and CDN URL. `null` for non-image content types."
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageSource"
+              }
+            ],
+            "description": "Resolved image delivery metadata for this variant, including dimensions and CDN URL. `null` for non-image content types.",
+            "example": {
+              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+              "height": 600,
+              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+              "mime_type": "application/json",
+              "refresh_url": "https://example.com",
+              "url": "https://example.com",
+              "width": 800
+            },
+            "nullable": true
           },
           "updated_at": {
             "description": "When this variant was last updated (ISO 8601).",
@@ -13359,6 +13394,7 @@
           "url": {
             "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
             "example": "https://example.com",
+            "nullable": true,
             "type": "string"
           },
           "variant_key": {
@@ -13369,6 +13405,7 @@
           "width": {
             "description": "Width of this variant in pixels. `null` if not recorded.",
             "example": 800,
+            "nullable": true,
             "type": "integer"
           }
         },
@@ -15705,13 +15742,28 @@
           "input_schema": {
             "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
             "example": {},
+            "nullable": true,
             "type": "object"
           },
           "participants": {
             "description": "Named participant slots declared by the workflow, sorted by name. `null` when the workflow declares none. Values supplied under the top-level `participants` field are agent IDs.",
+            "example": [
+              {
+                "description": "An example description.",
+                "name": "reporter",
+                "required": true,
+                "type": "agent_user"
+              }
+            ],
             "items": {
-              "$ref": "#/components/schemas/AutomationParticipantSlot"
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AutomationParticipantSlot"
+                }
+              ],
+              "nullable": true
             },
+            "nullable": true,
             "type": "array"
           },
           "prefills": {
@@ -15747,13 +15799,34 @@
         },
         "properties": {
           "automation_type": {
-            "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+            "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
             "example": "string",
+            "nullable": true,
             "type": "string"
           },
           "invoke_contract": {
-            "$ref": "#/components/schemas/SolutionAutomationInvokeContract",
-            "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning."
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SolutionAutomationInvokeContract"
+              }
+            ],
+            "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
+            "example": {
+              "input_schema": {},
+              "participants": [
+                {
+                  "description": "An example description.",
+                  "name": "reporter",
+                  "required": true,
+                  "type": "agent_user"
+                }
+              ],
+              "prefills": {
+                "participants": {},
+                "payload": {}
+              }
+            },
+            "nullable": true
           },
           "type": {
             "default": "automation",
@@ -17833,32 +17906,38 @@
           "created_by_agent_user": {
             "description": "Agent user that minted this token (`usr_...`). `null` unless an agent minted it.",
             "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
             "type": "string"
           },
           "created_by_developer": {
             "description": "Developer account that minted this token (`dva_...`). `null` unless minted with a developer token.",
             "example": "dva_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
             "type": "string"
           },
           "created_by_org": {
             "description": "Org of the principal that minted this token (`org_...`). `null` on legacy rows.",
             "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
             "type": "string"
           },
           "created_by_team": {
             "description": "Team that minted this token (`tem_...`). `null` unless minted as a team.",
             "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
             "type": "string"
           },
           "created_by_user": {
             "description": "User who minted this token (`usr_...`). Distinct from the token subject. `null` on legacy rows.",
             "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
             "type": "string"
           },
           "expires_at": {
             "description": "When the token expires. `null` on legacy rows that predate stored expiry.",
             "example": "2024-01-01T00:00:00Z",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "id": {
@@ -17870,22 +17949,26 @@
             "description": "When this token was last used to authenticate a request. `null` if the token has never been used.",
             "example": "2024-01-01T00:00:00Z",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "name": {
-            "description": "Human-readable label assigned to this token at creation time.",
+            "description": "Human-readable label assigned to this token at creation time. `null` when no label was supplied.",
             "example": "Example Name",
+            "nullable": true,
             "type": "string"
           },
           "revoked_at": {
             "description": "When this token was revoked. `null` if the token is still active.",
             "example": "2024-01-01T00:00:00Z",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "scopes": {
             "description": "Space-separated OAuth scopes stamped on the token. `null` on legacy rows; treat as `full_access`.",
             "example": "string",
+            "nullable": true,
             "type": "string"
           },
           "token": {
@@ -20730,8 +20813,9 @@
         },
         "properties": {
           "agent_enabled": {
-            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
             "example": true,
+            "nullable": true,
             "type": "boolean"
           }
         },
@@ -20829,11 +20913,13 @@
           "description": {
             "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
             "example": "An example description.",
+            "nullable": true,
             "type": "string"
           },
           "display_name": {
             "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
             "example": "Example Name",
+            "nullable": true,
             "type": "string"
           },
           "id": {
@@ -20849,11 +20935,13 @@
           "lookup_key": {
             "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
             "example": "string",
+            "nullable": true,
             "type": "string"
           },
           "name": {
             "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
             "example": "Example Name",
+            "nullable": true,
             "type": "string"
           },
           "updated_at": {
@@ -20865,6 +20953,7 @@
           "virtual_path": {
             "description": "Virtual filesystem path for this template config. `null` if not set.",
             "example": "string",
+            "nullable": true,
             "type": "string"
           }
         },
@@ -22792,12 +22881,13 @@
                                                       },
                                                       "properties": {
                                                         "automation_type": {
-                                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                           "example": "string",
+                                                          "nullable": true,
                                                           "type": "string"
                                                         },
                                                         "invoke_contract": {
-                                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                           "example": {
                                                             "input_schema": {},
                                                             "participants": [
@@ -22813,10 +22903,12 @@
                                                               "payload": {}
                                                             }
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "input_schema": {
                                                               "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                               "example": {},
+                                                              "nullable": true,
                                                               "type": "object"
                                                             },
                                                             "participants": {
@@ -22837,10 +22929,12 @@
                                                                   "required": true,
                                                                   "type": "agent_user"
                                                                 },
+                                                                "nullable": true,
                                                                 "properties": {
                                                                   "description": {
                                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                     "example": "An example description.",
+                                                                    "nullable": true,
                                                                     "type": "string"
                                                                   },
                                                                   "name": {
@@ -22866,6 +22960,7 @@
                                                                 ],
                                                                 "type": "object"
                                                               },
+                                                              "nullable": true,
                                                               "type": "array"
                                                             },
                                                             "prefills": {
@@ -23313,12 +23408,13 @@
                                                       },
                                                       "properties": {
                                                         "automation_type": {
-                                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                          "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                           "example": "string",
+                                                          "nullable": true,
                                                           "type": "string"
                                                         },
                                                         "invoke_contract": {
-                                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                          "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                           "example": {
                                                             "input_schema": {},
                                                             "participants": [
@@ -23334,10 +23430,12 @@
                                                               "payload": {}
                                                             }
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "input_schema": {
                                                               "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                               "example": {},
+                                                              "nullable": true,
                                                               "type": "object"
                                                             },
                                                             "participants": {
@@ -23358,10 +23456,12 @@
                                                                   "required": true,
                                                                   "type": "agent_user"
                                                                 },
+                                                                "nullable": true,
                                                                 "properties": {
                                                                   "description": {
                                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                     "example": "An example description.",
+                                                                    "nullable": true,
                                                                     "type": "string"
                                                                   },
                                                                   "name": {
@@ -23387,6 +23487,7 @@
                                                                 ],
                                                                 "type": "object"
                                                               },
+                                                              "nullable": true,
                                                               "type": "array"
                                                             },
                                                             "prefills": {
@@ -23530,11 +23631,13 @@
                                           "description": {
                                             "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                             "example": "An example description.",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "display_name": {
                                             "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                             "example": "Example Name",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "id": {
@@ -23550,11 +23653,13 @@
                                           "lookup_key": {
                                             "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                             "example": "string",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "name": {
                                             "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                             "example": "Example Name",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "updated_at": {
@@ -23566,6 +23671,7 @@
                                           "virtual_path": {
                                             "description": "Virtual filesystem path for this template config. `null` if not set.",
                                             "example": "string",
+                                            "nullable": true,
                                             "type": "string"
                                           }
                                         },
@@ -31221,8 +31327,9 @@
                         },
                         "properties": {
                           "agent_enabled": {
-                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                             "example": true,
+                            "nullable": true,
                             "type": "boolean"
                           }
                         },
@@ -53060,12 +53167,13 @@
                                                   },
                                                   "properties": {
                                                     "automation_type": {
-                                                      "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                      "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                       "example": "string",
+                                                      "nullable": true,
                                                       "type": "string"
                                                     },
                                                     "invoke_contract": {
-                                                      "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                      "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                       "example": {
                                                         "input_schema": {},
                                                         "participants": [
@@ -53081,10 +53189,12 @@
                                                           "payload": {}
                                                         }
                                                       },
+                                                      "nullable": true,
                                                       "properties": {
                                                         "input_schema": {
                                                           "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                           "example": {},
+                                                          "nullable": true,
                                                           "type": "object"
                                                         },
                                                         "participants": {
@@ -53105,10 +53215,12 @@
                                                               "required": true,
                                                               "type": "agent_user"
                                                             },
+                                                            "nullable": true,
                                                             "properties": {
                                                               "description": {
                                                                 "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                 "example": "An example description.",
+                                                                "nullable": true,
                                                                 "type": "string"
                                                               },
                                                               "name": {
@@ -53134,6 +53246,7 @@
                                                             ],
                                                             "type": "object"
                                                           },
+                                                          "nullable": true,
                                                           "type": "array"
                                                         },
                                                         "prefills": {
@@ -53581,12 +53694,13 @@
                                                   },
                                                   "properties": {
                                                     "automation_type": {
-                                                      "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                      "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                       "example": "string",
+                                                      "nullable": true,
                                                       "type": "string"
                                                     },
                                                     "invoke_contract": {
-                                                      "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                      "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                       "example": {
                                                         "input_schema": {},
                                                         "participants": [
@@ -53602,10 +53716,12 @@
                                                           "payload": {}
                                                         }
                                                       },
+                                                      "nullable": true,
                                                       "properties": {
                                                         "input_schema": {
                                                           "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                           "example": {},
+                                                          "nullable": true,
                                                           "type": "object"
                                                         },
                                                         "participants": {
@@ -53626,10 +53742,12 @@
                                                               "required": true,
                                                               "type": "agent_user"
                                                             },
+                                                            "nullable": true,
                                                             "properties": {
                                                               "description": {
                                                                 "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                 "example": "An example description.",
+                                                                "nullable": true,
                                                                 "type": "string"
                                                               },
                                                               "name": {
@@ -53655,6 +53773,7 @@
                                                             ],
                                                             "type": "object"
                                                           },
+                                                          "nullable": true,
                                                           "type": "array"
                                                         },
                                                         "prefills": {
@@ -53798,11 +53917,13 @@
                                       "description": {
                                         "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                         "example": "An example description.",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "display_name": {
                                         "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                         "example": "Example Name",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "id": {
@@ -53818,11 +53939,13 @@
                                       "lookup_key": {
                                         "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                         "example": "string",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "name": {
                                         "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                         "example": "Example Name",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "updated_at": {
@@ -53834,6 +53957,7 @@
                                       "virtual_path": {
                                         "description": "Virtual filesystem path for this template config. `null` if not set.",
                                         "example": "string",
+                                        "nullable": true,
                                         "type": "string"
                                       }
                                     },
@@ -60490,6 +60614,7 @@
                                           "content_type": {
                                             "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                             "example": "application/json",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "created_at": {
@@ -60506,11 +60631,13 @@
                                           "filename": {
                                             "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                             "example": "string",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "height": {
                                             "description": "Height of this variant in pixels. `null` if not recorded.",
                                             "example": 600,
+                                            "nullable": true,
                                             "type": "integer"
                                           },
                                           "id": {
@@ -60529,6 +60656,7 @@
                                               "url": "https://example.com",
                                               "width": 800
                                             },
+                                            "nullable": true,
                                             "properties": {
                                               "file": {
                                                 "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -60584,6 +60712,7 @@
                                           "url": {
                                             "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                             "example": "https://example.com",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "variant_key": {
@@ -60594,6 +60723,7 @@
                                           "width": {
                                             "description": "Width of this variant in pixels. `null` if not recorded.",
                                             "example": 800,
+                                            "nullable": true,
                                             "type": "integer"
                                           }
                                         },
@@ -62392,12 +62522,13 @@
                                                     },
                                                     "properties": {
                                                       "automation_type": {
-                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                         "example": "string",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "invoke_contract": {
-                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                         "example": {
                                                           "input_schema": {},
                                                           "participants": [
@@ -62413,10 +62544,12 @@
                                                             "payload": {}
                                                           }
                                                         },
+                                                        "nullable": true,
                                                         "properties": {
                                                           "input_schema": {
                                                             "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                             "example": {},
+                                                            "nullable": true,
                                                             "type": "object"
                                                           },
                                                           "participants": {
@@ -62437,10 +62570,12 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
+                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                   "example": "An example description.",
+                                                                  "nullable": true,
                                                                   "type": "string"
                                                                 },
                                                                 "name": {
@@ -62466,6 +62601,7 @@
                                                               ],
                                                               "type": "object"
                                                             },
+                                                            "nullable": true,
                                                             "type": "array"
                                                           },
                                                           "prefills": {
@@ -62913,12 +63049,13 @@
                                                     },
                                                     "properties": {
                                                       "automation_type": {
-                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                         "example": "string",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "invoke_contract": {
-                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                         "example": {
                                                           "input_schema": {},
                                                           "participants": [
@@ -62934,10 +63071,12 @@
                                                             "payload": {}
                                                           }
                                                         },
+                                                        "nullable": true,
                                                         "properties": {
                                                           "input_schema": {
                                                             "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                             "example": {},
+                                                            "nullable": true,
                                                             "type": "object"
                                                           },
                                                           "participants": {
@@ -62958,10 +63097,12 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
+                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                   "example": "An example description.",
+                                                                  "nullable": true,
                                                                   "type": "string"
                                                                 },
                                                                 "name": {
@@ -62987,6 +63128,7 @@
                                                               ],
                                                               "type": "object"
                                                             },
+                                                            "nullable": true,
                                                             "type": "array"
                                                           },
                                                           "prefills": {
@@ -63130,11 +63272,13 @@
                                         "description": {
                                           "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                           "example": "An example description.",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "display_name": {
                                           "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                           "example": "Example Name",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "id": {
@@ -63150,11 +63294,13 @@
                                         "lookup_key": {
                                           "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                           "example": "string",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "name": {
                                           "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                           "example": "Example Name",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "updated_at": {
@@ -63166,6 +63312,7 @@
                                         "virtual_path": {
                                           "description": "Virtual filesystem path for this template config. `null` if not set.",
                                           "example": "string",
+                                          "nullable": true,
                                           "type": "string"
                                         }
                                       },
@@ -63233,8 +63380,9 @@
                             },
                             "properties": {
                               "agent_enabled": {
-                                "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                                "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                                 "example": true,
+                                "nullable": true,
                                 "type": "boolean"
                               }
                             },
@@ -63541,8 +63689,9 @@
                         },
                         "properties": {
                           "agent_enabled": {
-                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                             "example": true,
+                            "nullable": true,
                             "type": "boolean"
                           }
                         },
@@ -66917,6 +67066,7 @@
                                           "content_type": {
                                             "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                             "example": "application/json",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "created_at": {
@@ -66933,11 +67083,13 @@
                                           "filename": {
                                             "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                             "example": "string",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "height": {
                                             "description": "Height of this variant in pixels. `null` if not recorded.",
                                             "example": 600,
+                                            "nullable": true,
                                             "type": "integer"
                                           },
                                           "id": {
@@ -66956,6 +67108,7 @@
                                               "url": "https://example.com",
                                               "width": 800
                                             },
+                                            "nullable": true,
                                             "properties": {
                                               "file": {
                                                 "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -67011,6 +67164,7 @@
                                           "url": {
                                             "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                             "example": "https://example.com",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "variant_key": {
@@ -67021,6 +67175,7 @@
                                           "width": {
                                             "description": "Width of this variant in pixels. `null` if not recorded.",
                                             "example": 800,
+                                            "nullable": true,
                                             "type": "integer"
                                           }
                                         },
@@ -75306,6 +75461,7 @@
                                           "content_type": {
                                             "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                             "example": "application/json",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "created_at": {
@@ -75322,11 +75478,13 @@
                                           "filename": {
                                             "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                             "example": "string",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "height": {
                                             "description": "Height of this variant in pixels. `null` if not recorded.",
                                             "example": 600,
+                                            "nullable": true,
                                             "type": "integer"
                                           },
                                           "id": {
@@ -75345,6 +75503,7 @@
                                               "url": "https://example.com",
                                               "width": 800
                                             },
+                                            "nullable": true,
                                             "properties": {
                                               "file": {
                                                 "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -75400,6 +75559,7 @@
                                           "url": {
                                             "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                             "example": "https://example.com",
+                                            "nullable": true,
                                             "type": "string"
                                           },
                                           "variant_key": {
@@ -75410,6 +75570,7 @@
                                           "width": {
                                             "description": "Width of this variant in pixels. `null` if not recorded.",
                                             "example": 800,
+                                            "nullable": true,
                                             "type": "integer"
                                           }
                                         },
@@ -77208,12 +77369,13 @@
                                                     },
                                                     "properties": {
                                                       "automation_type": {
-                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                         "example": "string",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "invoke_contract": {
-                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                         "example": {
                                                           "input_schema": {},
                                                           "participants": [
@@ -77229,10 +77391,12 @@
                                                             "payload": {}
                                                           }
                                                         },
+                                                        "nullable": true,
                                                         "properties": {
                                                           "input_schema": {
                                                             "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                             "example": {},
+                                                            "nullable": true,
                                                             "type": "object"
                                                           },
                                                           "participants": {
@@ -77253,10 +77417,12 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
+                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                   "example": "An example description.",
+                                                                  "nullable": true,
                                                                   "type": "string"
                                                                 },
                                                                 "name": {
@@ -77282,6 +77448,7 @@
                                                               ],
                                                               "type": "object"
                                                             },
+                                                            "nullable": true,
                                                             "type": "array"
                                                           },
                                                           "prefills": {
@@ -77729,12 +77896,13 @@
                                                     },
                                                     "properties": {
                                                       "automation_type": {
-                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                        "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                         "example": "string",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "invoke_contract": {
-                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                        "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                         "example": {
                                                           "input_schema": {},
                                                           "participants": [
@@ -77750,10 +77918,12 @@
                                                             "payload": {}
                                                           }
                                                         },
+                                                        "nullable": true,
                                                         "properties": {
                                                           "input_schema": {
                                                             "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                             "example": {},
+                                                            "nullable": true,
                                                             "type": "object"
                                                           },
                                                           "participants": {
@@ -77774,10 +77944,12 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
+                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                                   "example": "An example description.",
+                                                                  "nullable": true,
                                                                   "type": "string"
                                                                 },
                                                                 "name": {
@@ -77803,6 +77975,7 @@
                                                               ],
                                                               "type": "object"
                                                             },
+                                                            "nullable": true,
                                                             "type": "array"
                                                           },
                                                           "prefills": {
@@ -77946,11 +78119,13 @@
                                         "description": {
                                           "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                           "example": "An example description.",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "display_name": {
                                           "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                           "example": "Example Name",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "id": {
@@ -77966,11 +78141,13 @@
                                         "lookup_key": {
                                           "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                           "example": "string",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "name": {
                                           "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                           "example": "Example Name",
+                                          "nullable": true,
                                           "type": "string"
                                         },
                                         "updated_at": {
@@ -77982,6 +78159,7 @@
                                         "virtual_path": {
                                           "description": "Virtual filesystem path for this template config. `null` if not set.",
                                           "example": "string",
+                                          "nullable": true,
                                           "type": "string"
                                         }
                                       },
@@ -78049,8 +78227,9 @@
                             },
                             "properties": {
                               "agent_enabled": {
-                                "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                                "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                                 "example": true,
+                                "nullable": true,
                                 "type": "boolean"
                               }
                             },
@@ -78357,8 +78536,9 @@
                         },
                         "properties": {
                           "agent_enabled": {
-                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                             "example": true,
+                            "nullable": true,
                             "type": "boolean"
                           }
                         },
@@ -78513,32 +78693,38 @@
                           "created_by_agent_user": {
                             "description": "Agent user that minted this token (`usr_...`). `null` unless an agent minted it.",
                             "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
                             "type": "string"
                           },
                           "created_by_developer": {
                             "description": "Developer account that minted this token (`dva_...`). `null` unless minted with a developer token.",
                             "example": "dva_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
                             "type": "string"
                           },
                           "created_by_org": {
                             "description": "Org of the principal that minted this token (`org_...`). `null` on legacy rows.",
                             "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
                             "type": "string"
                           },
                           "created_by_team": {
                             "description": "Team that minted this token (`tem_...`). `null` unless minted as a team.",
                             "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
                             "type": "string"
                           },
                           "created_by_user": {
                             "description": "User who minted this token (`usr_...`). Distinct from the token subject. `null` on legacy rows.",
                             "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
                             "type": "string"
                           },
                           "expires_at": {
                             "description": "When the token expires. `null` on legacy rows that predate stored expiry.",
                             "example": "2024-01-01T00:00:00Z",
                             "format": "date-time",
+                            "nullable": true,
                             "type": "string"
                           },
                           "id": {
@@ -78550,22 +78736,26 @@
                             "description": "When this token was last used to authenticate a request. `null` if the token has never been used.",
                             "example": "2024-01-01T00:00:00Z",
                             "format": "date-time",
+                            "nullable": true,
                             "type": "string"
                           },
                           "name": {
-                            "description": "Human-readable label assigned to this token at creation time.",
+                            "description": "Human-readable label assigned to this token at creation time. `null` when no label was supplied.",
                             "example": "Example Name",
+                            "nullable": true,
                             "type": "string"
                           },
                           "revoked_at": {
                             "description": "When this token was revoked. `null` if the token is still active.",
                             "example": "2024-01-01T00:00:00Z",
                             "format": "date-time",
+                            "nullable": true,
                             "type": "string"
                           },
                           "scopes": {
                             "description": "Space-separated OAuth scopes stamped on the token. `null` on legacy rows; treat as `full_access`.",
                             "example": "string",
+                            "nullable": true,
                             "type": "string"
                           },
                           "token": {
@@ -80557,12 +80747,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -80578,10 +80769,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -80602,10 +80795,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -80631,6 +80826,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -81078,12 +81274,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -81099,10 +81296,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -81123,10 +81322,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -81152,6 +81353,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -81295,11 +81497,13 @@
                                     "description": {
                                       "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                       "example": "An example description.",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "display_name": {
                                       "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "id": {
@@ -81315,11 +81519,13 @@
                                     "lookup_key": {
                                       "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "name": {
                                       "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "updated_at": {
@@ -81331,6 +81537,7 @@
                                     "virtual_path": {
                                       "description": "Virtual filesystem path for this template config. `null` if not set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     }
                                   },
@@ -85279,12 +85486,13 @@
                                           },
                                           "properties": {
                                             "automation_type": {
-                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                               "example": "string",
+                                              "nullable": true,
                                               "type": "string"
                                             },
                                             "invoke_contract": {
-                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                               "example": {
                                                 "input_schema": {},
                                                 "participants": [
@@ -85300,10 +85508,12 @@
                                                   "payload": {}
                                                 }
                                               },
+                                              "nullable": true,
                                               "properties": {
                                                 "input_schema": {
                                                   "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                   "example": {},
+                                                  "nullable": true,
                                                   "type": "object"
                                                 },
                                                 "participants": {
@@ -85324,10 +85534,12 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                         "example": "An example description.",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "name": {
@@ -85353,6 +85565,7 @@
                                                     ],
                                                     "type": "object"
                                                   },
+                                                  "nullable": true,
                                                   "type": "array"
                                                 },
                                                 "prefills": {
@@ -85800,12 +86013,13 @@
                                           },
                                           "properties": {
                                             "automation_type": {
-                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                               "example": "string",
+                                              "nullable": true,
                                               "type": "string"
                                             },
                                             "invoke_contract": {
-                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                               "example": {
                                                 "input_schema": {},
                                                 "participants": [
@@ -85821,10 +86035,12 @@
                                                   "payload": {}
                                                 }
                                               },
+                                              "nullable": true,
                                               "properties": {
                                                 "input_schema": {
                                                   "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                   "example": {},
+                                                  "nullable": true,
                                                   "type": "object"
                                                 },
                                                 "participants": {
@@ -85845,10 +86061,12 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                         "example": "An example description.",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "name": {
@@ -85874,6 +86092,7 @@
                                                     ],
                                                     "type": "object"
                                                   },
+                                                  "nullable": true,
                                                   "type": "array"
                                                 },
                                                 "prefills": {
@@ -86017,11 +86236,13 @@
                               "description": {
                                 "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                 "example": "An example description.",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "display_name": {
                                 "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                 "example": "Example Name",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "id": {
@@ -86037,11 +86258,13 @@
                               "lookup_key": {
                                 "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "name": {
                                 "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                 "example": "Example Name",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "updated_at": {
@@ -86053,6 +86276,7 @@
                               "virtual_path": {
                                 "description": "Virtual filesystem path for this template config. `null` if not set.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               }
                             },
@@ -87442,12 +87666,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -87463,10 +87688,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -87487,10 +87714,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -87516,6 +87745,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -87963,12 +88193,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -87984,10 +88215,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -88008,10 +88241,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -88037,6 +88272,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -88180,11 +88416,13 @@
                                     "description": {
                                       "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                       "example": "An example description.",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "display_name": {
                                       "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "id": {
@@ -88200,11 +88438,13 @@
                                     "lookup_key": {
                                       "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "name": {
                                       "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "updated_at": {
@@ -88216,6 +88456,7 @@
                                     "virtual_path": {
                                       "description": "Virtual filesystem path for this template config. `null` if not set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     }
                                   },
@@ -89441,6 +89682,7 @@
                                     "content_type": {
                                       "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                       "example": "application/json",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "created_at": {
@@ -89457,11 +89699,13 @@
                                     "filename": {
                                       "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "height": {
                                       "description": "Height of this variant in pixels. `null` if not recorded.",
                                       "example": 600,
+                                      "nullable": true,
                                       "type": "integer"
                                     },
                                     "id": {
@@ -89480,6 +89724,7 @@
                                         "url": "https://example.com",
                                         "width": 800
                                       },
+                                      "nullable": true,
                                       "properties": {
                                         "file": {
                                           "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -89535,6 +89780,7 @@
                                     "url": {
                                       "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                       "example": "https://example.com",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "variant_key": {
@@ -89545,6 +89791,7 @@
                                     "width": {
                                       "description": "Width of this variant in pixels. `null` if not recorded.",
                                       "example": 800,
+                                      "nullable": true,
                                       "type": "integer"
                                     }
                                   },
@@ -91739,6 +91986,7 @@
                                       "content_type": {
                                         "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                         "example": "application/json",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "created_at": {
@@ -91755,11 +92003,13 @@
                                       "filename": {
                                         "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                         "example": "string",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "height": {
                                         "description": "Height of this variant in pixels. `null` if not recorded.",
                                         "example": 600,
+                                        "nullable": true,
                                         "type": "integer"
                                       },
                                       "id": {
@@ -91778,6 +92028,7 @@
                                           "url": "https://example.com",
                                           "width": 800
                                         },
+                                        "nullable": true,
                                         "properties": {
                                           "file": {
                                             "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -91833,6 +92084,7 @@
                                       "url": {
                                         "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                         "example": "https://example.com",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "variant_key": {
@@ -91843,6 +92095,7 @@
                                       "width": {
                                         "description": "Width of this variant in pixels. `null` if not recorded.",
                                         "example": 800,
+                                        "nullable": true,
                                         "type": "integer"
                                       }
                                     },
@@ -93641,12 +93894,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -93662,10 +93916,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -93686,10 +93942,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -93715,6 +93973,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -94162,12 +94421,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -94183,10 +94443,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -94207,10 +94469,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -94236,6 +94500,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -94379,11 +94644,13 @@
                                     "description": {
                                       "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                       "example": "An example description.",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "display_name": {
                                       "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "id": {
@@ -94399,11 +94666,13 @@
                                     "lookup_key": {
                                       "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "name": {
                                       "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "updated_at": {
@@ -94415,6 +94684,7 @@
                                     "virtual_path": {
                                       "description": "Virtual filesystem path for this template config. `null` if not set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     }
                                   },
@@ -94482,8 +94752,9 @@
                         },
                         "properties": {
                           "agent_enabled": {
-                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                             "example": true,
+                            "nullable": true,
                             "type": "boolean"
                           }
                         },
@@ -96259,6 +96530,7 @@
                                   "content_type": {
                                     "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                     "example": "application/json",
+                                    "nullable": true,
                                     "type": "string"
                                   },
                                   "created_at": {
@@ -96275,11 +96547,13 @@
                                   "filename": {
                                     "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                     "example": "string",
+                                    "nullable": true,
                                     "type": "string"
                                   },
                                   "height": {
                                     "description": "Height of this variant in pixels. `null` if not recorded.",
                                     "example": 600,
+                                    "nullable": true,
                                     "type": "integer"
                                   },
                                   "id": {
@@ -96298,6 +96572,7 @@
                                       "url": "https://example.com",
                                       "width": 800
                                     },
+                                    "nullable": true,
                                     "properties": {
                                       "file": {
                                         "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -96353,6 +96628,7 @@
                                   "url": {
                                     "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                     "example": "https://example.com",
+                                    "nullable": true,
                                     "type": "string"
                                   },
                                   "variant_key": {
@@ -96363,6 +96639,7 @@
                                   "width": {
                                     "description": "Width of this variant in pixels. `null` if not recorded.",
                                     "example": 800,
+                                    "nullable": true,
                                     "type": "integer"
                                   }
                                 },
@@ -98161,12 +98438,13 @@
                                             },
                                             "properties": {
                                               "automation_type": {
-                                                "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                 "example": "string",
+                                                "nullable": true,
                                                 "type": "string"
                                               },
                                               "invoke_contract": {
-                                                "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                 "example": {
                                                   "input_schema": {},
                                                   "participants": [
@@ -98182,10 +98460,12 @@
                                                     "payload": {}
                                                   }
                                                 },
+                                                "nullable": true,
                                                 "properties": {
                                                   "input_schema": {
                                                     "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                     "example": {},
+                                                    "nullable": true,
                                                     "type": "object"
                                                   },
                                                   "participants": {
@@ -98206,10 +98486,12 @@
                                                         "required": true,
                                                         "type": "agent_user"
                                                       },
+                                                      "nullable": true,
                                                       "properties": {
                                                         "description": {
                                                           "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                           "example": "An example description.",
+                                                          "nullable": true,
                                                           "type": "string"
                                                         },
                                                         "name": {
@@ -98235,6 +98517,7 @@
                                                       ],
                                                       "type": "object"
                                                     },
+                                                    "nullable": true,
                                                     "type": "array"
                                                   },
                                                   "prefills": {
@@ -98682,12 +98965,13 @@
                                             },
                                             "properties": {
                                               "automation_type": {
-                                                "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                 "example": "string",
+                                                "nullable": true,
                                                 "type": "string"
                                               },
                                               "invoke_contract": {
-                                                "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                 "example": {
                                                   "input_schema": {},
                                                   "participants": [
@@ -98703,10 +98987,12 @@
                                                     "payload": {}
                                                   }
                                                 },
+                                                "nullable": true,
                                                 "properties": {
                                                   "input_schema": {
                                                     "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                     "example": {},
+                                                    "nullable": true,
                                                     "type": "object"
                                                   },
                                                   "participants": {
@@ -98727,10 +99013,12 @@
                                                         "required": true,
                                                         "type": "agent_user"
                                                       },
+                                                      "nullable": true,
                                                       "properties": {
                                                         "description": {
                                                           "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                           "example": "An example description.",
+                                                          "nullable": true,
                                                           "type": "string"
                                                         },
                                                         "name": {
@@ -98756,6 +99044,7 @@
                                                       ],
                                                       "type": "object"
                                                     },
+                                                    "nullable": true,
                                                     "type": "array"
                                                   },
                                                   "prefills": {
@@ -98899,11 +99188,13 @@
                                 "description": {
                                   "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                   "example": "An example description.",
+                                  "nullable": true,
                                   "type": "string"
                                 },
                                 "display_name": {
                                   "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                   "example": "Example Name",
+                                  "nullable": true,
                                   "type": "string"
                                 },
                                 "id": {
@@ -98919,11 +99210,13 @@
                                 "lookup_key": {
                                   "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                   "example": "string",
+                                  "nullable": true,
                                   "type": "string"
                                 },
                                 "name": {
                                   "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                   "example": "Example Name",
+                                  "nullable": true,
                                   "type": "string"
                                 },
                                 "updated_at": {
@@ -98935,6 +99228,7 @@
                                 "virtual_path": {
                                   "description": "Virtual filesystem path for this template config. `null` if not set.",
                                   "example": "string",
+                                  "nullable": true,
                                   "type": "string"
                                 }
                               },
@@ -99002,8 +99296,9 @@
                     },
                     "properties": {
                       "agent_enabled": {
-                        "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                        "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                         "example": true,
+                        "nullable": true,
                         "type": "boolean"
                       }
                     },
@@ -100300,6 +100595,7 @@
                                 "content_type": {
                                   "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                   "example": "application/json",
+                                  "nullable": true,
                                   "type": "string"
                                 },
                                 "created_at": {
@@ -100316,11 +100612,13 @@
                                 "filename": {
                                   "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                   "example": "string",
+                                  "nullable": true,
                                   "type": "string"
                                 },
                                 "height": {
                                   "description": "Height of this variant in pixels. `null` if not recorded.",
                                   "example": 600,
+                                  "nullable": true,
                                   "type": "integer"
                                 },
                                 "id": {
@@ -100339,6 +100637,7 @@
                                     "url": "https://example.com",
                                     "width": 800
                                   },
+                                  "nullable": true,
                                   "properties": {
                                     "file": {
                                       "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -100394,6 +100693,7 @@
                                 "url": {
                                   "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                   "example": "https://example.com",
+                                  "nullable": true,
                                   "type": "string"
                                 },
                                 "variant_key": {
@@ -100404,6 +100704,7 @@
                                 "width": {
                                   "description": "Width of this variant in pixels. `null` if not recorded.",
                                   "example": 800,
+                                  "nullable": true,
                                   "type": "integer"
                                 }
                               },
@@ -103814,12 +104115,13 @@
                                           },
                                           "properties": {
                                             "automation_type": {
-                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                               "example": "string",
+                                              "nullable": true,
                                               "type": "string"
                                             },
                                             "invoke_contract": {
-                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                               "example": {
                                                 "input_schema": {},
                                                 "participants": [
@@ -103835,10 +104137,12 @@
                                                   "payload": {}
                                                 }
                                               },
+                                              "nullable": true,
                                               "properties": {
                                                 "input_schema": {
                                                   "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                   "example": {},
+                                                  "nullable": true,
                                                   "type": "object"
                                                 },
                                                 "participants": {
@@ -103859,10 +104163,12 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                         "example": "An example description.",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "name": {
@@ -103888,6 +104194,7 @@
                                                     ],
                                                     "type": "object"
                                                   },
+                                                  "nullable": true,
                                                   "type": "array"
                                                 },
                                                 "prefills": {
@@ -104335,12 +104642,13 @@
                                           },
                                           "properties": {
                                             "automation_type": {
-                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                              "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                               "example": "string",
+                                              "nullable": true,
                                               "type": "string"
                                             },
                                             "invoke_contract": {
-                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                              "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                               "example": {
                                                 "input_schema": {},
                                                 "participants": [
@@ -104356,10 +104664,12 @@
                                                   "payload": {}
                                                 }
                                               },
+                                              "nullable": true,
                                               "properties": {
                                                 "input_schema": {
                                                   "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                   "example": {},
+                                                  "nullable": true,
                                                   "type": "object"
                                                 },
                                                 "participants": {
@@ -104380,10 +104690,12 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                         "example": "An example description.",
+                                                        "nullable": true,
                                                         "type": "string"
                                                       },
                                                       "name": {
@@ -104409,6 +104721,7 @@
                                                     ],
                                                     "type": "object"
                                                   },
+                                                  "nullable": true,
                                                   "type": "array"
                                                 },
                                                 "prefills": {
@@ -104552,11 +104865,13 @@
                               "description": {
                                 "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                 "example": "An example description.",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "display_name": {
                                 "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                 "example": "Example Name",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "id": {
@@ -104572,11 +104887,13 @@
                               "lookup_key": {
                                 "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "name": {
                                 "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                 "example": "Example Name",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "updated_at": {
@@ -104588,6 +104905,7 @@
                               "virtual_path": {
                                 "description": "Virtual filesystem path for this template config. `null` if not set.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               }
                             },
@@ -105977,12 +106295,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -105998,10 +106317,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -106022,10 +106343,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -106051,6 +106374,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -106498,12 +106822,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -106519,10 +106844,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -106543,10 +106870,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -106572,6 +106901,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -106715,11 +107045,13 @@
                                     "description": {
                                       "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                       "example": "An example description.",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "display_name": {
                                       "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "id": {
@@ -106735,11 +107067,13 @@
                                     "lookup_key": {
                                       "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "name": {
                                       "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "updated_at": {
@@ -106751,6 +107085,7 @@
                                     "virtual_path": {
                                       "description": "Virtual filesystem path for this template config. `null` if not set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     }
                                   },
@@ -107976,6 +108311,7 @@
                                     "content_type": {
                                       "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                       "example": "application/json",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "created_at": {
@@ -107992,11 +108328,13 @@
                                     "filename": {
                                       "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "height": {
                                       "description": "Height of this variant in pixels. `null` if not recorded.",
                                       "example": 600,
+                                      "nullable": true,
                                       "type": "integer"
                                     },
                                     "id": {
@@ -108015,6 +108353,7 @@
                                         "url": "https://example.com",
                                         "width": 800
                                       },
+                                      "nullable": true,
                                       "properties": {
                                         "file": {
                                           "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -108070,6 +108409,7 @@
                                     "url": {
                                       "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                       "example": "https://example.com",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "variant_key": {
@@ -108080,6 +108420,7 @@
                                     "width": {
                                       "description": "Width of this variant in pixels. `null` if not recorded.",
                                       "example": 800,
+                                      "nullable": true,
                                       "type": "integer"
                                     }
                                   },
@@ -110274,6 +110615,7 @@
                                       "content_type": {
                                         "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                         "example": "application/json",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "created_at": {
@@ -110290,11 +110632,13 @@
                                       "filename": {
                                         "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                         "example": "string",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "height": {
                                         "description": "Height of this variant in pixels. `null` if not recorded.",
                                         "example": 600,
+                                        "nullable": true,
                                         "type": "integer"
                                       },
                                       "id": {
@@ -110313,6 +110657,7 @@
                                           "url": "https://example.com",
                                           "width": 800
                                         },
+                                        "nullable": true,
                                         "properties": {
                                           "file": {
                                             "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -110368,6 +110713,7 @@
                                       "url": {
                                         "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                         "example": "https://example.com",
+                                        "nullable": true,
                                         "type": "string"
                                       },
                                       "variant_key": {
@@ -110378,6 +110724,7 @@
                                       "width": {
                                         "description": "Width of this variant in pixels. `null` if not recorded.",
                                         "example": 800,
+                                        "nullable": true,
                                         "type": "integer"
                                       }
                                     },
@@ -112176,12 +112523,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -112197,10 +112545,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -112221,10 +112571,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -112250,6 +112602,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -112697,12 +113050,13 @@
                                                 },
                                                 "properties": {
                                                   "automation_type": {
-                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`).",
+                                                    "description": "Automation execution type (`invoked`, `scheduled`, or `trigger`). `null` when the template body does not declare one.",
                                                     "example": "string",
+                                                    "nullable": true,
                                                     "type": "string"
                                                   },
                                                   "invoke_contract": {
-                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning.",
+                                                    "description": "Schema-driven payload and participant inputs for an invoked automation. Used by installation clients to collect locked prefills before provisioning. `null` for non-invoked automation types.",
                                                     "example": {
                                                       "input_schema": {},
                                                       "participants": [
@@ -112718,10 +113072,12 @@
                                                         "payload": {}
                                                       }
                                                     },
+                                                    "nullable": true,
                                                     "properties": {
                                                       "input_schema": {
                                                         "description": "JSON Schema validated against the whole invoke payload, from the automation's `input_schema_config`. `null` when none is configured.",
                                                         "example": {},
+                                                        "nullable": true,
                                                         "type": "object"
                                                       },
                                                       "participants": {
@@ -112742,10 +113098,12 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
+                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
                                                               "example": "An example description.",
+                                                              "nullable": true,
                                                               "type": "string"
                                                             },
                                                             "name": {
@@ -112771,6 +113129,7 @@
                                                           ],
                                                           "type": "object"
                                                         },
+                                                        "nullable": true,
                                                         "type": "array"
                                                       },
                                                       "prefills": {
@@ -112914,11 +113273,13 @@
                                     "description": {
                                       "description": "Description of the template from the config body. `null` if the current version has no `description` field.",
                                       "example": "An example description.",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "display_name": {
                                       "description": "Human-readable display name from the config body. `null` if the current version has no `display_name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "id": {
@@ -112934,11 +113295,13 @@
                                     "lookup_key": {
                                       "description": "Stable lookup key assigned to this template config. `null` if no lookup key is set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "name": {
                                       "description": "Template name as stored in the config body. `null` if the current version has no `name` field.",
                                       "example": "Example Name",
+                                      "nullable": true,
                                       "type": "string"
                                     },
                                     "updated_at": {
@@ -112950,6 +113313,7 @@
                                     "virtual_path": {
                                       "description": "Virtual filesystem path for this template config. `null` if not set.",
                                       "example": "string",
+                                      "nullable": true,
                                       "type": "string"
                                     }
                                   },
@@ -113017,8 +113381,9 @@
                         },
                         "properties": {
                           "agent_enabled": {
-                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured.",
+                            "description": "Whether the AI agent is active for this thread. `true` enables AI responses; `false` disables them. Defaults to `true` when settings have not been explicitly configured. `null` when a client explicitly cleared the setting.",
                             "example": true,
+                            "nullable": true,
                             "type": "boolean"
                           }
                         },
@@ -114044,6 +114409,7 @@
                               "content_type": {
                                 "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                 "example": "application/json",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "created_at": {
@@ -114060,11 +114426,13 @@
                               "filename": {
                                 "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "height": {
                                 "description": "Height of this variant in pixels. `null` if not recorded.",
                                 "example": 600,
+                                "nullable": true,
                                 "type": "integer"
                               },
                               "id": {
@@ -114083,6 +114451,7 @@
                                   "url": "https://example.com",
                                   "width": 800
                                 },
+                                "nullable": true,
                                 "properties": {
                                   "file": {
                                     "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -114138,6 +114507,7 @@
                               "url": {
                                 "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                 "example": "https://example.com",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "variant_key": {
@@ -114148,6 +114518,7 @@
                               "width": {
                                 "description": "Width of this variant in pixels. `null` if not recorded.",
                                 "example": 800,
+                                "nullable": true,
                                 "type": "integer"
                               }
                             },
@@ -115570,6 +115941,7 @@
                               "content_type": {
                                 "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                 "example": "application/json",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "created_at": {
@@ -115586,11 +115958,13 @@
                               "filename": {
                                 "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "height": {
                                 "description": "Height of this variant in pixels. `null` if not recorded.",
                                 "example": 600,
+                                "nullable": true,
                                 "type": "integer"
                               },
                               "id": {
@@ -115609,6 +115983,7 @@
                                   "url": "https://example.com",
                                   "width": 800
                                 },
+                                "nullable": true,
                                 "properties": {
                                   "file": {
                                     "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -115664,6 +116039,7 @@
                               "url": {
                                 "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                 "example": "https://example.com",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "variant_key": {
@@ -115674,6 +116050,7 @@
                               "width": {
                                 "description": "Width of this variant in pixels. `null` if not recorded.",
                                 "example": 800,
+                                "nullable": true,
                                 "type": "integer"
                               }
                             },
@@ -117225,6 +117602,7 @@
                               "content_type": {
                                 "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                 "example": "application/json",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "created_at": {
@@ -117241,11 +117619,13 @@
                               "filename": {
                                 "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "height": {
                                 "description": "Height of this variant in pixels. `null` if not recorded.",
                                 "example": 600,
+                                "nullable": true,
                                 "type": "integer"
                               },
                               "id": {
@@ -117264,6 +117644,7 @@
                                   "url": "https://example.com",
                                   "width": 800
                                 },
+                                "nullable": true,
                                 "properties": {
                                   "file": {
                                     "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -117319,6 +117700,7 @@
                               "url": {
                                 "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                 "example": "https://example.com",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "variant_key": {
@@ -117329,6 +117711,7 @@
                               "width": {
                                 "description": "Width of this variant in pixels. `null` if not recorded.",
                                 "example": 800,
+                                "nullable": true,
                                 "type": "integer"
                               }
                             },
@@ -118730,6 +119113,7 @@
                               "content_type": {
                                 "description": "MIME type of this variant's file (e.g., `\"image/jpeg\"`, `\"video/mp4\"`). `null` if the file is not loaded.",
                                 "example": "application/json",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "created_at": {
@@ -118746,11 +119130,13 @@
                               "filename": {
                                 "description": "Original filename of the uploaded file for this variant. `null` if the file is not loaded.",
                                 "example": "string",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "height": {
                                 "description": "Height of this variant in pixels. `null` if not recorded.",
                                 "example": 600,
+                                "nullable": true,
                                 "type": "integer"
                               },
                               "id": {
@@ -118769,6 +119155,7 @@
                                   "url": "https://example.com",
                                   "width": 800
                                 },
+                                "nullable": true,
                                 "properties": {
                                   "file": {
                                     "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
@@ -118824,6 +119211,7 @@
                               "url": {
                                 "description": "Signed download URL for this variant, resolved at request time. `null` if the file is unavailable.",
                                 "example": "https://example.com",
+                                "nullable": true,
                                 "type": "string"
                               },
                               "variant_key": {
@@ -118834,6 +119222,7 @@
                               "width": {
                                 "description": "Width of this variant in pixels. `null` if not recorded.",
                                 "example": 800,
+                                "nullable": true,
                                 "type": "integer"
                               }
                             },
