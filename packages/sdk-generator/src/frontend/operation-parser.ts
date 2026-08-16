@@ -238,7 +238,7 @@ function extractSuccessResponse(
   }
 
   const jsonContent = successResponse.content["application/json"];
-  if (jsonContent?.schema) {
+  if (jsonContent?.schema && jsonContent.schema.format !== "binary") {
     return {
       returnType: jsonSchemaToTypeRef(jsonContent.schema),
       returnDescription,
