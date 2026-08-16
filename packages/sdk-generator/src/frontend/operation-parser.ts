@@ -237,6 +237,10 @@ function extractSuccessResponse(
     return { returnType: { kind: "void" }, returnDescription };
   }
 
+  // A binary-format schema is a raw blob even when served with a JSON content
+  // type, and must not be typed: HTTP clients decode the JSON body before the
+  // SDK's own decode runs. Only a top-level format is inspected; no spec shape
+  // wraps binary in a $ref or allOf today.
   const jsonContent = successResponse.content["application/json"];
   if (jsonContent?.schema && jsonContent.schema.format !== "binary") {
     return {
