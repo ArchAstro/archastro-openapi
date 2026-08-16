@@ -91,7 +91,7 @@ export function buildValidator(loaded: LoadedSpec): ChannelValidator {
   for (const [name, schema] of Object.entries(loaded.components)) {
     const id = `#/components/schemas/${name}`;
     if (!ajv.getSchema(id)) {
-      ajv.addSchema({ ...schema, $id: id });
+      ajv.addSchema({ ...normalizeNullable(schema), $id: id });
     }
   }
 
@@ -186,7 +186,80 @@ function compileIfPresent(
   schema: JsonSchema | null
 ): ValidateFunction | null {
   if (!schema) return null;
-  return ajv.compile(schema);
+  return ajv.compile(normalizeNullable(schema));
+}
+
+// Keywords whose value is a map of subschemas, a list of subschemas, or a
+// single subschema (possibly a tuple list, for `items`). Only these are
+// recursed into — a generic walk over every key would corrupt non-schema
+// values (e.g. a property literally named "nullable" inside `properties`).
+const SCHEMA_MAP_KEYWORDS = ["properties", "patternProperties", "definitions", "$defs"];
+const SCHEMA_LIST_KEYWORDS = ["allOf", "anyOf", "oneOf", "prefixItems"];
+const SCHEMA_CHILD_KEYWORDS = [
+  "items",
+  "additionalItems",
+  "additionalProperties",
+  "unevaluatedProperties",
+  "unevaluatedItems",
+  "contains",
+  "propertyNames",
+  "not",
+  "if",
+  "then",
+  "else",
+];
+
+/**
+ * Rewrite OpenAPI 3.0 `nullable: true` into an ajv-compilable form.
+ *
+ * Ajv only honors `nullable` next to a sibling `type`, and hard-errors on the
+ * two type-less shapes the platform spec legitimately uses for nullable refs
+ * and unions (`allOf: [$ref] + nullable` and `oneOf: [...] + nullable`). Every
+ * `nullable: true` schema — typed or not — becomes
+ * `{ anyOf: [<schema without nullable>, { type: "null" }] }`, which accepts
+ * null exactly where declared and leaves all other validation intact.
+ * Schemas without `nullable: true` are untouched, so non-nullable fields keep
+ * rejecting null.
+ */
+export function normalizeNullable(schema: JsonSchema): JsonSchema {
+  const copy: Record<string, unknown> = { ...schema };
+
+  for (const key of SCHEMA_MAP_KEYWORDS) {
+    const map = copy[key];
+    if (map && typeof map === "object" && !Array.isArray(map)) {
+      copy[key] = Object.fromEntries(
+        Object.entries(map as Record<string, unknown>).map(([name, sub]) => [
+          name,
+          normalizeChild(sub),
+        ])
+      );
+    }
+  }
+  for (const key of SCHEMA_LIST_KEYWORDS) {
+    const list = copy[key];
+    if (Array.isArray(list)) copy[key] = list.map(normalizeChild);
+  }
+  for (const key of SCHEMA_CHILD_KEYWORDS) {
+    if (key in copy) {
+      const child = copy[key];
+      copy[key] = Array.isArray(child)
+        ? child.map(normalizeChild)
+        : normalizeChild(child);
+    }
+  }
+
+  if (copy.nullable === undefined) return copy as JsonSchema;
+  const { nullable, ...rest } = copy;
+  // `nullable: false` (or junk values) would still crash ajv when there is no
+  // sibling `type`; dropping the keyword is exactly its declared meaning.
+  if (nullable !== true) return rest as JsonSchema;
+  return { anyOf: [rest, { type: "null" }] };
+}
+
+/** Recurse into a subschema position, passing booleans and non-objects through. */
+function normalizeChild(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  return normalizeNullable(value as JsonSchema);
 }
 
 /**
