@@ -865,3 +865,136 @@ describe("elixir backend", () => {
     expect(output).not.toMatch(/def post_api_v1_auth_login\(/);
   });
 });
+
+describe("elixir nullable composite descriptors", () => {
+  // The decode audit against the live platform showed nullable: true being
+  // dropped whenever it rides a composite shape (allOf+$ref, oneOf union,
+  // enum), so generated decoders crashed on nulls the platform legitimately
+  // sends. Every shape must emit a {:nullable, _} descriptor, on REST and
+  // channel surfaces alike.
+  const nullableFixture = {
+    openapi: "3.0.0",
+    info: { title: "Nullable API", version: "1.0.0" },
+    paths: {
+      "/api/v1/messages": {
+        get: {
+          operationId: "list_messages",
+          responses: {
+            "200": {
+              description: "ok",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/Message" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        Acl: {
+          type: "object",
+          properties: { grants: { type: "array", items: { type: "string" } } },
+        },
+        Badge: {
+          type: "object",
+          properties: { label: { type: "string" } },
+        },
+        Message: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string" },
+            acl: {
+              allOf: [{ $ref: "#/components/schemas/Acl" }],
+              nullable: true,
+            },
+            user: {
+              nullable: true,
+              oneOf: [{ type: "string" }, { $ref: "#/components/schemas/Badge" }],
+            },
+            agent_mode: { enum: ["default", "plan"], nullable: true },
+            badge: { allOf: [{ $ref: "#/components/schemas/Badge" }] },
+            mode: { enum: ["a", "b"] },
+          },
+        },
+      },
+    },
+    "x-channels": [
+      {
+        name: "ChatChannel",
+        description: "Nullable-shape fixture channel",
+        joins: [
+          {
+            pattern: "api:chat:{room_id}",
+            name: "join_room",
+            params: {
+              type: "object",
+              required: ["room_id"],
+              properties: { room_id: { type: "string" } },
+            },
+            returns: { type: "object" },
+          },
+        ],
+        messages: [],
+        pushes: [
+          {
+            event: "message_added",
+            description: "Carries a nullable ref in its payload",
+            payload: {
+              type: "object",
+              required: ["message"],
+              properties: {
+                message: {
+                  allOf: [{ $ref: "#/components/schemas/Message" }],
+                  nullable: true,
+                },
+              },
+            },
+          },
+        ],
+      },
+    ],
+  };
+
+  function nullableOutput(): string {
+    const spec = parseOpenApiSpec(nullableFixture, {
+      apiBase: "/api",
+      defaultVersion: "v1",
+    });
+    return Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
+  }
+
+  it("emits nullable descriptors for ref, union, and enum fields", () => {
+    const output = nullableOutput();
+    expect(output).toContain(
+      '{"acl", {:optional, {:nullable, {:ref, ArchAstro.SDK.Types.Acl}}}}'
+    );
+    expect(output).toContain(
+      '{"user", {:optional, {:nullable, {:union, [:string, {:ref, ArchAstro.SDK.Types.Badge}]}}}}'
+    );
+    expect(output).toContain(
+      '{"agent_mode", {:optional, {:nullable, {:enum, ["default", "plan"]}}}}'
+    );
+  });
+
+  it("leaves non-nullable composite fields unwrapped", () => {
+    const output = nullableOutput();
+    expect(output).toContain(
+      '{"badge", {:optional, {:ref, ArchAstro.SDK.Types.Badge}}}'
+    );
+    expect(output).toContain('{"mode", {:optional, {:enum, ["a", "b"]}}}');
+    expect(output).not.toContain(
+      '{:nullable, {:ref, ArchAstro.SDK.Types.Badge}}'
+    );
+  });
+
+  it("emits nullable descriptors on channel push payloads", () => {
+    const output = nullableOutput();
+    expect(output).toContain(
+      '{"message", {:nullable, {:ref, ArchAstro.SDK.Types.Message}}}'
+    );
+  });
+});
