@@ -87,6 +87,52 @@ const rawFixture = {
         },
       },
     },
+    "/api/v1/trajectories/{trajectory}/contents": {
+      get: {
+        operationId: "get_api_v1_trajectories_contents",
+        parameters: [
+          {
+            name: "trajectory",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Raw trajectory JSON blob served as application/json",
+            content: {
+              "application/json": {
+                schema: { type: "string", format: "binary" },
+              },
+            },
+          },
+        },
+      },
+    },
+    "/api/v1/configs/{config}/summary": {
+      get: {
+        operationId: "get_api_v1_configs_summary",
+        parameters: [
+          {
+            name: "config",
+            in: "path",
+            required: true,
+            schema: { type: "string" },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Plain JSON string",
+            content: {
+              "application/json": {
+                schema: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    },
   },
 };
 
@@ -319,6 +365,19 @@ describe("parseOpenApiSpec detects raw responses", () => {
     const configs = ast.resources.find((r) => r.name === "configs")!;
     const content = configs.operations.find((o) => o.name === "content")!;
     expect(content.rawResponse).toBe(true);
+  });
+
+  it("marks binary-format application/json responses as raw", () => {
+    const trajectories = ast.resources.find((r) => r.name === "trajectories")!;
+    const contents = trajectories.operations.find((o) => o.name === "contents")!;
+    expect(contents.rawResponse).toBe(true);
+  });
+
+  it("keeps plain application/json string responses typed", () => {
+    const configs = ast.resources.find((r) => r.name === "configs")!;
+    const summary = configs.operations.find((o) => o.name === "summary")!;
+    expect(summary.rawResponse).toBeFalsy();
+    expect(summary.returnType).toEqual({ kind: "primitive", type: "string" });
   });
 });
 
