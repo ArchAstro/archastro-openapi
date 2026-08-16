@@ -998,3 +998,92 @@ describe("elixir nullable composite descriptors", () => {
     );
   });
 });
+
+describe("elixir emission of binary-format application/json responses", () => {
+  // Mirrors the two production ops whose 200 response is a raw blob served
+  // with a JSON content type: trajectories contents and private service
+  // definitions. Both must come out as raw ops, never decode: :string.
+  const binaryRawFixture = {
+    openapi: "3.0.0",
+    info: { title: "Binary Raw API", version: "1.0.0" },
+    paths: {
+      "/api/v1/trajectories/{trajectory}/contents": {
+        get: {
+          operationId: "get_api_v1_trajectories_contents",
+          parameters: [
+            { name: "trajectory", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "Raw trajectory JSON blob",
+              content: {
+                "application/json": { schema: { type: "string", format: "binary" } },
+              },
+            },
+          },
+        },
+      },
+      "/api/v1/private_service_definitions/{app_id}/{private_service_id}": {
+        get: {
+          operationId: "get_api_v1_private_service_definitions",
+          parameters: [
+            { name: "app_id", in: "path", required: true, schema: { type: "string" } },
+            {
+              name: "private_service_id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "Raw service definition",
+              content: {
+                "application/json": { schema: { type: "string", format: "binary" } },
+              },
+            },
+          },
+        },
+      },
+      "/api/v1/configs/{config}/summary": {
+        get: {
+          operationId: "get_api_v1_configs_summary",
+          parameters: [
+            { name: "config", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "Plain JSON string",
+              content: { "application/json": { schema: { type: "string" } } },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  it("emits raw ops for binary-format json responses and typed ops for plain strings", () => {
+    const spec = parseOpenApiSpec(binaryRawFixture, {
+      apiBase: "/api",
+      defaultVersion: "v1",
+    });
+    const files = generateElixir(spec, { outDir: "sdk" });
+
+    const trajectories = Object.entries(files).find(([path]) =>
+      path.includes("trajectories")
+    )![1];
+    expect(trajectories).toContain("raw: true");
+    expect(trajectories).toContain("{:ok, Req.Response.t()}");
+    expect(trajectories).not.toContain("decode: :string");
+
+    const definitions = Object.entries(files).find(([path]) =>
+      path.includes("private_service_definitions")
+    )![1];
+    expect(definitions).toContain("raw: true");
+    expect(definitions).not.toContain("decode: :string");
+
+    const configs = Object.entries(files).find(([path]) => path.includes("configs"))![1];
+    expect(configs).toContain("decode: :string");
+    expect(configs).not.toContain("raw: true");
+  });
+});
