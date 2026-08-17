@@ -12235,6 +12235,558 @@
         ],
         "type": "object"
       },
+      "DomainEvent": {
+        "description": "A domain event with stable attribution fields and an event-specific payload.",
+        "example": {
+          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "created_at": "2024-01-01T00:00:00Z",
+          "event_name": "Example Name",
+          "id": "string",
+          "idempotency_key": "string",
+          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+          "payload": {},
+          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+        },
+        "properties": {
+          "agent": {
+            "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "created_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "event_name": {
+            "example": "Example Name",
+            "type": "string"
+          },
+          "id": {
+            "example": "string",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "example": "string",
+            "type": "string"
+          },
+          "org": {
+            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "payload": {
+            "description": "Opaque event-specific JSON. Use event_name to select the expected payload schema.",
+            "example": {},
+            "type": "object"
+          },
+          "sandbox": {
+            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "team": {
+            "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "user": {
+            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event_name",
+          "payload",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "EventSubscription": {
+        "description": "An app-scoped subscription to exact domain-event names.",
+        "example": {
+          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "available_count": 1,
+          "created_at": "2024-01-01T00:00:00Z",
+          "dropped_events_total": 1,
+          "dropped_through_position": 1,
+          "event_names": [
+            "Example Name"
+          ],
+          "id": "string",
+          "last_overflow_at": "2024-01-01T00:00:00Z",
+          "leased_count": 1,
+          "max_pending_events": 1,
+          "name": "Example Name",
+          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+          "queue_epoch": 1,
+          "retention_seconds": 1,
+          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+          "status": "active",
+          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+          "updated_at": "2024-01-01T00:00:00Z",
+          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+          "visibility_timeout_seconds": 1
+        },
+        "properties": {
+          "agent": {
+            "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "available_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "created_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "dropped_events_total": {
+            "example": 1,
+            "type": "integer"
+          },
+          "dropped_through_position": {
+            "example": 1,
+            "type": "integer"
+          },
+          "event_names": {
+            "example": [
+              "Example Name"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "example": "string",
+            "type": "string"
+          },
+          "last_overflow_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "leased_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "max_pending_events": {
+            "example": 1,
+            "type": "integer"
+          },
+          "name": {
+            "example": "Example Name",
+            "type": "string"
+          },
+          "org": {
+            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "queue_epoch": {
+            "example": 1,
+            "type": "integer"
+          },
+          "retention_seconds": {
+            "example": 1,
+            "type": "integer"
+          },
+          "sandbox": {
+            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "paused"
+            ],
+            "example": "active",
+            "type": "string"
+          },
+          "team": {
+            "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "user": {
+            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "visibility_timeout_seconds": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "event_names",
+          "status",
+          "max_pending_events",
+          "visibility_timeout_seconds",
+          "retention_seconds",
+          "available_count",
+          "leased_count",
+          "queue_epoch",
+          "dropped_events_total",
+          "dropped_through_position",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionClaim": {
+        "description": "Result of atomically claiming the head delivery.",
+        "example": {
+          "data": [
+            {
+              "delivery_id": "string",
+              "event": {
+                "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                "created_at": "2024-01-01T00:00:00Z",
+                "event_name": "Example Name",
+                "id": "string",
+                "idempotency_key": "string",
+                "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                "payload": {},
+                "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+              },
+              "lease_expires_at": "2024-01-01T00:00:00Z",
+              "receipt_handle": "string",
+              "receive_count": 1,
+              "sequence": 1
+            }
+          ],
+          "dropped_events_total": 1,
+          "dropped_through_position": 1,
+          "has_more": true,
+          "queue_epoch": 1
+        },
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventSubscriptionDelivery"
+            },
+            "type": "array"
+          },
+          "dropped_events_total": {
+            "example": 1,
+            "type": "integer"
+          },
+          "dropped_through_position": {
+            "example": 1,
+            "type": "integer"
+          },
+          "has_more": {
+            "example": true,
+            "type": "boolean"
+          },
+          "queue_epoch": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "queue_epoch",
+          "dropped_events_total",
+          "dropped_through_position"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionDelivery": {
+        "description": "A domain event leased from a subscription queue.",
+        "example": {
+          "delivery_id": "string",
+          "event": {
+            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "created_at": "2024-01-01T00:00:00Z",
+            "event_name": "Example Name",
+            "id": "string",
+            "idempotency_key": "string",
+            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "payload": {},
+            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+          },
+          "lease_expires_at": "2024-01-01T00:00:00Z",
+          "receipt_handle": "string",
+          "receive_count": 1,
+          "sequence": 1
+        },
+        "properties": {
+          "delivery_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/DomainEvent"
+          },
+          "lease_expires_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "receipt_handle": {
+            "example": "string",
+            "type": "string"
+          },
+          "receive_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "sequence": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "delivery_id",
+          "sequence",
+          "receipt_handle",
+          "lease_expires_at",
+          "receive_count",
+          "event"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionHead": {
+        "description": "A non-reserving view of the queue head.",
+        "example": {
+          "data": {
+            "delivery_id": "string",
+            "event": {
+              "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+              "created_at": "2024-01-01T00:00:00Z",
+              "event_name": "Example Name",
+              "id": "string",
+              "idempotency_key": "string",
+              "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+              "payload": {},
+              "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+            },
+            "lease_expires_at": "2024-01-01T00:00:00Z",
+            "receive_count": 1,
+            "sequence": 1,
+            "state": "available"
+          }
+        },
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EventSubscriptionQueueEntry"
+          }
+        },
+        "type": "object"
+      },
+      "EventSubscriptionPage": {
+        "description": "A page of domain-event subscriptions.",
+        "example": {
+          "data": [
+            {
+              "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+              "available_count": 1,
+              "created_at": "2024-01-01T00:00:00Z",
+              "dropped_events_total": 1,
+              "dropped_through_position": 1,
+              "event_names": [
+                "Example Name"
+              ],
+              "id": "string",
+              "last_overflow_at": "2024-01-01T00:00:00Z",
+              "leased_count": 1,
+              "max_pending_events": 1,
+              "name": "Example Name",
+              "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+              "queue_epoch": 1,
+              "retention_seconds": 1,
+              "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+              "status": "active",
+              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+              "updated_at": "2024-01-01T00:00:00Z",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+              "visibility_timeout_seconds": 1
+            }
+          ],
+          "page": 1,
+          "per_page": 1,
+          "total_count": 1,
+          "total_pages": 1
+        },
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventSubscription"
+            },
+            "type": "array"
+          },
+          "page": {
+            "example": 1,
+            "type": "integer"
+          },
+          "per_page": {
+            "example": 1,
+            "type": "integer"
+          },
+          "total_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "page",
+          "per_page",
+          "total_count",
+          "total_pages"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionQueue": {
+        "description": "A cursor-paginated non-reserving view of a subscription queue.",
+        "example": {
+          "after_cursor": "string",
+          "before_cursor": "string",
+          "data": [
+            {
+              "delivery_id": "string",
+              "event": {
+                "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                "created_at": "2024-01-01T00:00:00Z",
+                "event_name": "Example Name",
+                "id": "string",
+                "idempotency_key": "string",
+                "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                "payload": {},
+                "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+              },
+              "lease_expires_at": "2024-01-01T00:00:00Z",
+              "receive_count": 1,
+              "sequence": 1,
+              "state": "available"
+            }
+          ],
+          "dropped_events_total": 1,
+          "dropped_through_position": 1,
+          "has_more": true,
+          "queue_epoch": 1
+        },
+        "properties": {
+          "after_cursor": {
+            "example": "string",
+            "type": "string"
+          },
+          "before_cursor": {
+            "example": "string",
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventSubscriptionQueueEntry"
+            },
+            "type": "array"
+          },
+          "dropped_events_total": {
+            "example": 1,
+            "type": "integer"
+          },
+          "dropped_through_position": {
+            "example": 1,
+            "type": "integer"
+          },
+          "has_more": {
+            "example": true,
+            "type": "boolean"
+          },
+          "queue_epoch": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "queue_epoch",
+          "dropped_events_total",
+          "dropped_through_position"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionQueueEntry": {
+        "description": "A non-reserving view of one queued delivery.",
+        "example": {
+          "delivery_id": "string",
+          "event": {
+            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "created_at": "2024-01-01T00:00:00Z",
+            "event_name": "Example Name",
+            "id": "string",
+            "idempotency_key": "string",
+            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "payload": {},
+            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+          },
+          "lease_expires_at": "2024-01-01T00:00:00Z",
+          "receive_count": 1,
+          "sequence": 1,
+          "state": "available"
+        },
+        "properties": {
+          "delivery_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/DomainEvent"
+          },
+          "lease_expires_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "receive_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "sequence": {
+            "example": 1,
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "available",
+              "leased"
+            ],
+            "example": "available",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delivery_id",
+          "sequence",
+          "state",
+          "receive_count",
+          "event"
+        ],
+        "type": "object"
+      },
       "Extraction": {
         "description": "An extraction job: yields text from a document or website into a destination namespace, without committing knowledge to an agent.",
         "example": {
@@ -18013,6 +18565,7 @@
           },
           "description": "An example description.",
           "due_date": "2024-01-01T00:00:00Z",
+          "epic": "string",
           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
           "is_blocked": true,
           "links": {
@@ -18042,6 +18595,9 @@
           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
           "priority": 2,
           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+          "source_id": "string",
+          "source_scope": "string",
+          "source_type": "string",
           "status": "open",
           "subtasks_count": 1,
           "tags": [
@@ -18144,6 +18700,12 @@
             "nullable": true,
             "type": "string"
           },
+          "epic": {
+            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "description": "Task ID (`tsk_...`).",
             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -18228,6 +18790,24 @@
           "sandbox": {
             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
+            "type": "string"
+          },
+          "source_id": {
+            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "source_scope": {
+            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "source_type": {
+            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+            "example": "string",
             "nullable": true,
             "type": "string"
           },
@@ -20045,7 +20625,7 @@
             "type": "string"
           },
           "kind": {
-            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
             "example": "string",
             "nullable": true,
             "type": "string"
@@ -31158,6 +31738,7 @@
                     "description": "An example description.",
                     "is_unlisted": true,
                     "key": "string",
+                    "kind": "personal",
                     "members": [
                       {
                         "id": "string",
@@ -31195,6 +31776,7 @@
                       "description": "An example description.",
                       "is_unlisted": true,
                       "key": "string",
+                      "kind": "personal",
                       "members": [
                         {
                           "id": "string",
@@ -31237,6 +31819,14 @@
                       "key": {
                         "description": "Client-assigned unique key for idempotent creation or later lookup. Must be unique within the owning organization.",
                         "example": "string",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Optional behavioral subtype. `personal` is accepted only for a user-owned thread and limits membership to that user and agents currently owned by them. Mirror kinds remain server-derived and cannot be selected by callers.",
+                        "enum": [
+                          "personal"
+                        ],
+                        "example": "personal",
                         "type": "string"
                       },
                       "members": {
@@ -38172,6 +38762,584 @@
           }
         },
         "summary": "Update a custom object",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscription_deliveries/{delivery}/acknowledge": {
+      "post": {
+        "description": "Acknowledges a delivery using its current receipt handle. Repeating the same acknowledgement is idempotent; a stale or incorrect receipt returns 409. Acknowledging a delivery that aged out under the subscription's retention returns `delivery_not_found` — the event was already counted in `dropped_events_total`, and the acknowledgement should not be retried.",
+        "operationId": "post_api_v1_event_subscription_deliveries__delivery_acknowledge",
+        "parameters": [
+          {
+            "description": "Delivery ID (`esd_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "delivery",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "receipt_handle": "string"
+                },
+                "properties": {
+                  "receipt_handle": {
+                    "description": "Opaque handle returned by claim.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "receipt_handle"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription delivery not found"
+          },
+          "409": {
+            "description": "The delivery lease is no longer current"
+          }
+        },
+        "summary": "Acknowledge a claimed event",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions": {
+      "get": {
+        "description": "Lists the subscriptions visible to the caller, with current queue counters.",
+        "operationId": "get_api_v1_event_subscriptions",
+        "parameters": [
+          {
+            "description": "Page number, starting at 1.",
+            "example": 1,
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Subscriptions per page, from 1 through 100.",
+            "example": 1,
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionPage"
+                }
+              }
+            },
+            "description": "Subscriptions visible to this caller."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "List domain-event subscriptions",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "description": "Creates a durable subscription that receives exportable domain events matching its exact event names. Matching events fan out into a per-subscription queue bounded by max_pending_events and retention_seconds; consume with claim and acknowledge.",
+        "operationId": "post_api_v1_event_subscriptions",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "event_names": [
+                    "Example Name"
+                  ],
+                  "max_pending_events": 1,
+                  "name": "Example Name",
+                  "retention_seconds": 1,
+                  "status": "active",
+                  "visibility_timeout_seconds": 1
+                },
+                "properties": {
+                  "event_names": {
+                    "description": "Exact event names to receive.",
+                    "example": [
+                      "Example Name"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "max_pending_events": {
+                    "description": "Queue cap. Defaults to 100; maximum 1000.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "description": "Customer-defined subscription name.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "retention_seconds": {
+                    "description": "Delivery retention in seconds. Defaults to 86400 (24 hours); between 7200 and 2592000. Applies to future deliveries only.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "status": {
+                    "description": "Initial status. Defaults to active.",
+                    "enum": [
+                      "active",
+                      "paused"
+                    ],
+                    "example": "active",
+                    "type": "string"
+                  },
+                  "visibility_timeout_seconds": {
+                    "description": "Default claim lease in seconds. Defaults to 300.",
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "name",
+                  "event_names"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscription"
+                }
+              }
+            },
+            "description": "The new volatile subscription."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          }
+        },
+        "summary": "Create a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}": {
+      "delete": {
+        "description": "Deletes the subscription and every delivery still in its queue.",
+        "operationId": "delete_api_v1_event_subscriptions__subscription",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Delete a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "get": {
+        "description": "Returns one subscription and its current queue counters.",
+        "operationId": "get_api_v1_event_subscriptions__subscription",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscription"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Get a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "patch": {
+        "description": "Updates matching, status, or queue limits for future fanout. Already queued deliveries remain unless a lower cap trims the oldest entries; retention changes apply to future deliveries only.",
+        "operationId": "patch_api_v1_event_subscriptions__subscription",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "event_names": [
+                    "Example Name"
+                  ],
+                  "max_pending_events": 1,
+                  "name": "Example Name",
+                  "retention_seconds": 1,
+                  "status": "active",
+                  "visibility_timeout_seconds": 1
+                },
+                "properties": {
+                  "event_names": {
+                    "example": [
+                      "Example Name"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "max_pending_events": {
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "retention_seconds": {
+                    "description": "Delivery retention in seconds. Defaults to 86400 (24 hours); between 7200 and 2592000. Applies to future deliveries only.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "status": {
+                    "enum": [
+                      "active",
+                      "paused"
+                    ],
+                    "example": "active",
+                    "type": "string"
+                  },
+                  "visibility_timeout_seconds": {
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscription"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          }
+        },
+        "summary": "Update a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}/claim": {
+      "post": {
+        "description": "Atomically leases the oldest unacknowledged delivery. Returns an empty data array when the queue is empty or its head already has an active lease. Passing max_events opts into batch mode, where leased entries are skipped instead of blocking; wait_seconds bounds a long poll on an empty queue.",
+        "operationId": "post_api_v1_event_subscriptions__subscription_claim",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "consumer_id": "string",
+                  "max_events": 1,
+                  "request_id": "string",
+                  "visibility_timeout_seconds": 1,
+                  "wait_seconds": 1
+                },
+                "properties": {
+                  "consumer_id": {
+                    "description": "Consumer identity between 1 and 128 bytes, recorded on the lease for attribution.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "max_events": {
+                    "description": "Opts into batch mode: leases up to this many lease-available deliveries (between 1 and 20) in sequence order, skipping leased entries instead of blocking on the head. Omit to keep strict head-of-line semantics.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "request_id": {
+                    "description": "Idempotency key between 1 and 128 bytes. Use a value unique per claim attempt (e.g. a UUID) — the key is scoped to the subscription, so a reused value takes over whatever leases it last stamped. Retrying a claim with the same request_id while its leases are unexpired returns the same deliveries (regardless of max_events) with fresh receipt handles and refreshed leases.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "visibility_timeout_seconds": {
+                    "description": "Lease duration override between 15 and 3600 seconds.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "wait_seconds": {
+                    "description": "Long-poll bound between 0 and 20 seconds. When the queue is empty, the request waits up to this long for a delivery before returning an empty data array. 0 (or omitting) returns immediately.",
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionClaim"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          }
+        },
+        "summary": "Claim events from a subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}/head": {
+      "get": {
+        "description": "Returns the oldest unacknowledged delivery without reserving it. This diagnostic read cannot be used as a safe substitute for claim.",
+        "operationId": "get_api_v1_event_subscriptions__subscription_head",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionHead"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Peek at the head of a subscription queue",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}/queue": {
+      "get": {
+        "description": "Returns a non-reserving, oldest-first view of unacknowledged deliveries, including the queue's loss indicators (queue_epoch, dropped_events_total, dropped_through_position). Use claim to obtain a receipt handle before acknowledging.",
+        "operationId": "get_api_v1_event_subscriptions__subscription_queue",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum entries to return, from 1 through 100.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor for the preceding page.",
+            "example": "string",
+            "in": "query",
+            "name": "before_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque cursor for the following page.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionQueue"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid cursor"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Read a subscription queue",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -45285,6 +46453,7 @@
                   "agent": "string",
                   "description": "An example description.",
                   "due_date": "2024-01-01T00:00:00Z",
+                  "epic": "string",
                   "lease_id": "string",
                   "lease_session_id": "string",
                   "links": {},
@@ -45297,6 +46466,9 @@
                   "owner_user": "string",
                   "parent": "string",
                   "priority": 1,
+                  "source_id": "string",
+                  "source_scope": "string",
+                  "source_type": "string",
                   "status": "string",
                   "tags": [
                     "string"
@@ -45319,6 +46491,11 @@
                     "description": "Updated due date in ISO 8601 format, or null to clear it.",
                     "example": "2024-01-01T00:00:00Z",
                     "format": "date-time",
+                    "type": "string"
+                  },
+                  "epic": {
+                    "description": "Replacement grouping label. Pass null to clear it.",
+                    "example": "string",
                     "type": "string"
                   },
                   "lease_id": {
@@ -45372,6 +46549,21 @@
                     "description": "Updated priority from 0 (highest) to 4 (lowest).",
                     "example": 1,
                     "type": "integer"
+                  },
+                  "source_id": {
+                    "description": "Replacement source object identity. Must be supplied with the other source fields.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "source_scope": {
+                    "description": "Replacement source container. Pass together with `source_type` and `source_id`, or pass all three as null to clear the source.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "source_type": {
+                    "description": "Replacement source object kind. Must be supplied with the other source fields.",
+                    "example": "string",
+                    "type": "string"
                   },
                   "status": {
                     "description": "Updated status: `open`, `in_progress`, or `done`.",
@@ -45726,6 +46918,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -45755,6 +46948,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -45808,6 +47004,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -45837,6 +47034,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -45879,6 +47079,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -45908,6 +47109,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -46103,6 +47307,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -46261,6 +47471,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -46601,6 +47829,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -46630,6 +47859,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -46683,6 +47915,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -46712,6 +47945,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -46754,6 +47990,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -46783,6 +48020,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -46978,6 +48218,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -47136,6 +48382,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -48321,6 +49585,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -48350,6 +49615,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -48403,6 +49671,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -48432,6 +49701,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -48474,6 +49746,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -48503,6 +49776,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -48698,6 +49974,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -48856,6 +50138,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -49065,6 +50365,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "404": {
             "description": "Team or member not found"
@@ -54291,7 +55594,7 @@
         ]
       },
       "post": {
-        "description": "Adds a user or agent as a member of the specified team and returns the new\nmembership with HTTP 201. Provide exactly one of `user` or `agent` — supplying\nboth or neither returns a 400 error.\n\nThe caller must have permission to manage the team. When an `app` is provided,\nthe request is scoped to that app and the caller must hold a valid app-scoped\ntoken. The default role is `\"member\"` when `role` is omitted.\n",
+        "description": "Adds a user or agent as a member of the specified team and returns the new\nmembership with HTTP 201. Provide exactly one of `user` or `agent` — supplying\nboth or neither returns a 400 error.\n\nAdding a user requires permission to manage the team (team owner, team\nadmin, or org admin). Adding an agent with the default `\"member\"` role is\nalso open to any existing member of the team; assigning an elevated role to\nan agent still requires team-manage permission. When an `app` is provided,\nthe request is scoped to that app and the caller must hold a valid app-scoped\ntoken. The default role is `\"member\"` when `role` is omitted.\n",
         "operationId": "post_api_v1_teams__team_members",
         "parameters": [
           {
@@ -54791,6 +56094,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Restrict results to tasks whose name or description contains this string.",
             "example": "string",
             "in": "query",
@@ -54920,6 +56263,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -54949,6 +56293,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -55005,6 +56352,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -55034,6 +56382,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -55076,6 +56427,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -55105,6 +56457,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -55300,6 +56655,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -55461,6 +56822,24 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "status": {
                             "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
                             "example": "open",
@@ -55571,6 +56950,7 @@
                   "task": {
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "billing-cadence",
                     "links": {
                       "key": "value"
                     },
@@ -55582,6 +56962,9 @@
                     "owner_user": "string",
                     "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                     "priority": 2,
+                    "source_id": "ArchAstro/firstlanding",
+                    "source_scope": "github.com",
+                    "source_type": "repository",
                     "status": "open",
                     "tags": [
                       "backend",
@@ -55607,6 +56990,7 @@
                     "example": {
                       "description": "An example description.",
                       "due_date": "2024-01-01T00:00:00Z",
+                      "epic": "billing-cadence",
                       "links": {
                         "key": "value"
                       },
@@ -55618,6 +57002,9 @@
                       "owner_user": "string",
                       "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                       "priority": 2,
+                      "source_id": "ArchAstro/firstlanding",
+                      "source_scope": "github.com",
+                      "source_type": "repository",
                       "status": "open",
                       "tags": [
                         "backend",
@@ -55635,6 +57022,11 @@
                         "description": "Date and time by which the task should be completed (ISO 8601). Omit to create the task without a due date.",
                         "example": "2024-01-01T00:00:00Z",
                         "format": "date-time",
+                        "type": "string"
+                      },
+                      "epic": {
+                        "description": "Optional free-form grouping label.",
+                        "example": "billing-cadence",
                         "type": "string"
                       },
                       "links": {
@@ -55675,6 +57067,21 @@
                         "description": "Priority level from `0` (highest) to `4` (lowest). Defaults to `2` (medium) when omitted.",
                         "example": 2,
                         "type": "integer"
+                      },
+                      "source_id": {
+                        "description": "Source object identity (for example `ArchAstro/firstlanding`).",
+                        "example": "ArchAstro/firstlanding",
+                        "type": "string"
+                      },
+                      "source_scope": {
+                        "description": "Container of the work this task is about (for example `github.com`). Must be supplied with `source_type` and `source_id`.",
+                        "example": "github.com",
+                        "type": "string"
+                      },
+                      "source_type": {
+                        "description": "Kind of source object (for example `repository`).",
+                        "example": "repository",
+                        "type": "string"
                       },
                       "status": {
                         "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
@@ -55843,6 +57250,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -55872,6 +57280,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -55929,6 +57340,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -55958,6 +57370,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -56004,6 +57419,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -56033,6 +57449,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -56078,6 +57497,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -56107,6 +57527,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -56149,6 +57572,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -56178,6 +57602,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -56373,6 +57800,12 @@
                                   "nullable": true,
                                   "type": "string"
                                 },
+                                "epic": {
+                                  "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "id": {
                                   "description": "Task ID (`tsk_...`).",
                                   "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -56531,6 +57964,24 @@
                                 "sandbox": {
                                   "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                                   "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_id": {
+                                  "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_scope": {
+                                  "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_type": {
+                                  "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                  "example": "string",
                                   "nullable": true,
                                   "type": "string"
                                 },
@@ -56797,6 +58248,46 @@
             }
           },
           {
+            "description": "Only include tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of readiness entries to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -56860,6 +58351,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -56889,6 +58381,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -56951,6 +58446,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -56980,6 +58476,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -57026,6 +58525,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -57055,6 +58555,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -57118,6 +58621,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -57147,6 +58651,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -57342,6 +58849,12 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "epic": {
+                                "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
                               "id": {
                                 "description": "Task ID (`tsk_...`).",
                                 "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -57500,6 +59013,24 @@
                               "sandbox": {
                                 "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                                 "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_id": {
+                                "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_scope": {
+                                "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_type": {
+                                "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                "example": "string",
                                 "nullable": true,
                                 "type": "string"
                               },
@@ -57713,6 +59244,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of tasks to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -57772,6 +59343,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -57801,6 +59373,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -57856,6 +59431,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -57885,6 +59461,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -57927,6 +59506,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -57956,6 +59536,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -58151,6 +59734,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -58309,6 +59898,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -59829,7 +61436,7 @@
                             "type": "string"
                           },
                           "kind": {
-                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                             "example": "string",
                             "nullable": true,
                             "type": "string"
@@ -63520,6 +65127,7 @@
                     "description": "An example description.",
                     "is_unlisted": true,
                     "key": "string",
+                    "kind": "personal",
                     "members": [
                       {
                         "id": "string",
@@ -63557,6 +65165,7 @@
                       "description": "An example description.",
                       "is_unlisted": true,
                       "key": "string",
+                      "kind": "personal",
                       "members": [
                         {
                           "id": "string",
@@ -63599,6 +65208,14 @@
                       "key": {
                         "description": "Client-assigned unique key for idempotent creation or later lookup. Must be unique within the owning organization.",
                         "example": "string",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Optional behavioral subtype. `personal` is accepted only for a user-owned thread and limits membership to that user and agents currently owned by them. Mirror kinds remain server-derived and cannot be selected by callers.",
+                        "enum": [
+                          "personal"
+                        ],
+                        "example": "personal",
                         "type": "string"
                       },
                       "members": {
@@ -68416,7 +70033,7 @@
     },
     "/api/v1/threads/{thread}/trajectories": {
       "get": {
-        "description": "Returns a cursor-paginated list of thread message trajectories associated with the\nspecified thread. Each trajectory links a user message and its agent response to the\nunderlying AI trajectory record that captured the model's reasoning steps.\n\nThe authenticated user must own the thread or be a member of the workspace it belongs\nto. Results are returned in reverse chronological order by default. Use `before_cursor`\nand `after_cursor` to navigate pages; provide at most one cursor per request.\n\nOptionally filter results to trajectories produced in response to a specific message\nby supplying the `message` parameter. When no trajectories match the query, `data`\nis an empty array and both cursor fields are `null`.\n",
+        "description": "Returns a cursor-paginated list of thread message trajectories associated with the\nspecified thread. Each trajectory links a user message and its agent response to the\nunderlying AI trajectory record that captured the model's reasoning steps.\n\nThe authenticated user must own the thread or be a member of the workspace it belongs\nto. Results are returned in reverse chronological order by default. Use `before_cursor`\nand `after_cursor` to navigate pages; provide at most one cursor per request.\n\nOptionally filter results to trajectories produced in response to a specific message\nby supplying the `message` parameter. When no trajectories match the query, `data`\nis an empty array and both cursor fields are `null`. A cursor that cannot be decoded\nreturns a 400 `invalid_cursor` error.\n",
         "operationId": "get_api_v1_threads__thread_trajectories",
         "parameters": [
           {
@@ -68601,6 +70218,9 @@
               }
             },
             "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid cursor"
           },
           "401": {
             "description": "Unauthorized"
@@ -69218,19 +70838,6 @@
                         "slug": "example-slug",
                         "status": "active",
                         "updated_at": "2024-01-01T00:00:00Z",
-                        "vendor": {
-                          "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                          "logo": {
-                            "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                            "height": 600,
-                            "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                            "mime_type": "application/json",
-                            "refresh_url": "https://example.com",
-                            "url": "https://example.com",
-                            "width": 800
-                          },
-                          "name": "Example Name"
-                        },
                         "website": "https://example.com"
                       }
                     ]
@@ -69255,19 +70862,6 @@
                           "slug": "example-slug",
                           "status": "active",
                           "updated_at": "2024-01-01T00:00:00Z",
-                          "vendor": {
-                            "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                            "logo": {
-                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                              "height": 600,
-                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                              "mime_type": "application/json",
-                              "refresh_url": "https://example.com",
-                              "url": "https://example.com",
-                              "width": 800
-                            },
-                            "name": "Example Name"
-                          },
                           "website": "https://example.com"
                         }
                       ],
@@ -69289,19 +70883,6 @@
                           "slug": "example-slug",
                           "status": "active",
                           "updated_at": "2024-01-01T00:00:00Z",
-                          "vendor": {
-                            "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                            "logo": {
-                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                              "height": 600,
-                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                              "mime_type": "application/json",
-                              "refresh_url": "https://example.com",
-                              "url": "https://example.com",
-                              "width": 800
-                            },
-                            "name": "Example Name"
-                          },
                           "website": "https://example.com"
                         },
                         "properties": {
@@ -69337,7 +70918,7 @@
                             "type": "string"
                           },
                           "onboarding_solution_lookup_key": {
-                            "description": "Lookup key (`sol-...`) of the Solution that drove this org's customer onboarding, stamped when the org was first linked into a vendor's network via an explore-install. `null` for vendor-track orgs and invite-driven customers. The onboarding UI reads the referenced Solution's `metadata.onboarding` block to tailor the customer checklist.",
+                            "description": "Lookup key (`sol-...`) of the Solution currently driving this org's customer onboarding — the active onboarding solution pointer. Stamped when the org is linked into a vendor's network via an explore-install and re-stamped by every later solution-driven link, so the latest install wins. `null` for vendor-track orgs and invite-driven customers. The onboarding UI reads the referenced Solution's `metadata.onboarding` block to tailor the customer checklist.",
                             "example": "string",
                             "type": "string"
                           },
@@ -69376,95 +70957,6 @@
                             "example": "2024-01-01T00:00:00Z",
                             "format": "date-time",
                             "type": "string"
-                          },
-                          "vendor": {
-                            "description": "Branding of the solution vendor whose network this organization belongs to — the vendor of the oldest active vendor relationship. Only present for organizations on the `\"customer\"` onboarding track; `null` for vendor-track organizations (including vendors that later joined another vendor's network) and for customers with no active vendor link. Clients use it to co-brand the workspace (\"ArchAgents by Acme\").",
-                            "example": {
-                              "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                              "logo": {
-                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                                "height": 600,
-                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                                "mime_type": "application/json",
-                                "refresh_url": "https://example.com",
-                                "url": "https://example.com",
-                                "width": 800
-                              },
-                              "name": "Example Name"
-                            },
-                            "properties": {
-                              "id": {
-                                "description": "Organization ID of the vendor (`org_...`).",
-                                "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                                "type": "string"
-                              },
-                              "logo": {
-                                "description": "Logo of the vendor organization. The `url` is a stable, non-expiring capability URL served by the platform (the same mechanism as catalog `org_logo` fields), safe to hold in caches; `refresh_url` is `null`. `null` when the vendor has no logo.",
-                                "example": {
-                                  "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                                  "height": 600,
-                                  "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                                  "mime_type": "application/json",
-                                  "refresh_url": "https://example.com",
-                                  "url": "https://example.com",
-                                  "width": 800
-                                },
-                                "properties": {
-                                  "file": {
-                                    "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
-                                    "example": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "height": {
-                                    "description": "Height of the image in pixels. `null` if not known.",
-                                    "example": 600,
-                                    "nullable": true,
-                                    "type": "integer"
-                                  },
-                                  "media": {
-                                    "description": "ID of the associated media record (`med_...`). `null` when the image is not linked to a media entity.",
-                                    "example": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "mime_type": {
-                                    "description": "MIME type of the image, e.g. `\"image/png\"` or `\"image/jpeg\"`. `null` if not known.",
-                                    "example": "application/json",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "refresh_url": {
-                                    "description": "Endpoint URL you can call to obtain a fresh signed `url` when the current one has expired. `null` if the URL does not require refreshing.",
-                                    "example": "https://example.com",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "url": {
-                                    "description": "Signed or public URL for downloading the image. May be time-limited; use `refresh_url` to obtain a new URL when this one expires.",
-                                    "example": "https://example.com",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "width": {
-                                    "description": "Width of the image in pixels. `null` if not known.",
-                                    "example": 800,
-                                    "nullable": true,
-                                    "type": "integer"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "name": {
-                                "description": "Display name of the vendor organization. `null` if the vendor has not set a name.",
-                                "example": "Example Name",
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "id"
-                            ],
-                            "type": "object"
                           },
                           "website": {
                             "description": "Public website URL for the organization. `null` if not set.",
@@ -69704,6 +71196,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Restrict results to tasks whose name or description contains this string.",
             "example": "string",
             "in": "query",
@@ -69833,6 +71365,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -69862,6 +71395,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -69918,6 +71454,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -69947,6 +71484,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -69989,6 +71529,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -70018,6 +71559,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -70213,6 +71757,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -70374,6 +71924,24 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "status": {
                             "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
                             "example": "open",
@@ -70484,6 +72052,7 @@
                   "task": {
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "billing-cadence",
                     "links": {
                       "key": "value"
                     },
@@ -70495,6 +72064,9 @@
                     "owner_user": "string",
                     "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                     "priority": 2,
+                    "source_id": "ArchAstro/firstlanding",
+                    "source_scope": "github.com",
+                    "source_type": "repository",
                     "status": "open",
                     "tags": [
                       "backend",
@@ -70520,6 +72092,7 @@
                     "example": {
                       "description": "An example description.",
                       "due_date": "2024-01-01T00:00:00Z",
+                      "epic": "billing-cadence",
                       "links": {
                         "key": "value"
                       },
@@ -70531,6 +72104,9 @@
                       "owner_user": "string",
                       "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                       "priority": 2,
+                      "source_id": "ArchAstro/firstlanding",
+                      "source_scope": "github.com",
+                      "source_type": "repository",
                       "status": "open",
                       "tags": [
                         "backend",
@@ -70548,6 +72124,11 @@
                         "description": "Date and time by which the task should be completed (ISO 8601). Omit to create the task without a due date.",
                         "example": "2024-01-01T00:00:00Z",
                         "format": "date-time",
+                        "type": "string"
+                      },
+                      "epic": {
+                        "description": "Optional free-form grouping label.",
+                        "example": "billing-cadence",
                         "type": "string"
                       },
                       "links": {
@@ -70588,6 +72169,21 @@
                         "description": "Priority level from `0` (highest) to `4` (lowest). Defaults to `2` (medium) when omitted.",
                         "example": 2,
                         "type": "integer"
+                      },
+                      "source_id": {
+                        "description": "Source object identity (for example `ArchAstro/firstlanding`).",
+                        "example": "ArchAstro/firstlanding",
+                        "type": "string"
+                      },
+                      "source_scope": {
+                        "description": "Container of the work this task is about (for example `github.com`). Must be supplied with `source_type` and `source_id`.",
+                        "example": "github.com",
+                        "type": "string"
+                      },
+                      "source_type": {
+                        "description": "Kind of source object (for example `repository`).",
+                        "example": "repository",
+                        "type": "string"
                       },
                       "status": {
                         "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
@@ -70756,6 +72352,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -70785,6 +72382,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -70842,6 +72442,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -70871,6 +72472,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -70917,6 +72521,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -70946,6 +72551,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -70991,6 +72599,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -71020,6 +72629,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -71062,6 +72674,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -71091,6 +72704,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -71286,6 +72902,12 @@
                                   "nullable": true,
                                   "type": "string"
                                 },
+                                "epic": {
+                                  "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "id": {
                                   "description": "Task ID (`tsk_...`).",
                                   "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -71447,6 +73069,24 @@
                                   "nullable": true,
                                   "type": "string"
                                 },
+                                "source_id": {
+                                  "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_scope": {
+                                  "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_type": {
+                                  "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "status": {
                                   "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
                                   "example": "open",
@@ -71597,6 +73237,46 @@
             }
           },
           {
+            "description": "Only include tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of readiness entries to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -71660,6 +73340,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -71689,6 +73370,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -71751,6 +73435,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -71780,6 +73465,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -71826,6 +73514,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -71855,6 +73544,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -71918,6 +73610,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -71947,6 +73640,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -72142,6 +73838,12 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "epic": {
+                                "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
                               "id": {
                                 "description": "Task ID (`tsk_...`).",
                                 "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -72300,6 +74002,24 @@
                               "sandbox": {
                                 "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                                 "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_id": {
+                                "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_scope": {
+                                "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_type": {
+                                "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                "example": "string",
                                 "nullable": true,
                                 "type": "string"
                               },
@@ -72513,6 +74233,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of tasks to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -72572,6 +74332,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -72601,6 +74362,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -72656,6 +74420,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -72685,6 +74450,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -72727,6 +74495,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -72756,6 +74525,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -72951,6 +74723,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -73109,6 +74887,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -74676,7 +76472,7 @@
                             "type": "string"
                           },
                           "kind": {
-                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                             "example": "string",
                             "nullable": true,
                             "type": "string"
@@ -78367,6 +80163,7 @@
                     "description": "An example description.",
                     "is_unlisted": true,
                     "key": "string",
+                    "kind": "personal",
                     "members": [
                       {
                         "id": "string",
@@ -78404,6 +80201,7 @@
                       "description": "An example description.",
                       "is_unlisted": true,
                       "key": "string",
+                      "kind": "personal",
                       "members": [
                         {
                           "id": "string",
@@ -78446,6 +80244,14 @@
                       "key": {
                         "description": "Client-assigned unique key for idempotent creation or later lookup. Must be unique within the owning organization.",
                         "example": "string",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Optional behavioral subtype. `personal` is accepted only for a user-owned thread and limits membership to that user and agents currently owned by them. Mirror kinds remain server-derived and cannot be selected by callers.",
+                        "enum": [
+                          "personal"
+                        ],
+                        "example": "personal",
                         "type": "string"
                       },
                       "members": {
@@ -91201,7 +93007,7 @@
                         "type": "string"
                       },
                       "kind": {
-                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                         "example": "string",
                         "nullable": true,
                         "type": "string"
@@ -95745,7 +97551,7 @@
                     "type": "string"
                   },
                   "kind": {
-                    "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                    "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                     "example": "string",
                     "nullable": true,
                     "type": "string"
@@ -109830,7 +111636,7 @@
                         "type": "string"
                       },
                       "kind": {
-                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                         "example": "string",
                         "nullable": true,
                         "type": "string"
@@ -120451,6 +122257,7 @@
                   },
                   "description": "An example description.",
                   "due_date": "2024-01-01T00:00:00Z",
+                  "epic": "string",
                   "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                   "is_blocked": true,
                   "links": {
@@ -120480,6 +122287,9 @@
                   "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                   "priority": 2,
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                  "source_id": "string",
+                  "source_scope": "string",
+                  "source_type": "string",
                   "status": "open",
                   "subtasks_count": 1,
                   "tags": [
@@ -120524,6 +122334,7 @@
                     },
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "string",
                     "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "is_blocked": true,
                     "links": {
@@ -120553,6 +122364,9 @@
                     "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "priority": 2,
                     "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                    "source_id": "string",
+                    "source_scope": "string",
+                    "source_type": "string",
                     "status": "open",
                     "subtasks_count": 1,
                     "tags": [
@@ -120595,6 +122409,7 @@
                     },
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "string",
                     "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "is_blocked": true,
                     "links": {
@@ -120624,6 +122439,9 @@
                     "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "priority": 2,
                     "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                    "source_id": "string",
+                    "source_scope": "string",
+                    "source_type": "string",
                     "status": "open",
                     "subtasks_count": 1,
                     "tags": [
@@ -120819,6 +122637,12 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "epic": {
+                      "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "id": {
                       "description": "Task ID (`tsk_...`).",
                       "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -120977,6 +122801,24 @@
                     "sandbox": {
                       "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                       "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "source_id": {
+                      "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "source_scope": {
+                      "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "source_type": {
+                      "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                      "example": "string",
                       "nullable": true,
                       "type": "string"
                     },
