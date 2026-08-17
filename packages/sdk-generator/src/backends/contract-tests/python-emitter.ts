@@ -5,6 +5,8 @@ import { pythonParameterName, uniquePythonParameterNames } from "../python/ident
 import {
   pythonInlineResponseName,
   pythonResponseShape,
+  responseAllowsNull,
+  unwrapNullability,
 } from "../python/response-type.js";
 import {
   buildMethodCalls,
@@ -347,19 +349,37 @@ function emitResultAssertions(
       cb.line('assert result["mime_type"]');
       break;
     case "model": {
-      cb.line("assert isinstance(result, BaseModel)");
-      cb.line(`assert type(result).__name__ == "${modelClassName(call)}"`);
-      if (returnTypeHasDataArray(call.operation.returnType)) {
-        cb.line("assert isinstance(result.data, list)");
+      if (responseAllowsNull(call.operation.returnType)) {
+        cb.line("assert result is None or isinstance(result, BaseModel)");
+        cb.line(
+          `assert result is None or type(result).__name__ == "${modelClassName(call)}"`
+        );
+      } else {
+        cb.line("assert isinstance(result, BaseModel)");
+        cb.line(`assert type(result).__name__ == "${modelClassName(call)}"`);
+      }
+      if (returnTypeHasDataArray(unwrapNullability(call.operation.returnType))) {
+        cb.line(
+          responseAllowsNull(call.operation.returnType)
+            ? "assert result is None or isinstance(result.data, list)"
+            : "assert isinstance(result.data, list)"
+        );
       }
       break;
     }
     case "model_list": {
       const itemName = listItemClassName(call);
-      cb.line("assert isinstance(result, list)");
-      cb.line(
-        `assert all(type(item).__name__ == "${itemName}" for item in result)`
-      );
+      if (responseAllowsNull(call.operation.returnType)) {
+        cb.line("assert result is None or isinstance(result, list)");
+        cb.line(
+          `assert result is None or all(type(item).__name__ == "${itemName}" for item in result)`
+        );
+      } else {
+        cb.line("assert isinstance(result, list)");
+        cb.line(
+          `assert all(type(item).__name__ == "${itemName}" for item in result)`
+        );
+      }
       break;
     }
     case "untyped":
@@ -369,13 +389,13 @@ function emitResultAssertions(
 }
 
 function modelClassName(call: MethodCallInfo): string {
-  const ret = call.operation.returnType;
+  const ret = unwrapNullability(call.operation.returnType);
   if (ret.kind === "ref") return ret.schema;
   return pythonInlineResponseName(call.resource.className, call.operation.name);
 }
 
 function listItemClassName(call: MethodCallInfo): string {
-  const ret = call.operation.returnType;
+  const ret = unwrapNullability(call.operation.returnType);
   if (ret.kind === "array" && ret.items.kind === "ref") return ret.items.schema;
   throw new Error(
     `[sdk-generator] ${call.operation.operationId}: model_list response ` +

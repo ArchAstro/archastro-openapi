@@ -20,6 +20,10 @@ import {
   swiftResponseShape,
 } from "./response-type.js";
 import {
+  responseAllowsNull,
+  unwrapNullability,
+} from "../python/response-type.js";
+import {
   swiftQueryStringExpr,
   typeRefToSwift,
   unwrapOptional,
@@ -255,13 +259,19 @@ export function swiftReturnType(
       return undefined;
     case "raw":
       return "RawResponse";
-    case "model":
-      if (op.returnType.kind === "ref") return resolveRef(op.returnType.schema);
-      return registry.lookup(responseKey(op));
+    case "model": {
+      const inner = unwrapNullability(op.returnType);
+      const name =
+        inner.kind === "ref"
+          ? resolveRef(inner.schema)
+          : registry.lookup(responseKey(op));
+      return responseAllowsNull(op.returnType) ? `${name}?` : name;
+    }
     case "model_list": {
-      const ret = op.returnType;
+      const ret = unwrapNullability(op.returnType);
       if (ret.kind === "array" && ret.items.kind === "ref") {
-        return `[${resolveRef(ret.items.schema)}]`;
+        const list = `[${resolveRef(ret.items.schema)}]`;
+        return responseAllowsNull(op.returnType) ? `${list}?` : list;
       }
       return "JSONValue";
     }

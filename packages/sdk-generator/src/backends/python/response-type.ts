@@ -22,9 +22,23 @@ export type PythonResponseShape =
   | "model_list"
   | "untyped";
 
+/** Peel a single outer `nullable` / `optional` wrapper. */
+export function unwrapNullability(ref: TypeRef): TypeRef {
+  let current = ref;
+  while (current.kind === "nullable" || current.kind === "optional") {
+    current = current.inner;
+  }
+  return current;
+}
+
+/** True when the operation may legally return JSON null. */
+export function responseAllowsNull(ref: TypeRef): boolean {
+  return ref.kind === "nullable" || ref.kind === "optional";
+}
+
 export function pythonResponseShape(op: OperationDef): PythonResponseShape {
   if (op.rawResponse) return "raw";
-  const ret = op.returnType;
+  const ret = unwrapNullability(op.returnType);
   switch (ret.kind) {
     case "void":
       return "void";
@@ -94,9 +108,13 @@ export function pythonResponseTypeExpr(
   inlineResponseName: string | undefined
 ): string | undefined {
   switch (pythonResponseShape(op)) {
-    case "model":
-      if (op.returnType.kind === "ref") return op.returnType.schema;
-      if (!inlineResponseName) {
+    case "model": {
+      const inner = unwrapNullability(op.returnType);
+      const name =
+        inner.kind === "ref"
+          ? inner.schema
+          : inlineResponseName;
+      if (!name) {
         throw new Error(
           `[sdk-generator] ${op.operationId}: classified as "model" (inline ` +
             `object response) but no hoisted BaseModel name was provided; ` +
@@ -104,12 +122,18 @@ export function pythonResponseTypeExpr(
             `pythonResponseShape.`
         );
       }
-      return inlineResponseName;
-    case "model_list":
-      if (op.returnType.kind === "array" && op.returnType.items.kind === "ref") {
-        return `list[${op.returnType.items.schema}]`;
+      // TypeAdapter(Model) rejects JSON null; the union is what the runtime
+      // actually deserializes for OAS nullable $ref responses.
+      return responseAllowsNull(op.returnType) ? `${name} | None` : name;
+    }
+    case "model_list": {
+      const inner = unwrapNullability(op.returnType);
+      if (inner.kind === "array" && inner.items.kind === "ref") {
+        const listType = `list[${inner.items.schema}]`;
+        return responseAllowsNull(op.returnType) ? `${listType} | None` : listType;
       }
       return undefined;
+    }
     default:
       return undefined;
   }
