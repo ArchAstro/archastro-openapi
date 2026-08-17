@@ -18013,6 +18013,7 @@
           },
           "description": "An example description.",
           "due_date": "2024-01-01T00:00:00Z",
+          "epic": "string",
           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
           "is_blocked": true,
           "links": {
@@ -18042,6 +18043,9 @@
           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
           "priority": 2,
           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+          "source_id": "string",
+          "source_scope": "string",
+          "source_type": "string",
           "status": "open",
           "subtasks_count": 1,
           "tags": [
@@ -18144,6 +18148,12 @@
             "nullable": true,
             "type": "string"
           },
+          "epic": {
+            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "description": "Task ID (`tsk_...`).",
             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -18228,6 +18238,24 @@
           "sandbox": {
             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
+            "type": "string"
+          },
+          "source_id": {
+            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "source_scope": {
+            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "source_type": {
+            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+            "example": "string",
             "nullable": true,
             "type": "string"
           },
@@ -20045,7 +20073,7 @@
             "type": "string"
           },
           "kind": {
-            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
             "example": "string",
             "nullable": true,
             "type": "string"
@@ -31158,6 +31186,7 @@
                     "description": "An example description.",
                     "is_unlisted": true,
                     "key": "string",
+                    "kind": "personal",
                     "members": [
                       {
                         "id": "string",
@@ -31195,6 +31224,7 @@
                       "description": "An example description.",
                       "is_unlisted": true,
                       "key": "string",
+                      "kind": "personal",
                       "members": [
                         {
                           "id": "string",
@@ -31237,6 +31267,14 @@
                       "key": {
                         "description": "Client-assigned unique key for idempotent creation or later lookup. Must be unique within the owning organization.",
                         "example": "string",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Optional behavioral subtype. `personal` is accepted only for a user-owned thread and limits membership to that user and agents currently owned by them. Mirror kinds remain server-derived and cannot be selected by callers.",
+                        "enum": [
+                          "personal"
+                        ],
+                        "example": "personal",
                         "type": "string"
                       },
                       "members": {
@@ -45285,6 +45323,7 @@
                   "agent": "string",
                   "description": "An example description.",
                   "due_date": "2024-01-01T00:00:00Z",
+                  "epic": "string",
                   "lease_id": "string",
                   "lease_session_id": "string",
                   "links": {},
@@ -45297,6 +45336,9 @@
                   "owner_user": "string",
                   "parent": "string",
                   "priority": 1,
+                  "source_id": "string",
+                  "source_scope": "string",
+                  "source_type": "string",
                   "status": "string",
                   "tags": [
                     "string"
@@ -45319,6 +45361,11 @@
                     "description": "Updated due date in ISO 8601 format, or null to clear it.",
                     "example": "2024-01-01T00:00:00Z",
                     "format": "date-time",
+                    "type": "string"
+                  },
+                  "epic": {
+                    "description": "Replacement grouping label. Pass null to clear it.",
+                    "example": "string",
                     "type": "string"
                   },
                   "lease_id": {
@@ -45372,6 +45419,21 @@
                     "description": "Updated priority from 0 (highest) to 4 (lowest).",
                     "example": 1,
                     "type": "integer"
+                  },
+                  "source_id": {
+                    "description": "Replacement source object identity. Must be supplied with the other source fields.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "source_scope": {
+                    "description": "Replacement source container. Pass together with `source_type` and `source_id`, or pass all three as null to clear the source.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "source_type": {
+                    "description": "Replacement source object kind. Must be supplied with the other source fields.",
+                    "example": "string",
+                    "type": "string"
                   },
                   "status": {
                     "description": "Updated status: `open`, `in_progress`, or `done`.",
@@ -45726,6 +45788,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -45755,6 +45818,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -45808,6 +45874,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -45837,6 +45904,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -45879,6 +45949,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -45908,6 +45979,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -46103,6 +46177,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -46261,6 +46341,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -46601,6 +46699,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -46630,6 +46729,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -46683,6 +46785,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -46712,6 +46815,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -46754,6 +46860,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -46783,6 +46890,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -46978,6 +47088,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -47136,6 +47252,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -48321,6 +48455,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -48350,6 +48485,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -48403,6 +48541,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -48432,6 +48571,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -48474,6 +48616,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -48503,6 +48646,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -48698,6 +48844,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -48856,6 +49008,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -49065,6 +49235,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "404": {
             "description": "Team or member not found"
@@ -54291,7 +54464,7 @@
         ]
       },
       "post": {
-        "description": "Adds a user or agent as a member of the specified team and returns the new\nmembership with HTTP 201. Provide exactly one of `user` or `agent` — supplying\nboth or neither returns a 400 error.\n\nThe caller must have permission to manage the team. When an `app` is provided,\nthe request is scoped to that app and the caller must hold a valid app-scoped\ntoken. The default role is `\"member\"` when `role` is omitted.\n",
+        "description": "Adds a user or agent as a member of the specified team and returns the new\nmembership with HTTP 201. Provide exactly one of `user` or `agent` — supplying\nboth or neither returns a 400 error.\n\nAdding a user requires permission to manage the team (team owner, team\nadmin, or org admin). Adding an agent with the default `\"member\"` role is\nalso open to any existing member of the team; assigning an elevated role to\nan agent still requires team-manage permission. When an `app` is provided,\nthe request is scoped to that app and the caller must hold a valid app-scoped\ntoken. The default role is `\"member\"` when `role` is omitted.\n",
         "operationId": "post_api_v1_teams__team_members",
         "parameters": [
           {
@@ -54791,6 +54964,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Restrict results to tasks whose name or description contains this string.",
             "example": "string",
             "in": "query",
@@ -54920,6 +55133,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -54949,6 +55163,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -55005,6 +55222,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -55034,6 +55252,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -55076,6 +55297,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -55105,6 +55327,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -55300,6 +55525,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -55461,6 +55692,24 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "status": {
                             "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
                             "example": "open",
@@ -55571,6 +55820,7 @@
                   "task": {
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "billing-cadence",
                     "links": {
                       "key": "value"
                     },
@@ -55582,6 +55832,9 @@
                     "owner_user": "string",
                     "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                     "priority": 2,
+                    "source_id": "ArchAstro/firstlanding",
+                    "source_scope": "github.com",
+                    "source_type": "repository",
                     "status": "open",
                     "tags": [
                       "backend",
@@ -55607,6 +55860,7 @@
                     "example": {
                       "description": "An example description.",
                       "due_date": "2024-01-01T00:00:00Z",
+                      "epic": "billing-cadence",
                       "links": {
                         "key": "value"
                       },
@@ -55618,6 +55872,9 @@
                       "owner_user": "string",
                       "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                       "priority": 2,
+                      "source_id": "ArchAstro/firstlanding",
+                      "source_scope": "github.com",
+                      "source_type": "repository",
                       "status": "open",
                       "tags": [
                         "backend",
@@ -55635,6 +55892,11 @@
                         "description": "Date and time by which the task should be completed (ISO 8601). Omit to create the task without a due date.",
                         "example": "2024-01-01T00:00:00Z",
                         "format": "date-time",
+                        "type": "string"
+                      },
+                      "epic": {
+                        "description": "Optional free-form grouping label.",
+                        "example": "billing-cadence",
                         "type": "string"
                       },
                       "links": {
@@ -55675,6 +55937,21 @@
                         "description": "Priority level from `0` (highest) to `4` (lowest). Defaults to `2` (medium) when omitted.",
                         "example": 2,
                         "type": "integer"
+                      },
+                      "source_id": {
+                        "description": "Source object identity (for example `ArchAstro/firstlanding`).",
+                        "example": "ArchAstro/firstlanding",
+                        "type": "string"
+                      },
+                      "source_scope": {
+                        "description": "Container of the work this task is about (for example `github.com`). Must be supplied with `source_type` and `source_id`.",
+                        "example": "github.com",
+                        "type": "string"
+                      },
+                      "source_type": {
+                        "description": "Kind of source object (for example `repository`).",
+                        "example": "repository",
+                        "type": "string"
                       },
                       "status": {
                         "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
@@ -55843,6 +56120,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -55872,6 +56150,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -55929,6 +56210,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -55958,6 +56240,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -56004,6 +56289,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -56033,6 +56319,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -56078,6 +56367,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -56107,6 +56397,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -56149,6 +56442,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -56178,6 +56472,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -56373,6 +56670,12 @@
                                   "nullable": true,
                                   "type": "string"
                                 },
+                                "epic": {
+                                  "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "id": {
                                   "description": "Task ID (`tsk_...`).",
                                   "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -56531,6 +56834,24 @@
                                 "sandbox": {
                                   "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                                   "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_id": {
+                                  "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_scope": {
+                                  "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_type": {
+                                  "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                  "example": "string",
                                   "nullable": true,
                                   "type": "string"
                                 },
@@ -56797,6 +57118,46 @@
             }
           },
           {
+            "description": "Only include tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of readiness entries to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -56860,6 +57221,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -56889,6 +57251,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -56951,6 +57316,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -56980,6 +57346,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -57026,6 +57395,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -57055,6 +57425,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -57118,6 +57491,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -57147,6 +57521,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -57342,6 +57719,12 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "epic": {
+                                "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
                               "id": {
                                 "description": "Task ID (`tsk_...`).",
                                 "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -57500,6 +57883,24 @@
                               "sandbox": {
                                 "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                                 "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_id": {
+                                "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_scope": {
+                                "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_type": {
+                                "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                "example": "string",
                                 "nullable": true,
                                 "type": "string"
                               },
@@ -57713,6 +58114,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of tasks to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -57772,6 +58213,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -57801,6 +58243,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -57856,6 +58301,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -57885,6 +58331,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -57927,6 +58376,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -57956,6 +58406,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -58151,6 +58604,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -58309,6 +58768,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -59829,7 +60306,7 @@
                             "type": "string"
                           },
                           "kind": {
-                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                             "example": "string",
                             "nullable": true,
                             "type": "string"
@@ -63520,6 +63997,7 @@
                     "description": "An example description.",
                     "is_unlisted": true,
                     "key": "string",
+                    "kind": "personal",
                     "members": [
                       {
                         "id": "string",
@@ -63557,6 +64035,7 @@
                       "description": "An example description.",
                       "is_unlisted": true,
                       "key": "string",
+                      "kind": "personal",
                       "members": [
                         {
                           "id": "string",
@@ -63599,6 +64078,14 @@
                       "key": {
                         "description": "Client-assigned unique key for idempotent creation or later lookup. Must be unique within the owning organization.",
                         "example": "string",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Optional behavioral subtype. `personal` is accepted only for a user-owned thread and limits membership to that user and agents currently owned by them. Mirror kinds remain server-derived and cannot be selected by callers.",
+                        "enum": [
+                          "personal"
+                        ],
+                        "example": "personal",
                         "type": "string"
                       },
                       "members": {
@@ -68416,7 +68903,7 @@
     },
     "/api/v1/threads/{thread}/trajectories": {
       "get": {
-        "description": "Returns a cursor-paginated list of thread message trajectories associated with the\nspecified thread. Each trajectory links a user message and its agent response to the\nunderlying AI trajectory record that captured the model's reasoning steps.\n\nThe authenticated user must own the thread or be a member of the workspace it belongs\nto. Results are returned in reverse chronological order by default. Use `before_cursor`\nand `after_cursor` to navigate pages; provide at most one cursor per request.\n\nOptionally filter results to trajectories produced in response to a specific message\nby supplying the `message` parameter. When no trajectories match the query, `data`\nis an empty array and both cursor fields are `null`.\n",
+        "description": "Returns a cursor-paginated list of thread message trajectories associated with the\nspecified thread. Each trajectory links a user message and its agent response to the\nunderlying AI trajectory record that captured the model's reasoning steps.\n\nThe authenticated user must own the thread or be a member of the workspace it belongs\nto. Results are returned in reverse chronological order by default. Use `before_cursor`\nand `after_cursor` to navigate pages; provide at most one cursor per request.\n\nOptionally filter results to trajectories produced in response to a specific message\nby supplying the `message` parameter. When no trajectories match the query, `data`\nis an empty array and both cursor fields are `null`. A cursor that cannot be decoded\nreturns a 400 `invalid_cursor` error.\n",
         "operationId": "get_api_v1_threads__thread_trajectories",
         "parameters": [
           {
@@ -68601,6 +69088,9 @@
               }
             },
             "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid cursor"
           },
           "401": {
             "description": "Unauthorized"
@@ -69218,19 +69708,6 @@
                         "slug": "example-slug",
                         "status": "active",
                         "updated_at": "2024-01-01T00:00:00Z",
-                        "vendor": {
-                          "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                          "logo": {
-                            "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                            "height": 600,
-                            "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                            "mime_type": "application/json",
-                            "refresh_url": "https://example.com",
-                            "url": "https://example.com",
-                            "width": 800
-                          },
-                          "name": "Example Name"
-                        },
                         "website": "https://example.com"
                       }
                     ]
@@ -69255,19 +69732,6 @@
                           "slug": "example-slug",
                           "status": "active",
                           "updated_at": "2024-01-01T00:00:00Z",
-                          "vendor": {
-                            "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                            "logo": {
-                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                              "height": 600,
-                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                              "mime_type": "application/json",
-                              "refresh_url": "https://example.com",
-                              "url": "https://example.com",
-                              "width": 800
-                            },
-                            "name": "Example Name"
-                          },
                           "website": "https://example.com"
                         }
                       ],
@@ -69289,19 +69753,6 @@
                           "slug": "example-slug",
                           "status": "active",
                           "updated_at": "2024-01-01T00:00:00Z",
-                          "vendor": {
-                            "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                            "logo": {
-                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                              "height": 600,
-                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                              "mime_type": "application/json",
-                              "refresh_url": "https://example.com",
-                              "url": "https://example.com",
-                              "width": 800
-                            },
-                            "name": "Example Name"
-                          },
                           "website": "https://example.com"
                         },
                         "properties": {
@@ -69337,7 +69788,7 @@
                             "type": "string"
                           },
                           "onboarding_solution_lookup_key": {
-                            "description": "Lookup key (`sol-...`) of the Solution that drove this org's customer onboarding, stamped when the org was first linked into a vendor's network via an explore-install. `null` for vendor-track orgs and invite-driven customers. The onboarding UI reads the referenced Solution's `metadata.onboarding` block to tailor the customer checklist.",
+                            "description": "Lookup key (`sol-...`) of the Solution currently driving this org's customer onboarding — the active onboarding solution pointer. Stamped when the org is linked into a vendor's network via an explore-install and re-stamped by every later solution-driven link, so the latest install wins. `null` for vendor-track orgs and invite-driven customers. The onboarding UI reads the referenced Solution's `metadata.onboarding` block to tailor the customer checklist.",
                             "example": "string",
                             "type": "string"
                           },
@@ -69376,95 +69827,6 @@
                             "example": "2024-01-01T00:00:00Z",
                             "format": "date-time",
                             "type": "string"
-                          },
-                          "vendor": {
-                            "description": "Branding of the solution vendor whose network this organization belongs to — the vendor of the oldest active vendor relationship. Only present for organizations on the `\"customer\"` onboarding track; `null` for vendor-track organizations (including vendors that later joined another vendor's network) and for customers with no active vendor link. Clients use it to co-brand the workspace (\"ArchAgents by Acme\").",
-                            "example": {
-                              "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                              "logo": {
-                                "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                                "height": 600,
-                                "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                                "mime_type": "application/json",
-                                "refresh_url": "https://example.com",
-                                "url": "https://example.com",
-                                "width": 800
-                              },
-                              "name": "Example Name"
-                            },
-                            "properties": {
-                              "id": {
-                                "description": "Organization ID of the vendor (`org_...`).",
-                                "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                                "type": "string"
-                              },
-                              "logo": {
-                                "description": "Logo of the vendor organization. The `url` is a stable, non-expiring capability URL served by the platform (the same mechanism as catalog `org_logo` fields), safe to hold in caches; `refresh_url` is `null`. `null` when the vendor has no logo.",
-                                "example": {
-                                  "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                                  "height": 600,
-                                  "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                                  "mime_type": "application/json",
-                                  "refresh_url": "https://example.com",
-                                  "url": "https://example.com",
-                                  "width": 800
-                                },
-                                "properties": {
-                                  "file": {
-                                    "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
-                                    "example": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "height": {
-                                    "description": "Height of the image in pixels. `null` if not known.",
-                                    "example": 600,
-                                    "nullable": true,
-                                    "type": "integer"
-                                  },
-                                  "media": {
-                                    "description": "ID of the associated media record (`med_...`). `null` when the image is not linked to a media entity.",
-                                    "example": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "mime_type": {
-                                    "description": "MIME type of the image, e.g. `\"image/png\"` or `\"image/jpeg\"`. `null` if not known.",
-                                    "example": "application/json",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "refresh_url": {
-                                    "description": "Endpoint URL you can call to obtain a fresh signed `url` when the current one has expired. `null` if the URL does not require refreshing.",
-                                    "example": "https://example.com",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "url": {
-                                    "description": "Signed or public URL for downloading the image. May be time-limited; use `refresh_url` to obtain a new URL when this one expires.",
-                                    "example": "https://example.com",
-                                    "nullable": true,
-                                    "type": "string"
-                                  },
-                                  "width": {
-                                    "description": "Width of the image in pixels. `null` if not known.",
-                                    "example": 800,
-                                    "nullable": true,
-                                    "type": "integer"
-                                  }
-                                },
-                                "type": "object"
-                              },
-                              "name": {
-                                "description": "Display name of the vendor organization. `null` if the vendor has not set a name.",
-                                "example": "Example Name",
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "id"
-                            ],
-                            "type": "object"
                           },
                           "website": {
                             "description": "Public website URL for the organization. `null` if not set.",
@@ -69704,6 +70066,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity. Must be supplied with the other source filters.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Restrict results to tasks whose name or description contains this string.",
             "example": "string",
             "in": "query",
@@ -69833,6 +70235,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -69862,6 +70265,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -69918,6 +70324,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -69947,6 +70354,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -69989,6 +70399,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -70018,6 +70429,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -70213,6 +70627,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -70374,6 +70794,24 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "status": {
                             "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
                             "example": "open",
@@ -70484,6 +70922,7 @@
                   "task": {
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "billing-cadence",
                     "links": {
                       "key": "value"
                     },
@@ -70495,6 +70934,9 @@
                     "owner_user": "string",
                     "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                     "priority": 2,
+                    "source_id": "ArchAstro/firstlanding",
+                    "source_scope": "github.com",
+                    "source_type": "repository",
                     "status": "open",
                     "tags": [
                       "backend",
@@ -70520,6 +70962,7 @@
                     "example": {
                       "description": "An example description.",
                       "due_date": "2024-01-01T00:00:00Z",
+                      "epic": "billing-cadence",
                       "links": {
                         "key": "value"
                       },
@@ -70531,6 +70974,9 @@
                       "owner_user": "string",
                       "parent": "tsk_01j3k5m7n9p2r4s6t8v0w1x2",
                       "priority": 2,
+                      "source_id": "ArchAstro/firstlanding",
+                      "source_scope": "github.com",
+                      "source_type": "repository",
                       "status": "open",
                       "tags": [
                         "backend",
@@ -70548,6 +70994,11 @@
                         "description": "Date and time by which the task should be completed (ISO 8601). Omit to create the task without a due date.",
                         "example": "2024-01-01T00:00:00Z",
                         "format": "date-time",
+                        "type": "string"
+                      },
+                      "epic": {
+                        "description": "Optional free-form grouping label.",
+                        "example": "billing-cadence",
                         "type": "string"
                       },
                       "links": {
@@ -70588,6 +71039,21 @@
                         "description": "Priority level from `0` (highest) to `4` (lowest). Defaults to `2` (medium) when omitted.",
                         "example": 2,
                         "type": "integer"
+                      },
+                      "source_id": {
+                        "description": "Source object identity (for example `ArchAstro/firstlanding`).",
+                        "example": "ArchAstro/firstlanding",
+                        "type": "string"
+                      },
+                      "source_scope": {
+                        "description": "Container of the work this task is about (for example `github.com`). Must be supplied with `source_type` and `source_id`.",
+                        "example": "github.com",
+                        "type": "string"
+                      },
+                      "source_type": {
+                        "description": "Kind of source object (for example `repository`).",
+                        "example": "repository",
+                        "type": "string"
                       },
                       "status": {
                         "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
@@ -70756,6 +71222,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -70785,6 +71252,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -70842,6 +71312,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -70871,6 +71342,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -70917,6 +71391,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -70946,6 +71421,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -70991,6 +71469,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -71020,6 +71499,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -71062,6 +71544,7 @@
                                 },
                                 "description": "An example description.",
                                 "due_date": "2024-01-01T00:00:00Z",
+                                "epic": "string",
                                 "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "is_blocked": true,
                                 "links": {
@@ -71091,6 +71574,9 @@
                                 "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                                 "priority": 2,
                                 "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "source_id": "string",
+                                "source_scope": "string",
+                                "source_type": "string",
                                 "status": "open",
                                 "subtasks_count": 1,
                                 "tags": [
@@ -71286,6 +71772,12 @@
                                   "nullable": true,
                                   "type": "string"
                                 },
+                                "epic": {
+                                  "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "id": {
                                   "description": "Task ID (`tsk_...`).",
                                   "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -71447,6 +71939,24 @@
                                   "nullable": true,
                                   "type": "string"
                                 },
+                                "source_id": {
+                                  "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_scope": {
+                                  "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "source_type": {
+                                  "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "status": {
                                   "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
                                   "example": "open",
@@ -71597,6 +72107,46 @@
             }
           },
           {
+            "description": "Only include tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only include tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of readiness entries to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -71660,6 +72210,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -71689,6 +72240,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -71751,6 +72305,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -71780,6 +72335,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -71826,6 +72384,7 @@
                             },
                             "description": "An example description.",
                             "due_date": "2024-01-01T00:00:00Z",
+                            "epic": "string",
                             "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "is_blocked": true,
                             "links": {
@@ -71855,6 +72414,9 @@
                             "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                             "priority": 2,
                             "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "source_id": "string",
+                            "source_scope": "string",
+                            "source_type": "string",
                             "status": "open",
                             "subtasks_count": 1,
                             "tags": [
@@ -71918,6 +72480,7 @@
                               },
                               "description": "An example description.",
                               "due_date": "2024-01-01T00:00:00Z",
+                              "epic": "string",
                               "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "is_blocked": true,
                               "links": {
@@ -71947,6 +72510,9 @@
                               "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                               "priority": 2,
                               "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                              "source_id": "string",
+                              "source_scope": "string",
+                              "source_type": "string",
                               "status": "open",
                               "subtasks_count": 1,
                               "tags": [
@@ -72142,6 +72708,12 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "epic": {
+                                "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
                               "id": {
                                 "description": "Task ID (`tsk_...`).",
                                 "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -72300,6 +72872,24 @@
                               "sandbox": {
                                 "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                                 "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_id": {
+                                "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_scope": {
+                                "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "source_type": {
+                                "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                                "example": "string",
                                 "nullable": true,
                                 "type": "string"
                               },
@@ -72513,6 +73103,46 @@
             }
           },
           {
+            "description": "Return only tasks whose source matches this container. Must be supplied with `source_type` and `source_id`.",
+            "example": "string",
+            "in": "query",
+            "name": "source_scope",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object kind.",
+            "example": "string",
+            "in": "query",
+            "name": "source_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks whose source matches this object identity.",
+            "example": "string",
+            "in": "query",
+            "name": "source_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Return only tasks with this exact epic label.",
+            "example": "string",
+            "in": "query",
+            "name": "epic",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Maximum number of tasks to return. Capped at 100.",
             "example": 1,
             "in": "query",
@@ -72572,6 +73202,7 @@
                         },
                         "description": "An example description.",
                         "due_date": "2024-01-01T00:00:00Z",
+                        "epic": "string",
                         "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "is_blocked": true,
                         "links": {
@@ -72601,6 +73232,9 @@
                         "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                         "priority": 2,
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                        "source_id": "string",
+                        "source_scope": "string",
+                        "source_type": "string",
                         "status": "open",
                         "subtasks_count": 1,
                         "tags": [
@@ -72656,6 +73290,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -72685,6 +73320,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -72727,6 +73365,7 @@
                           },
                           "description": "An example description.",
                           "due_date": "2024-01-01T00:00:00Z",
+                          "epic": "string",
                           "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "is_blocked": true,
                           "links": {
@@ -72756,6 +73395,9 @@
                           "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                           "priority": 2,
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                          "source_id": "string",
+                          "source_scope": "string",
+                          "source_type": "string",
                           "status": "open",
                           "subtasks_count": 1,
                           "tags": [
@@ -72951,6 +73593,12 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "epic": {
+                            "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
                           "id": {
                             "description": "Task ID (`tsk_...`).",
                             "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -73109,6 +73757,24 @@
                           "sandbox": {
                             "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                             "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_scope": {
+                            "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "source_type": {
+                            "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                            "example": "string",
                             "nullable": true,
                             "type": "string"
                           },
@@ -74676,7 +75342,7 @@
                             "type": "string"
                           },
                           "kind": {
-                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                            "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                             "example": "string",
                             "nullable": true,
                             "type": "string"
@@ -78367,6 +79033,7 @@
                     "description": "An example description.",
                     "is_unlisted": true,
                     "key": "string",
+                    "kind": "personal",
                     "members": [
                       {
                         "id": "string",
@@ -78404,6 +79071,7 @@
                       "description": "An example description.",
                       "is_unlisted": true,
                       "key": "string",
+                      "kind": "personal",
                       "members": [
                         {
                           "id": "string",
@@ -78446,6 +79114,14 @@
                       "key": {
                         "description": "Client-assigned unique key for idempotent creation or later lookup. Must be unique within the owning organization.",
                         "example": "string",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "description": "Optional behavioral subtype. `personal` is accepted only for a user-owned thread and limits membership to that user and agents currently owned by them. Mirror kinds remain server-derived and cannot be selected by callers.",
+                        "enum": [
+                          "personal"
+                        ],
+                        "example": "personal",
                         "type": "string"
                       },
                       "members": {
@@ -91201,7 +91877,7 @@
                         "type": "string"
                       },
                       "kind": {
-                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                         "example": "string",
                         "nullable": true,
                         "type": "string"
@@ -95745,7 +96421,7 @@
                     "type": "string"
                   },
                   "kind": {
-                    "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                    "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                     "example": "string",
                     "nullable": true,
                     "type": "string"
@@ -109830,7 +110506,7 @@
                         "type": "string"
                       },
                       "kind": {
-                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. Read-only — derived server-side at creation, never accepted from params.",
+                        "description": "Thread subtype: `\"standard\"` for ordinary threads, `\"personal\"` for a user-and-owned-agents roster, `\"slack_mirror\"` for the membership-strict mirror of a Slack channel, or `\"slashwork_mirror\"` for the membership-strict mirror of a Slashwork group. `personal` is an explicit user-thread creation option; mirror kinds are server-derived.",
                         "example": "string",
                         "nullable": true,
                         "type": "string"
@@ -120451,6 +121127,7 @@
                   },
                   "description": "An example description.",
                   "due_date": "2024-01-01T00:00:00Z",
+                  "epic": "string",
                   "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                   "is_blocked": true,
                   "links": {
@@ -120480,6 +121157,9 @@
                   "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                   "priority": 2,
                   "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                  "source_id": "string",
+                  "source_scope": "string",
+                  "source_type": "string",
                   "status": "open",
                   "subtasks_count": 1,
                   "tags": [
@@ -120524,6 +121204,7 @@
                     },
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "string",
                     "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "is_blocked": true,
                     "links": {
@@ -120553,6 +121234,9 @@
                     "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "priority": 2,
                     "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                    "source_id": "string",
+                    "source_scope": "string",
+                    "source_type": "string",
                     "status": "open",
                     "subtasks_count": 1,
                     "tags": [
@@ -120595,6 +121279,7 @@
                     },
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
+                    "epic": "string",
                     "id": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "is_blocked": true,
                     "links": {
@@ -120624,6 +121309,9 @@
                     "parent": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
                     "priority": 2,
                     "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                    "source_id": "string",
+                    "source_scope": "string",
+                    "source_type": "string",
                     "status": "open",
                     "subtasks_count": 1,
                     "tags": [
@@ -120819,6 +121507,12 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "epic": {
+                      "description": "Free-form grouping label. `null` when the task is not in an epic.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "id": {
                       "description": "Task ID (`tsk_...`).",
                       "example": "tsk_0aBcDeFgHiJkLmNoPqRsTu",
@@ -120977,6 +121671,24 @@
                     "sandbox": {
                       "description": "ID of the developer sandbox this task is scoped to (`dsb_...`). `null` for tasks outside a sandbox environment.",
                       "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "source_id": {
+                      "description": "Source object identity (for example `ArchAstro/firstlanding`). `null` when the task has no source.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "source_scope": {
+                      "description": "Container of the work this task is about (for example `github.com`). `null` when the task has no source. Set together with `source_type` and `source_id`.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "source_type": {
+                      "description": "Kind of source object (for example `repository`). `null` when the task has no source.",
+                      "example": "string",
                       "nullable": true,
                       "type": "string"
                     },
