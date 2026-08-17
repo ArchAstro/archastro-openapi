@@ -1613,7 +1613,6 @@
                                                   "required": true,
                                                   "type": "agent_user"
                                                 },
-                                                "nullable": true,
                                                 "properties": {
                                                   "description": {
                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -2140,7 +2139,6 @@
                                                   "required": true,
                                                   "type": "agent_user"
                                                 },
-                                                "nullable": true,
                                                 "properties": {
                                                   "description": {
                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -9516,6 +9514,62 @@
         ],
         "type": "object"
       },
+      "ChatLocalToolDefinition": {
+        "description": "An OpenAI-compatible local function definition supplied while joining a personal thread.",
+        "example": {
+          "function": {
+            "description": "An example description.",
+            "name": "Example Name",
+            "parameters": {}
+          },
+          "type": "function"
+        },
+        "properties": {
+          "function": {
+            "$ref": "#/components/schemas/ChatLocalToolFunction"
+          },
+          "type": {
+            "enum": [
+              "function"
+            ],
+            "example": "function",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "function"
+        ],
+        "type": "object"
+      },
+      "ChatLocalToolFunction": {
+        "description": "A function implemented by the client connected to a personal thread.",
+        "example": {
+          "description": "An example description.",
+          "name": "Example Name",
+          "parameters": {}
+        },
+        "properties": {
+          "description": {
+            "example": "An example description.",
+            "type": "string"
+          },
+          "name": {
+            "example": "Example Name",
+            "type": "string"
+          },
+          "parameters": {
+            "example": {},
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "parameters"
+        ],
+        "type": "object"
+      },
       "ChatMarkThreadReadResponse": {
         "description": "Response returned after marking a chat thread as read. Confirms that the read marker was successfully recorded for the authenticated user.",
         "example": {
@@ -12232,6 +12286,558 @@
         },
         "required": [
           "status"
+        ],
+        "type": "object"
+      },
+      "DomainEvent": {
+        "description": "A domain event with stable attribution fields and an event-specific payload.",
+        "example": {
+          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "created_at": "2024-01-01T00:00:00Z",
+          "event_name": "Example Name",
+          "id": "string",
+          "idempotency_key": "string",
+          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+          "payload": {},
+          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+        },
+        "properties": {
+          "agent": {
+            "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "created_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "event_name": {
+            "example": "Example Name",
+            "type": "string"
+          },
+          "id": {
+            "example": "string",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "example": "string",
+            "type": "string"
+          },
+          "org": {
+            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "payload": {
+            "description": "Opaque event-specific JSON. Use event_name to select the expected payload schema.",
+            "example": {},
+            "type": "object"
+          },
+          "sandbox": {
+            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "team": {
+            "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "user": {
+            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event_name",
+          "payload",
+          "created_at"
+        ],
+        "type": "object"
+      },
+      "EventSubscription": {
+        "description": "An app-scoped subscription to exact domain-event names.",
+        "example": {
+          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "available_count": 1,
+          "created_at": "2024-01-01T00:00:00Z",
+          "dropped_events_total": 1,
+          "dropped_through_position": 1,
+          "event_names": [
+            "Example Name"
+          ],
+          "id": "string",
+          "last_overflow_at": "2024-01-01T00:00:00Z",
+          "leased_count": 1,
+          "max_pending_events": 1,
+          "name": "Example Name",
+          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+          "queue_epoch": 1,
+          "retention_seconds": 1,
+          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+          "status": "active",
+          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+          "updated_at": "2024-01-01T00:00:00Z",
+          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+          "visibility_timeout_seconds": 1
+        },
+        "properties": {
+          "agent": {
+            "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "available_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "created_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "dropped_events_total": {
+            "example": 1,
+            "type": "integer"
+          },
+          "dropped_through_position": {
+            "example": 1,
+            "type": "integer"
+          },
+          "event_names": {
+            "example": [
+              "Example Name"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "example": "string",
+            "type": "string"
+          },
+          "last_overflow_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "leased_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "max_pending_events": {
+            "example": 1,
+            "type": "integer"
+          },
+          "name": {
+            "example": "Example Name",
+            "type": "string"
+          },
+          "org": {
+            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "queue_epoch": {
+            "example": 1,
+            "type": "integer"
+          },
+          "retention_seconds": {
+            "example": 1,
+            "type": "integer"
+          },
+          "sandbox": {
+            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "paused"
+            ],
+            "example": "active",
+            "type": "string"
+          },
+          "team": {
+            "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "user": {
+            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "visibility_timeout_seconds": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "event_names",
+          "status",
+          "max_pending_events",
+          "visibility_timeout_seconds",
+          "retention_seconds",
+          "available_count",
+          "leased_count",
+          "queue_epoch",
+          "dropped_events_total",
+          "dropped_through_position",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionClaim": {
+        "description": "Result of atomically claiming the head delivery.",
+        "example": {
+          "data": [
+            {
+              "delivery_id": "string",
+              "event": {
+                "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                "created_at": "2024-01-01T00:00:00Z",
+                "event_name": "Example Name",
+                "id": "string",
+                "idempotency_key": "string",
+                "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                "payload": {},
+                "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+              },
+              "lease_expires_at": "2024-01-01T00:00:00Z",
+              "receipt_handle": "string",
+              "receive_count": 1,
+              "sequence": 1
+            }
+          ],
+          "dropped_events_total": 1,
+          "dropped_through_position": 1,
+          "has_more": true,
+          "queue_epoch": 1
+        },
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventSubscriptionDelivery"
+            },
+            "type": "array"
+          },
+          "dropped_events_total": {
+            "example": 1,
+            "type": "integer"
+          },
+          "dropped_through_position": {
+            "example": 1,
+            "type": "integer"
+          },
+          "has_more": {
+            "example": true,
+            "type": "boolean"
+          },
+          "queue_epoch": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "queue_epoch",
+          "dropped_events_total",
+          "dropped_through_position"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionDelivery": {
+        "description": "A domain event leased from a subscription queue.",
+        "example": {
+          "delivery_id": "string",
+          "event": {
+            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "created_at": "2024-01-01T00:00:00Z",
+            "event_name": "Example Name",
+            "id": "string",
+            "idempotency_key": "string",
+            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "payload": {},
+            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+          },
+          "lease_expires_at": "2024-01-01T00:00:00Z",
+          "receipt_handle": "string",
+          "receive_count": 1,
+          "sequence": 1
+        },
+        "properties": {
+          "delivery_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/DomainEvent"
+          },
+          "lease_expires_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "receipt_handle": {
+            "example": "string",
+            "type": "string"
+          },
+          "receive_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "sequence": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "delivery_id",
+          "sequence",
+          "receipt_handle",
+          "lease_expires_at",
+          "receive_count",
+          "event"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionHead": {
+        "description": "A non-reserving view of the queue head.",
+        "example": {
+          "data": {
+            "delivery_id": "string",
+            "event": {
+              "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+              "created_at": "2024-01-01T00:00:00Z",
+              "event_name": "Example Name",
+              "id": "string",
+              "idempotency_key": "string",
+              "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+              "payload": {},
+              "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+            },
+            "lease_expires_at": "2024-01-01T00:00:00Z",
+            "receive_count": 1,
+            "sequence": 1,
+            "state": "available"
+          }
+        },
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/EventSubscriptionQueueEntry"
+          }
+        },
+        "type": "object"
+      },
+      "EventSubscriptionPage": {
+        "description": "A page of domain-event subscriptions.",
+        "example": {
+          "data": [
+            {
+              "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+              "available_count": 1,
+              "created_at": "2024-01-01T00:00:00Z",
+              "dropped_events_total": 1,
+              "dropped_through_position": 1,
+              "event_names": [
+                "Example Name"
+              ],
+              "id": "string",
+              "last_overflow_at": "2024-01-01T00:00:00Z",
+              "leased_count": 1,
+              "max_pending_events": 1,
+              "name": "Example Name",
+              "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+              "queue_epoch": 1,
+              "retention_seconds": 1,
+              "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+              "status": "active",
+              "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+              "updated_at": "2024-01-01T00:00:00Z",
+              "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+              "visibility_timeout_seconds": 1
+            }
+          ],
+          "page": 1,
+          "per_page": 1,
+          "total_count": 1,
+          "total_pages": 1
+        },
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventSubscription"
+            },
+            "type": "array"
+          },
+          "page": {
+            "example": 1,
+            "type": "integer"
+          },
+          "per_page": {
+            "example": 1,
+            "type": "integer"
+          },
+          "total_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "total_pages": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "page",
+          "per_page",
+          "total_count",
+          "total_pages"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionQueue": {
+        "description": "A cursor-paginated non-reserving view of a subscription queue.",
+        "example": {
+          "after_cursor": "string",
+          "before_cursor": "string",
+          "data": [
+            {
+              "delivery_id": "string",
+              "event": {
+                "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                "created_at": "2024-01-01T00:00:00Z",
+                "event_name": "Example Name",
+                "id": "string",
+                "idempotency_key": "string",
+                "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                "payload": {},
+                "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+                "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+              },
+              "lease_expires_at": "2024-01-01T00:00:00Z",
+              "receive_count": 1,
+              "sequence": 1,
+              "state": "available"
+            }
+          ],
+          "dropped_events_total": 1,
+          "dropped_through_position": 1,
+          "has_more": true,
+          "queue_epoch": 1
+        },
+        "properties": {
+          "after_cursor": {
+            "example": "string",
+            "type": "string"
+          },
+          "before_cursor": {
+            "example": "string",
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/EventSubscriptionQueueEntry"
+            },
+            "type": "array"
+          },
+          "dropped_events_total": {
+            "example": 1,
+            "type": "integer"
+          },
+          "dropped_through_position": {
+            "example": 1,
+            "type": "integer"
+          },
+          "has_more": {
+            "example": true,
+            "type": "boolean"
+          },
+          "queue_epoch": {
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data",
+          "has_more",
+          "queue_epoch",
+          "dropped_events_total",
+          "dropped_through_position"
+        ],
+        "type": "object"
+      },
+      "EventSubscriptionQueueEntry": {
+        "description": "A non-reserving view of one queued delivery.",
+        "example": {
+          "delivery_id": "string",
+          "event": {
+            "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "created_at": "2024-01-01T00:00:00Z",
+            "event_name": "Example Name",
+            "id": "string",
+            "idempotency_key": "string",
+            "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "payload": {},
+            "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+          },
+          "lease_expires_at": "2024-01-01T00:00:00Z",
+          "receive_count": 1,
+          "sequence": 1,
+          "state": "available"
+        },
+        "properties": {
+          "delivery_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/DomainEvent"
+          },
+          "lease_expires_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "receive_count": {
+            "example": 1,
+            "type": "integer"
+          },
+          "sequence": {
+            "example": 1,
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "available",
+              "leased"
+            ],
+            "example": "available",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delivery_id",
+          "sequence",
+          "state",
+          "receive_count",
+          "event"
         ],
         "type": "object"
       },
@@ -15747,21 +16353,8 @@
           },
           "participants": {
             "description": "Named participant slots declared by the workflow, sorted by name. `null` when the workflow declares none. Values supplied under the top-level `participants` field are agent IDs.",
-            "example": [
-              {
-                "description": "An example description.",
-                "name": "reporter",
-                "required": true,
-                "type": "agent_user"
-              }
-            ],
             "items": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/AutomationParticipantSlot"
-                }
-              ],
-              "nullable": true
+              "$ref": "#/components/schemas/AutomationParticipantSlot"
             },
             "nullable": true,
             "type": "array"
@@ -20289,196 +20882,8 @@
           },
           "participating_agents": {
             "description": "Expanded agent objects for all agents participating in this thread. Present only when agent enrichment is requested.",
-            "example": [
-              {
-                "acl": {
-                  "add": [
-                    {
-                      "actions": [
-                        "read",
-                        "write"
-                      ],
-                      "principal": "string",
-                      "principal_type": "user"
-                    }
-                  ],
-                  "grants": [
-                    {
-                      "actions": [
-                        "read",
-                        "write"
-                      ],
-                      "principal": "string",
-                      "principal_type": "user"
-                    }
-                  ],
-                  "remove": [
-                    {
-                      "principal": "string",
-                      "principal_type": "user"
-                    }
-                  ]
-                },
-                "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
-                "created_at": "2024-01-01T00:00:00Z",
-                "default_model": "claude-3-7-sonnet-latest",
-                "description": "An example description.",
-                "email": "user@example.com",
-                "id": "agi_0aBcDeFgHiJkLmNoPqRsTu",
-                "identity": "You are a helpful assistant that answers questions about ArchAstro products.",
-                "last_applied_template_config": "cfg_0aBcDeFgHiJkLmNoPqRsTu",
-                "lookup_key": "string",
-                "metadata": {
-                  "key": "value"
-                },
-                "name": "Example Name",
-                "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                "org_name": "Example Name",
-                "originator": "deploy-pipeline",
-                "phone_number": "+15555550123",
-                "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
-                "source_solution": {
-                  "current_solution": {
-                    "category_keys": [
-                      "string"
-                    ],
-                    "created_at": "2024-01-01T00:00:00Z",
-                    "description": "An example description.",
-                    "events": {},
-                    "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
-                    "image_url": "https://example.com",
-                    "kind": "Solution",
-                    "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
-                    "latest_version": "1.0.0",
-                    "lookup_key": "string",
-                    "metadata": {
-                      "key": "value"
-                    },
-                    "name": "Example Name",
-                    "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                    "org_logo": {
-                      "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                      "height": 600,
-                      "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                      "mime_type": "application/json",
-                      "refresh_url": "https://example.com",
-                      "url": "https://example.com",
-                      "width": 800
-                    },
-                    "org_name": "Example Name",
-                    "org_slug": "example-slug",
-                    "owners": [
-                      "string"
-                    ],
-                    "readme_url": "https://example.com",
-                    "screenshot_urls": [
-                      "https://example.com"
-                    ],
-                    "solution_id": "01234567-89ab-cdef-0123-456789abcdef",
-                    "solution_version": "1.2.0",
-                    "tag_keys": [
-                      "string"
-                    ],
-                    "template_kind": "AgentTemplate",
-                    "templates": [
-                      {
-                        "description": "An example description.",
-                        "display_name": "Example Name",
-                        "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
-                        "kind": "AgentTemplate",
-                        "lookup_key": "string",
-                        "name": "Example Name",
-                        "readme_url": "https://example.com",
-                        "virtual_path": "string"
-                      }
-                    ],
-                    "updated_at": "2024-01-01T00:00:00Z",
-                    "upgrade_available": true,
-                    "virtual_path": "string"
-                  },
-                  "solution": {
-                    "category_keys": [
-                      "string"
-                    ],
-                    "created_at": "2024-01-01T00:00:00Z",
-                    "description": "An example description.",
-                    "events": {},
-                    "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
-                    "image_url": "https://example.com",
-                    "kind": "Solution",
-                    "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
-                    "latest_version": "1.0.0",
-                    "lookup_key": "string",
-                    "metadata": {
-                      "key": "value"
-                    },
-                    "name": "Example Name",
-                    "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
-                    "org_logo": {
-                      "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
-                      "height": 600,
-                      "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
-                      "mime_type": "application/json",
-                      "refresh_url": "https://example.com",
-                      "url": "https://example.com",
-                      "width": 800
-                    },
-                    "org_name": "Example Name",
-                    "org_slug": "example-slug",
-                    "owners": [
-                      "string"
-                    ],
-                    "readme_url": "https://example.com",
-                    "screenshot_urls": [
-                      "https://example.com"
-                    ],
-                    "solution_id": "01234567-89ab-cdef-0123-456789abcdef",
-                    "solution_version": "1.2.0",
-                    "tag_keys": [
-                      "string"
-                    ],
-                    "template_kind": "AgentTemplate",
-                    "templates": [
-                      {
-                        "description": "An example description.",
-                        "display_name": "Example Name",
-                        "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
-                        "kind": "AgentTemplate",
-                        "lookup_key": "string",
-                        "name": "Example Name",
-                        "readme_url": "https://example.com",
-                        "virtual_path": "string"
-                      }
-                    ],
-                    "updated_at": "2024-01-01T00:00:00Z",
-                    "upgrade_available": true,
-                    "virtual_path": "string"
-                  },
-                  "template": {
-                    "created_at": "2024-01-01T00:00:00Z",
-                    "description": "An example description.",
-                    "display_name": "Example Name",
-                    "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
-                    "kind": "agent_tool_template",
-                    "lookup_key": "string",
-                    "name": "Example Name",
-                    "updated_at": "2024-01-01T00:00:00Z",
-                    "virtual_path": "string"
-                  }
-                },
-                "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
-                "template_upgrade_available": true,
-                "updated_at": "2024-01-01T00:00:00Z",
-                "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
-              }
-            ],
             "items": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Agent"
-                }
-              ],
-              "nullable": true
+              "$ref": "#/components/schemas/Agent"
             },
             "nullable": true,
             "type": "array"
@@ -20511,7 +20916,6 @@
               {}
             ],
             "items": {
-              "nullable": true,
               "type": "object"
             },
             "nullable": true,
@@ -22957,7 +23361,6 @@
                                                                   "required": true,
                                                                   "type": "agent_user"
                                                                 },
-                                                                "nullable": true,
                                                                 "properties": {
                                                                   "description": {
                                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -23484,7 +23887,6 @@
                                                                   "required": true,
                                                                   "type": "agent_user"
                                                                 },
-                                                                "nullable": true,
                                                                 "properties": {
                                                                   "description": {
                                                                     "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -38210,6 +38612,584 @@
           }
         },
         "summary": "Update a custom object",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscription_deliveries/{delivery}/acknowledge": {
+      "post": {
+        "description": "Acknowledges a delivery using its current receipt handle. Repeating the same acknowledgement is idempotent; a stale or incorrect receipt returns 409. Acknowledging a delivery that aged out under the subscription's retention returns `delivery_not_found` — the event was already counted in `dropped_events_total`, and the acknowledgement should not be retried.",
+        "operationId": "post_api_v1_event_subscription_deliveries__delivery_acknowledge",
+        "parameters": [
+          {
+            "description": "Delivery ID (`esd_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "delivery",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "receipt_handle": "string"
+                },
+                "properties": {
+                  "receipt_handle": {
+                    "description": "Opaque handle returned by claim.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "receipt_handle"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription delivery not found"
+          },
+          "409": {
+            "description": "The delivery lease is no longer current"
+          }
+        },
+        "summary": "Acknowledge a claimed event",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions": {
+      "get": {
+        "description": "Lists the subscriptions visible to the caller, with current queue counters.",
+        "operationId": "get_api_v1_event_subscriptions",
+        "parameters": [
+          {
+            "description": "Page number, starting at 1.",
+            "example": 1,
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Subscriptions per page, from 1 through 100.",
+            "example": 1,
+            "in": "query",
+            "name": "per_page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionPage"
+                }
+              }
+            },
+            "description": "Subscriptions visible to this caller."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "List domain-event subscriptions",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "description": "Creates a durable subscription that receives exportable domain events matching its exact event names. Matching events fan out into a per-subscription queue bounded by max_pending_events and retention_seconds; consume with claim and acknowledge.",
+        "operationId": "post_api_v1_event_subscriptions",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "event_names": [
+                    "Example Name"
+                  ],
+                  "max_pending_events": 1,
+                  "name": "Example Name",
+                  "retention_seconds": 1,
+                  "status": "active",
+                  "visibility_timeout_seconds": 1
+                },
+                "properties": {
+                  "event_names": {
+                    "description": "Exact event names to receive.",
+                    "example": [
+                      "Example Name"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "max_pending_events": {
+                    "description": "Queue cap. Defaults to 100; maximum 1000.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "description": "Customer-defined subscription name.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "retention_seconds": {
+                    "description": "Delivery retention in seconds. Defaults to 86400 (24 hours); between 7200 and 2592000. Applies to future deliveries only.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "status": {
+                    "description": "Initial status. Defaults to active.",
+                    "enum": [
+                      "active",
+                      "paused"
+                    ],
+                    "example": "active",
+                    "type": "string"
+                  },
+                  "visibility_timeout_seconds": {
+                    "description": "Default claim lease in seconds. Defaults to 300.",
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "name",
+                  "event_names"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscription"
+                }
+              }
+            },
+            "description": "The new volatile subscription."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          }
+        },
+        "summary": "Create a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}": {
+      "delete": {
+        "description": "Deletes the subscription and every delivery still in its queue.",
+        "operationId": "delete_api_v1_event_subscriptions__subscription",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Delete a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "get": {
+        "description": "Returns one subscription and its current queue counters.",
+        "operationId": "get_api_v1_event_subscriptions__subscription",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscription"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Get a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "patch": {
+        "description": "Updates matching, status, or queue limits for future fanout. Already queued deliveries remain unless a lower cap trims the oldest entries; retention changes apply to future deliveries only.",
+        "operationId": "patch_api_v1_event_subscriptions__subscription",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "event_names": [
+                    "Example Name"
+                  ],
+                  "max_pending_events": 1,
+                  "name": "Example Name",
+                  "retention_seconds": 1,
+                  "status": "active",
+                  "visibility_timeout_seconds": 1
+                },
+                "properties": {
+                  "event_names": {
+                    "example": [
+                      "Example Name"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "max_pending_events": {
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "retention_seconds": {
+                    "description": "Delivery retention in seconds. Defaults to 86400 (24 hours); between 7200 and 2592000. Applies to future deliveries only.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "status": {
+                    "enum": [
+                      "active",
+                      "paused"
+                    ],
+                    "example": "active",
+                    "type": "string"
+                  },
+                  "visibility_timeout_seconds": {
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscription"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          }
+        },
+        "summary": "Update a domain-event subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}/claim": {
+      "post": {
+        "description": "Atomically leases the oldest unacknowledged delivery. Returns an empty data array when the queue is empty or its head already has an active lease. Passing max_events opts into batch mode, where leased entries are skipped instead of blocking; wait_seconds bounds a long poll on an empty queue.",
+        "operationId": "post_api_v1_event_subscriptions__subscription_claim",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "consumer_id": "string",
+                  "max_events": 1,
+                  "request_id": "string",
+                  "visibility_timeout_seconds": 1,
+                  "wait_seconds": 1
+                },
+                "properties": {
+                  "consumer_id": {
+                    "description": "Consumer identity between 1 and 128 bytes, recorded on the lease for attribution.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "max_events": {
+                    "description": "Opts into batch mode: leases up to this many lease-available deliveries (between 1 and 20) in sequence order, skipping leased entries instead of blocking on the head. Omit to keep strict head-of-line semantics.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "request_id": {
+                    "description": "Idempotency key between 1 and 128 bytes. Use a value unique per claim attempt (e.g. a UUID) — the key is scoped to the subscription, so a reused value takes over whatever leases it last stamped. Retrying a claim with the same request_id while its leases are unexpired returns the same deliveries (regardless of max_events) with fresh receipt handles and refreshed leases.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "visibility_timeout_seconds": {
+                    "description": "Lease duration override between 15 and 3600 seconds.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "wait_seconds": {
+                    "description": "Long-poll bound between 0 and 20 seconds. When the queue is empty, the request waits up to this long for a delivery before returning an empty data array. 0 (or omitting) returns immediately.",
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionClaim"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          }
+        },
+        "summary": "Claim events from a subscription",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}/head": {
+      "get": {
+        "description": "Returns the oldest unacknowledged delivery without reserving it. This diagnostic read cannot be used as a safe substitute for claim.",
+        "operationId": "get_api_v1_event_subscriptions__subscription_head",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionHead"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Peek at the head of a subscription queue",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/event_subscriptions/{subscription}/queue": {
+      "get": {
+        "description": "Returns a non-reserving, oldest-first view of unacknowledged deliveries, including the queue's loss indicators (queue_epoch, dropped_events_total, dropped_through_position). Use claim to obtain a receipt handle before acknowledging.",
+        "operationId": "get_api_v1_event_subscriptions__subscription_queue",
+        "parameters": [
+          {
+            "description": "Subscription ID (`esub_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "subscription",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum entries to return, from 1 through 100.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor for the preceding page.",
+            "example": "string",
+            "in": "query",
+            "name": "before_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque cursor for the following page.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventSubscriptionQueue"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid cursor"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event subscription not found"
+          }
+        },
+        "summary": "Read a subscription queue",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -53388,7 +54368,6 @@
                                                               "required": true,
                                                               "type": "agent_user"
                                                             },
-                                                            "nullable": true,
                                                             "properties": {
                                                               "description": {
                                                                 "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -53915,7 +54894,6 @@
                                                               "required": true,
                                                               "type": "agent_user"
                                                             },
-                                                            "nullable": true,
                                                             "properties": {
                                                               "description": {
                                                                 "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -62270,7 +63248,6 @@
                                 "updated_at": "string",
                                 "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                               },
-                              "nullable": true,
                               "properties": {
                                 "acl": {
                                   "description": "Access control list for the agent. Contains a `grants` array where each entry specifies `principal_type`, `principal`, and `actions`. `null` when no ACL restrictions are applied and the agent is accessible to all members of its scope.",
@@ -63047,7 +64024,6 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
-                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -63574,7 +64550,6 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
-                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -63877,7 +64852,6 @@
                               {}
                             ],
                             "items": {
-                              "nullable": true,
                               "type": "object"
                             },
                             "nullable": true,
@@ -77306,7 +78280,6 @@
                                 "updated_at": "string",
                                 "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                               },
-                              "nullable": true,
                               "properties": {
                                 "acl": {
                                   "description": "Access control list for the agent. Contains a `grants` array where each entry specifies `principal_type`, `principal`, and `actions`. `null` when no ACL restrictions are applied and the agent is accessible to all members of its scope.",
@@ -78083,7 +79056,6 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
-                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -78610,7 +79582,6 @@
                                                                 "required": true,
                                                                 "type": "agent_user"
                                                               },
-                                                              "nullable": true,
                                                               "properties": {
                                                                 "description": {
                                                                   "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -78913,7 +79884,6 @@
                               {}
                             ],
                             "items": {
-                              "nullable": true,
                               "type": "object"
                             },
                             "nullable": true,
@@ -81471,7 +82441,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -81998,7 +82967,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -82710,7 +83678,7 @@
           }
         },
         {
-          "description": "Join a user-scoped thread by ID",
+          "description": "Join a user-scoped thread by ID, optionally supplying local tools for a personal thread",
           "name": "join_user_thread",
           "params": {
             "example": {
@@ -82718,6 +83686,17 @@
               "before_cursor": "string",
               "include_metadata": true,
               "limit": 1,
+              "local_tool_provider_id": "string",
+              "local_tools": [
+                {
+                  "function": {
+                    "description": "An example description.",
+                    "name": "Example Name",
+                    "parameters": {}
+                  },
+                  "type": "function"
+                }
+              ],
               "thread_id": "string"
             },
             "properties": {
@@ -82736,6 +83715,76 @@
               "limit": {
                 "example": 1,
                 "type": "integer"
+              },
+              "local_tool_provider_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "local_tools": {
+                "example": [
+                  {
+                    "function": {
+                      "description": "An example description.",
+                      "name": "Example Name",
+                      "parameters": {}
+                    },
+                    "type": "function"
+                  }
+                ],
+                "items": {
+                  "description": "An OpenAI-compatible local function definition supplied while joining a personal thread.",
+                  "example": {
+                    "function": {
+                      "description": "An example description.",
+                      "name": "Example Name",
+                      "parameters": {}
+                    },
+                    "type": "function"
+                  },
+                  "properties": {
+                    "function": {
+                      "description": "A function implemented by the client connected to a personal thread.",
+                      "example": {
+                        "description": "An example description.",
+                        "name": "Example Name",
+                        "parameters": {}
+                      },
+                      "properties": {
+                        "description": {
+                          "example": "An example description.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "example": "Example Name",
+                          "type": "string"
+                        },
+                        "parameters": {
+                          "example": {},
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ],
+                      "type": "object"
+                    },
+                    "type": {
+                      "enum": [
+                        "function"
+                      ],
+                      "example": "function",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "function"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "thread_id": {
                 "example": "string",
@@ -86210,7 +87259,6 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
-                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -86737,7 +87785,6 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
-                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -88390,7 +89437,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -88917,7 +89963,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -93841,7 +94886,6 @@
                             "updated_at": "string",
                             "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                           },
-                          "nullable": true,
                           "properties": {
                             "acl": {
                               "description": "Access control list for the agent. Contains a `grants` array where each entry specifies `principal_type`, `principal`, and `actions`. `null` when no ACL restrictions are applied and the agent is accessible to all members of its scope.",
@@ -94618,7 +95662,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -95145,7 +96188,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -95448,7 +96490,6 @@
                           {}
                         ],
                         "items": {
-                          "nullable": true,
                           "type": "object"
                         },
                         "nullable": true,
@@ -98385,7 +99426,6 @@
                         "updated_at": "string",
                         "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                       },
-                      "nullable": true,
                       "properties": {
                         "acl": {
                           "description": "Access control list for the agent. Contains a `grants` array where each entry specifies `principal_type`, `principal`, and `actions`. `null` when no ACL restrictions are applied and the agent is accessible to all members of its scope.",
@@ -99162,7 +100202,6 @@
                                                         "required": true,
                                                         "type": "agent_user"
                                                       },
-                                                      "nullable": true,
                                                       "properties": {
                                                         "description": {
                                                           "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -99689,7 +100728,6 @@
                                                         "required": true,
                                                         "type": "agent_user"
                                                       },
-                                                      "nullable": true,
                                                       "properties": {
                                                         "description": {
                                                           "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -99992,7 +101030,6 @@
                       {}
                     ],
                     "items": {
-                      "nullable": true,
                       "type": "object"
                     },
                     "nullable": true,
@@ -104839,7 +105876,6 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
-                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -105366,7 +106402,6 @@
                                                       "required": true,
                                                       "type": "agent_user"
                                                     },
-                                                    "nullable": true,
                                                     "properties": {
                                                       "description": {
                                                         "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -107019,7 +108054,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -107546,7 +108580,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -112470,7 +113503,6 @@
                             "updated_at": "string",
                             "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                           },
-                          "nullable": true,
                           "properties": {
                             "acl": {
                               "description": "Access control list for the agent. Contains a `grants` array where each entry specifies `principal_type`, `principal`, and `actions`. `null` when no ACL restrictions are applied and the agent is accessible to all members of its scope.",
@@ -113247,7 +114279,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -113774,7 +114805,6 @@
                                                             "required": true,
                                                             "type": "agent_user"
                                                           },
-                                                          "nullable": true,
                                                           "properties": {
                                                             "description": {
                                                               "description": "Workflow-authored explanation of the slot's role. `null` when the workflow declares none.",
@@ -114077,7 +115107,6 @@
                           {}
                         ],
                         "items": {
-                          "nullable": true,
                           "type": "object"
                         },
                         "nullable": true,
