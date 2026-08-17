@@ -495,6 +495,27 @@ describe("Python resource emitter passes response_type for typed responses", () 
           },
         },
       },
+      "/api/v1/widgets/{widget}/lease": {
+        get: {
+          operationId: "get_api_v1_widgets_widget_lease",
+          parameters: [
+            { name: "widget", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "Live lease summary, or null.",
+              content: {
+                "application/json": {
+                  schema: {
+                    allOf: [{ $ref: "#/components/schemas/Widget" }],
+                    nullable: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       "/api/v1/widgets/paged": {
         get: {
           operationId: "get_api_v1_widgets_paged",
@@ -550,6 +571,15 @@ describe("Python resource emitter passes response_type for typed responses", () 
     );
   });
 
+  it("deserializes nullable $ref responses as Model | None", () => {
+    expect(output).toContain(
+      "async def lease(self, widget: str) -> Optional[Widget]:"
+    );
+    expect(output).toContain(
+      "response_type=Widget | None"
+    );
+  });
+
   it("passes list[Model] for array-of-$ref responses", () => {
     expect(output).toContain(
       'return await self._http.request(f"/api/v1/widgets", response_type=list[Widget])'
@@ -594,6 +624,15 @@ describe("Python resource emitter passes response_type for typed responses", () 
       );
     });
 
+    it("accepts None or the model for nullable $ref responses", () => {
+      expect(content).toContain(
+        "assert result is None or isinstance(result, BaseModel)"
+      );
+      expect(content).toContain(
+        'assert result is None or type(result).__name__ == "Widget"'
+      );
+    });
+
     it("asserts lists of concrete model instances for list responses", () => {
       expect(content).toContain("assert isinstance(result, list)");
       expect(content).toContain(
@@ -634,6 +673,25 @@ describe("Python resource emitter passes response_type for typed responses", () 
         errors: [],
       })
     ).toThrow(/not deserialized/);
+  });
+
+  it("classifies a nullable schema-ref response as a deserialized model", () => {
+    expect(
+      pythonResponseShape({
+        name: "get_lease",
+        operationId: "get_api_v1_tasks__task_lease",
+        method: "GET",
+        path: "/api/v1/tasks/{task}/lease",
+        deprecated: false,
+        pathParams: [],
+        queryParams: [],
+        returnType: {
+          kind: "nullable",
+          inner: { kind: "ref", schema: "TaskSessionLeaseSummary" },
+        },
+        errors: [],
+      })
+    ).toBe("model");
   });
 });
 

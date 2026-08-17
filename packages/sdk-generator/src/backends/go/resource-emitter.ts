@@ -26,6 +26,7 @@ import {
   goParamsStructName,
   goResponseShape,
 } from "./response-type.js";
+import { unwrapNullability } from "../python/response-type.js";
 import {
   goFieldType,
   goQueryStringExpr,
@@ -389,11 +390,13 @@ export function goReturnType(
       return "";
     case "raw":
       return "*RawResponse";
-    case "model":
-      if (op.returnType.kind === "ref") return `*${resolveRef(op.returnType.schema)}`;
+    case "model": {
+      const inner = unwrapNullability(op.returnType);
+      if (inner.kind === "ref") return `*${resolveRef(inner.schema)}`;
       return `*${registry.lookup(responseKey(op))}`;
+    }
     case "model_list": {
-      const ret = op.returnType;
+      const ret = unwrapNullability(op.returnType);
       if (ret.kind === "array" && ret.items.kind === "ref") {
         return `[]${resolveRef(ret.items.schema)}`;
       }
