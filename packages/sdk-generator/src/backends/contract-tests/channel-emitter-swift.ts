@@ -118,7 +118,9 @@ function joinCall(
 
 /** Typed value for a join payload parameter (typed method signature). */
 function swiftPayloadValue(param: ParamDef): string {
-  return swiftTypedValue(param.type, param.name, pascalCase(param.name), []);
+  // Join methods type inline objects as `[String: JSONValue]`, not hoisted
+  // structs. Dummy values must be JSON dictionaries or they will not compile.
+  return swiftTypedValue(param.type, param.name, pascalCase(param.name), [], "json");
 }
 
 function testPrefix(channel: ChannelDef, suffix: string): string {

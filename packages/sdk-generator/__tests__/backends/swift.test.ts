@@ -13,6 +13,7 @@ import {
   swiftQueryStringExpr,
 } from "../../src/backends/swift/type-map.js";
 import { emitSwiftContractTests } from "../../src/backends/contract-tests/swift-emitter.js";
+import { emitSwiftChannelContractTestFile } from "../../src/backends/contract-tests/channel-emitter-swift.js";
 import type { SchemaDef } from "../../src/ast/types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -266,5 +267,65 @@ describe("swift contract tests emitter", () => {
     const combined = Object.values(files).join("\n");
     const hasErrorTest = /error_\d{3}\(\) async throws/.test(combined);
     expect(hasErrorTest).toBe(true);
+  });
+
+  it("uses JSON dictionaries for inline channel join objects", () => {
+    const output = emitSwiftChannelContractTestFile(
+      {
+        name: "api_chat",
+        className: "ApiChatChannel",
+        joins: [
+          {
+            topicPattern: "api:chat:user:thread:{thread_id}",
+            params: [
+              {
+                name: "thread_id",
+                type: { kind: "primitive", type: "string" },
+                required: true,
+              },
+              {
+                name: "local_tools",
+                type: {
+                  kind: "array",
+                  items: {
+                    kind: "object",
+                    fields: [
+                      {
+                        name: "type",
+                        type: { kind: "primitive", type: "string" },
+                        required: true,
+                      },
+                      {
+                        name: "function",
+                        type: {
+                          kind: "object",
+                          fields: [
+                            {
+                              name: "name",
+                              type: { kind: "primitive", type: "string" },
+                              required: true,
+                            },
+                          ],
+                        },
+                        required: true,
+                      },
+                    ],
+                  },
+                },
+                required: false,
+              },
+            ],
+            returnType: { kind: "unknown" },
+          },
+        ],
+        messages: [],
+        pushes: [],
+      },
+      new SwiftNameRegistry()
+    );
+    expect(output).not.toContain("LocalToolsItem");
+    expect(output).toContain(
+      'localTools: [["type": "test", "function": ["name": "test-name"]]]'
+    );
   });
 });
