@@ -7096,6 +7096,38 @@
         ],
         "type": "object"
       },
+      "Cancelled": {
+        "description": "A cancelled local-tool outcome.",
+        "example": {
+          "call_id": "string",
+          "reason": "string",
+          "status": "cancelled"
+        },
+        "properties": {
+          "call_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "reason": {
+            "example": "string",
+            "type": "string"
+          },
+          "status": {
+            "default": "cancelled",
+            "enum": [
+              "cancelled"
+            ],
+            "example": "cancelled",
+            "type": "string"
+          }
+        },
+        "required": [
+          "call_id",
+          "status",
+          "reason"
+        ],
+        "type": "object"
+      },
       "ChannelAck": {
         "description": "Empty acknowledgement payload returned by channel message handlers that produce no data. The wire envelope is `{\"status\": \"ok\", \"response\": {}}`.",
         "properties": {},
@@ -7601,6 +7633,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -7803,6 +7843,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -8239,6 +8287,14 @@
               ],
               "branched_thread": "string",
               "content": "Hello, how can I help you today?",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "created_at": "2024-01-01T00:00:00Z",
               "has_replies": true,
               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -9029,6 +9085,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -9231,6 +9295,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -9514,8 +9586,36 @@
         ],
         "type": "object"
       },
+      "ChatLocalToolCall": {
+        "description": "One local function invocation requested by the model.",
+        "example": {
+          "arguments": {},
+          "id": "string",
+          "name": "Example Name"
+        },
+        "properties": {
+          "arguments": {
+            "example": {},
+            "type": "object"
+          },
+          "id": {
+            "example": "string",
+            "type": "string"
+          },
+          "name": {
+            "example": "Example Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "arguments"
+        ],
+        "type": "object"
+      },
       "ChatLocalToolDefinition": {
-        "description": "An OpenAI-compatible local function definition supplied while joining a personal thread.",
+        "description": "An OpenAI-compatible local function definition advertised by a personal-thread connection.",
         "example": {
           "function": {
             "description": "An example description.",
@@ -9569,6 +9669,80 @@
           "parameters"
         ],
         "type": "object"
+      },
+      "ChatLocalToolProvider": {
+        "description": "Server-issued identity for the local-tool set currently advertised by this connection.",
+        "example": {
+          "generation": 1,
+          "provider_id": "string"
+        },
+        "properties": {
+          "generation": {
+            "example": 1,
+            "type": "integer"
+          },
+          "provider_id": {
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider_id",
+          "generation"
+        ],
+        "type": "object"
+      },
+      "ChatLocalToolRequest": {
+        "description": "A correlated batch of local function calls targeted to one connection.",
+        "example": {
+          "calls": [
+            {
+              "arguments": {},
+              "id": "string",
+              "name": "Example Name"
+            }
+          ],
+          "id": "string"
+        },
+        "properties": {
+          "calls": {
+            "items": {
+              "$ref": "#/components/schemas/ChatLocalToolCall"
+            },
+            "type": "array"
+          },
+          "id": {
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "calls"
+        ],
+        "type": "object"
+      },
+      "ChatLocalToolResult": {
+        "description": "One terminal local-tool outcome returned by the owning client connection.",
+        "discriminator": {
+          "mapping": {
+            "cancelled": "#/components/schemas/Cancelled",
+            "error": "#/components/schemas/Error",
+            "ok": "#/components/schemas/Ok"
+          },
+          "propertyName": "status"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Ok"
+          },
+          {
+            "$ref": "#/components/schemas/Error"
+          },
+          {
+            "$ref": "#/components/schemas/Cancelled"
+          }
+        ]
       },
       "ChatMarkThreadReadResponse": {
         "description": "Response returned after marking a chat thread as read. Confirms that the read marker was successfully recorded for the authenticated user.",
@@ -9927,6 +10101,14 @@
               ],
               "branched_thread": "string",
               "content": "Hello, how can I help you today?",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "created_at": "2024-01-01T00:00:00Z",
               "has_replies": true,
               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -10082,6 +10264,14 @@
             ],
             "branched_thread": "string",
             "content": "Hello, how can I help you today?",
+            "context": [
+              {
+                "attributes": {},
+                "content": "string",
+                "title": "PR #10458",
+                "type": "archdev.pull_request"
+              }
+            ],
             "created_at": "2024-01-01T00:00:00Z",
             "has_replies": true,
             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -10628,6 +10818,14 @@
               ],
               "branched_thread": "string",
               "content": "Hello, how can I help you today?",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "created_at": "2024-01-01T00:00:00Z",
               "has_replies": true,
               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -10830,6 +11028,14 @@
               ],
               "branched_thread": "string",
               "content": "Hello, how can I help you today?",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "created_at": "2024-01-01T00:00:00Z",
               "has_replies": true,
               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -12352,6 +12558,44 @@
           "event_name",
           "payload",
           "created_at"
+        ],
+        "type": "object"
+      },
+      "Error": {
+        "description": "A failed local-tool outcome.",
+        "example": {
+          "call_id": "string",
+          "code": "string",
+          "message": "string",
+          "status": "error"
+        },
+        "properties": {
+          "call_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "code": {
+            "example": "string",
+            "type": "string"
+          },
+          "message": {
+            "example": "string",
+            "type": "string"
+          },
+          "status": {
+            "default": "error",
+            "enum": [
+              "error"
+            ],
+            "example": "error",
+            "type": "string"
+          }
+        },
+        "required": [
+          "call_id",
+          "status",
+          "code",
+          "message"
         ],
         "type": "object"
       },
@@ -14123,6 +14367,14 @@
           ],
           "branched_thread": "string",
           "content": "Hello, how can I help you today?",
+          "context": [
+            {
+              "attributes": {},
+              "content": "string",
+              "title": "PR #10458",
+              "type": "archdev.pull_request"
+            }
+          ],
           "created_at": "string",
           "has_replies": true,
           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -14250,6 +14502,14 @@
             ],
             "branched_thread": "string",
             "content": "Hello, how can I help you today?",
+            "context": [
+              {
+                "attributes": {},
+                "content": "string",
+                "title": "PR #10458",
+                "type": "archdev.pull_request"
+              }
+            ],
             "created_at": "2024-01-01T00:00:00Z",
             "has_replies": true,
             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -14372,6 +14632,13 @@
             "example": "Hello, how can I help you today?",
             "nullable": true,
             "type": "string"
+          },
+          "context": {
+            "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+            "items": {
+              "$ref": "#/components/schemas/MessageContext"
+            },
+            "type": "array"
           },
           "created_at": {
             "description": "When the message was posted (ISO 8601).",
@@ -14561,6 +14828,14 @@
               ],
               "branched_thread": "string",
               "content": "Hello, how can I help you today?",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "created_at": "2024-01-01T00:00:00Z",
               "has_replies": true,
               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -14795,6 +15070,43 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "MessageContext": {
+        "description": "Structured context captured with a chat message and delivered to agents as data.",
+        "example": {
+          "attributes": {},
+          "content": "string",
+          "title": "PR #10458",
+          "type": "archdev.pull_request"
+        },
+        "properties": {
+          "attributes": {
+            "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+            "example": {},
+            "type": "object"
+          },
+          "content": {
+            "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "description": "Optional human-readable label for this context block.",
+            "example": "PR #10458",
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+            "example": "archdev.pull_request",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
         ],
         "type": "object"
       },
@@ -15080,6 +15392,38 @@
         ],
         "type": "object"
       },
+      "Ok": {
+        "description": "A successful local-tool outcome.",
+        "example": {
+          "call_id": "string",
+          "content": "string",
+          "status": "ok"
+        },
+        "properties": {
+          "call_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "content": {
+            "example": "string",
+            "type": "string"
+          },
+          "status": {
+            "default": "ok",
+            "enum": [
+              "ok"
+            ],
+            "example": "ok",
+            "type": "string"
+          }
+        },
+        "required": [
+          "call_id",
+          "status",
+          "content"
+        ],
+        "type": "object"
+      },
       "PaginatedReplies": {
         "description": "A paginated list of reply messages for a thread. The reply array is returned directly, not nested inside a `data` wrapper.",
         "example": {
@@ -15188,6 +15532,14 @@
               ],
               "branched_thread": "string",
               "content": "Hello, how can I help you today?",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "created_at": "2024-01-01T00:00:00Z",
               "has_replies": true,
               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -18579,6 +18931,7 @@
         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
         "example": {
           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "aggregate_version": 1,
           "blocked_by_count": 1,
           "closed_at": "2024-01-01T00:00:00Z",
           "comments_count": 1,
@@ -18655,6 +19008,12 @@
             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
             "nullable": true,
             "type": "string"
+          },
+          "aggregate_version": {
+            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+            "example": 1,
+            "nullable": true,
+            "type": "integer"
           },
           "blocked_by_count": {
             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -20191,6 +20550,14 @@
             ],
             "branched_thread": "string",
             "content": "Hello, how can I help you today?",
+            "context": [
+              {
+                "attributes": {},
+                "content": "string",
+                "title": "PR #10458",
+                "type": "archdev.pull_request"
+              }
+            ],
             "created_at": "2024-01-01T00:00:00Z",
             "has_replies": true,
             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -20816,6 +21183,14 @@
               ],
               "branched_thread": "string",
               "content": "Hello, how can I help you today?",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "created_at": "2024-01-01T00:00:00Z",
               "has_replies": true,
               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -21600,6 +21975,60 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "UserSSHKey": {
+        "description": "Metadata for a registered SSH public key. Key material is never returned.",
+        "example": {
+          "algorithm": "string",
+          "created_at": "2024-01-01T00:00:00Z",
+          "fingerprint": "string",
+          "id": "ssk_0aBcDeFgHiJkLmNoPqRsTu",
+          "label": "string",
+          "revoked_at": "2024-01-01T00:00:00Z"
+        },
+        "properties": {
+          "algorithm": {
+            "description": "SSH algorithm. V1 accepts `ssh-ed25519`.",
+            "example": "string",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "Registration time.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "fingerprint": {
+            "description": "OpenSSH SHA-256 fingerprint.",
+            "example": "string",
+            "type": "string"
+          },
+          "id": {
+            "description": "Registered SSH key ID (`ssk_...`).",
+            "example": "ssk_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "label": {
+            "description": "User-visible label for the key.",
+            "example": "string",
+            "type": "string"
+          },
+          "revoked_at": {
+            "description": "Revocation time, or null while active.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "algorithm",
+          "fingerprint",
+          "created_at"
         ],
         "type": "object"
       },
@@ -46139,6 +46568,43 @@
         ]
       }
     },
+    "/api/v1/ssh_keys/{ssh_key}": {
+      "delete": {
+        "description": "Revokes an owned key immediately. The key remains visible as audit metadata.",
+        "operationId": "delete_api_v1_ssh_keys__ssh_key",
+        "parameters": [
+          {
+            "description": "Registered SSH key ID (`ssk_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "ssh_key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "summary": "Revoke an SSH public key",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/status/ping": {
       "get": {
         "description": "Returns the validity and metadata of the bearer token supplied in the request.\nUse this endpoint to verify that an API key or session token is present, active,\nand unexpired before making authenticated calls.\n\nNo authentication is required to call this endpoint — it accepts any request,\nincluding those with no token at all. When a token is absent the `token.status`\nfield is `\"missing\"` and `token.active` is `false`. When a token is present but\ninvalid (expired, malformed, or referencing an unknown user) `token.active` is\n`false` and `token.status` describes the failure reason. When the token is valid,\n`token.active` is `true`, `token.status` is `\"active\"`, and `user` is populated\nwith the authenticated user's profile.\n",
@@ -46281,7 +46747,7 @@
         ]
       },
       "put": {
-        "description": "Updates the supplied fields on a task and returns the complete updated task.\nAuthenticated users use their session identity. App-scoped developer and\nserver-to-server callers must explicitly supply the task's `org` and owner.\n`team` or `user` identifies that owner; when neither is present, `agent`\nidentifies an agent-owned task. With a team or user owner, `agent` identifies\nthe acting principal. Every reference is validated before the update.\n\nA cooperating coding-session client may supply both `lease_id` and\n`lease_session_id`. The task aggregate fences that update against the live\nlease and records server-sourced session provenance. Omitting both remains a\nnormal authorized human/API update.\n",
+        "description": "Updates the supplied fields on a task and returns the complete updated task.\nAuthenticated users use their session identity. App-scoped developer and\nserver-to-server callers must explicitly supply the task's `org` and owner.\n`team` or `user` identifies that owner; when neither is present, `agent`\nidentifies an agent-owned task. With a team or user owner, `agent` identifies\nthe acting principal. Every reference is validated before the update.\n\nA cooperating coding-session client may supply both `lease_id` and\n`lease_session_id`. The task aggregate fences that update against the live\nlease and records server-sourced session provenance. Omitting both remains a\nnormal authorized human/API update.\n\nSupply `expected_version` from the latest task representation to make the\nupdate conditional. A concurrent write returns `task_version_conflict`.\n",
         "operationId": "put_api_v1_tasks__task",
         "parameters": [
           {
@@ -46304,6 +46770,7 @@
                   "description": "An example description.",
                   "due_date": "2024-01-01T00:00:00Z",
                   "epic": "string",
+                  "expected_version": 1,
                   "lease_id": "string",
                   "lease_session_id": "string",
                   "links": {},
@@ -46347,6 +46814,11 @@
                     "description": "Replacement grouping label. Pass null to clear it.",
                     "example": "string",
                     "type": "string"
+                  },
+                  "expected_version": {
+                    "description": "Aggregate version returned by the latest task read. The update fails with `task_version_conflict` if the task changed first.",
+                    "example": 1,
+                    "type": "integer"
                   },
                   "lease_id": {
                     "description": "Current caller-held lease UUID. Must be paired with `lease_session_id`.",
@@ -46468,7 +46940,7 @@
             "description": "Task not found"
           },
           "409": {
-            "description": "Task lease has expired; Task lease does not match the current holder"
+            "description": "Task lease has expired; Task lease does not match the current holder; Task changed since it was read"
           },
           "422": {
             "description": "Invalid parameters"
@@ -46741,6 +47213,7 @@
                     "data": [
                       {
                         "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "aggregate_version": 1,
                         "blocked_by_count": 1,
                         "closed_at": "2024-01-01T00:00:00Z",
                         "comments_count": 1,
@@ -46827,6 +47300,7 @@
                       "example": [
                         {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -46902,6 +47376,7 @@
                         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                         "example": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -46978,6 +47453,12 @@
                             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "aggregate_version": {
+                            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                            "example": 1,
+                            "nullable": true,
+                            "type": "integer"
                           },
                           "blocked_by_count": {
                             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -47652,6 +48133,7 @@
                     "data": [
                       {
                         "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "aggregate_version": 1,
                         "blocked_by_count": 1,
                         "closed_at": "2024-01-01T00:00:00Z",
                         "comments_count": 1,
@@ -47738,6 +48220,7 @@
                       "example": [
                         {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -47813,6 +48296,7 @@
                         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                         "example": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -47889,6 +48373,12 @@
                             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "aggregate_version": {
+                            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                            "example": 1,
+                            "nullable": true,
+                            "type": "integer"
                           },
                           "blocked_by_count": {
                             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -49408,6 +49898,7 @@
                     "data": [
                       {
                         "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "aggregate_version": 1,
                         "blocked_by_count": 1,
                         "closed_at": "2024-01-01T00:00:00Z",
                         "comments_count": 1,
@@ -49494,6 +49985,7 @@
                       "example": [
                         {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -49569,6 +50061,7 @@
                         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                         "example": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -49645,6 +50138,12 @@
                             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "aggregate_version": {
+                            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                            "example": 1,
+                            "nullable": true,
+                            "type": "integer"
                           },
                           "blocked_by_count": {
                             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -56084,6 +56583,7 @@
                     "data": [
                       {
                         "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "aggregate_version": 1,
                         "blocked_by_count": 1,
                         "closed_at": "2024-01-01T00:00:00Z",
                         "comments_count": 1,
@@ -56173,6 +56673,7 @@
                       "example": [
                         {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -56248,6 +56749,7 @@
                         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                         "example": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -56324,6 +56826,12 @@
                             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "aggregate_version": {
+                            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                            "example": 1,
+                            "nullable": true,
+                            "type": "integer"
                           },
                           "blocked_by_count": {
                             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -57071,6 +57579,7 @@
                         "tasks": [
                           {
                             "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "aggregate_version": 1,
                             "blocked_by_count": 1,
                             "closed_at": "2024-01-01T00:00:00Z",
                             "comments_count": 1,
@@ -57161,6 +57670,7 @@
                           "tasks": [
                             {
                               "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "aggregate_version": 1,
                               "blocked_by_count": 1,
                               "closed_at": "2024-01-01T00:00:00Z",
                               "comments_count": 1,
@@ -57240,6 +57750,7 @@
                           "tasks": [
                             {
                               "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "aggregate_version": 1,
                               "blocked_by_count": 1,
                               "closed_at": "2024-01-01T00:00:00Z",
                               "comments_count": 1,
@@ -57318,6 +57829,7 @@
                             "example": [
                               {
                                 "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "aggregate_version": 1,
                                 "blocked_by_count": 1,
                                 "closed_at": "2024-01-01T00:00:00Z",
                                 "comments_count": 1,
@@ -57393,6 +57905,7 @@
                               "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                               "example": {
                                 "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "aggregate_version": 1,
                                 "blocked_by_count": 1,
                                 "closed_at": "2024-01-01T00:00:00Z",
                                 "comments_count": 1,
@@ -57469,6 +57982,12 @@
                                   "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                                   "nullable": true,
                                   "type": "string"
+                                },
+                                "aggregate_version": {
+                                  "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                                  "example": 1,
+                                  "nullable": true,
+                                  "type": "integer"
                                 },
                                 "blocked_by_count": {
                                   "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -58172,6 +58691,7 @@
                         "reason": "open_blockers",
                         "task": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -58267,6 +58787,7 @@
                           "reason": "open_blockers",
                           "task": {
                             "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "aggregate_version": 1,
                             "blocked_by_count": 1,
                             "closed_at": "2024-01-01T00:00:00Z",
                             "comments_count": 1,
@@ -58346,6 +58867,7 @@
                           "reason": "open_blockers",
                           "task": {
                             "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "aggregate_version": 1,
                             "blocked_by_count": 1,
                             "closed_at": "2024-01-01T00:00:00Z",
                             "comments_count": 1,
@@ -58442,6 +58964,7 @@
                             "description": "The task evaluated for readiness.",
                             "example": {
                               "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "aggregate_version": 1,
                               "blocked_by_count": 1,
                               "closed_at": "2024-01-01T00:00:00Z",
                               "comments_count": 1,
@@ -58518,6 +59041,12 @@
                                 "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                                 "nullable": true,
                                 "type": "string"
+                              },
+                              "aggregate_version": {
+                                "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                                "example": 1,
+                                "nullable": true,
+                                "type": "integer"
                               },
                               "blocked_by_count": {
                                 "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -59164,6 +59693,7 @@
                     "data": [
                       {
                         "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "aggregate_version": 1,
                         "blocked_by_count": 1,
                         "closed_at": "2024-01-01T00:00:00Z",
                         "comments_count": 1,
@@ -59252,6 +59782,7 @@
                       "example": [
                         {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -59327,6 +59858,7 @@
                         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                         "example": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -59403,6 +59935,12 @@
                             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "aggregate_version": {
+                            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                            "example": 1,
+                            "nullable": true,
+                            "type": "integer"
                           },
                           "blocked_by_count": {
                             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -60018,6 +60556,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -60415,6 +60961,14 @@
                             ],
                             "branched_thread": "string",
                             "content": "Hello, how can I help you today?",
+                            "context": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
                             "created_at": "2024-01-01T00:00:00Z",
                             "has_replies": true,
                             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -60809,6 +61363,14 @@
                             ],
                             "branched_thread": "string",
                             "content": "Hello, how can I help you today?",
+                            "context": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
                             "created_at": "2024-01-01T00:00:00Z",
                             "has_replies": true,
                             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -61429,6 +61991,14 @@
                               ],
                               "branched_thread": "string",
                               "content": "Hello, how can I help you today?",
+                              "context": [
+                                {
+                                  "attributes": {},
+                                  "content": "string",
+                                  "title": "PR #10458",
+                                  "type": "archdev.pull_request"
+                                }
+                              ],
                               "created_at": "2024-01-01T00:00:00Z",
                               "has_replies": true,
                               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -62222,6 +62792,55 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "context": {
+                                "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                                "example": [
+                                  {
+                                    "attributes": {},
+                                    "content": "string",
+                                    "title": "PR #10458",
+                                    "type": "archdev.pull_request"
+                                  }
+                                ],
+                                "items": {
+                                  "description": "Structured context captured with a chat message and delivered to agents as data.",
+                                  "example": {
+                                    "attributes": {},
+                                    "content": "string",
+                                    "title": "PR #10458",
+                                    "type": "archdev.pull_request"
+                                  },
+                                  "properties": {
+                                    "attributes": {
+                                      "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                                      "example": {},
+                                      "type": "object"
+                                    },
+                                    "content": {
+                                      "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                                      "example": "string",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "description": "Optional human-readable label for this context block.",
+                                      "example": "PR #10458",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                                      "example": "archdev.pull_request",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "type"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
                               "created_at": {
                                 "description": "When the message was posted (ISO 8601).",
                                 "example": "string",
@@ -62449,6 +63068,14 @@
                                   ],
                                   "branched_thread": "string",
                                   "content": "Hello, how can I help you today?",
+                                  "context": [
+                                    {
+                                      "attributes": {},
+                                      "content": "string",
+                                      "title": "PR #10458",
+                                      "type": "archdev.pull_request"
+                                    }
+                                  ],
                                   "created_at": "2024-01-01T00:00:00Z",
                                   "has_replies": true,
                                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -67307,6 +67934,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -67454,6 +68089,14 @@
                             ],
                             "branched_thread": "string",
                             "content": "Hello, how can I help you today?",
+                            "context": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
                             "created_at": "2024-01-01T00:00:00Z",
                             "has_replies": true,
                             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -67614,6 +68257,14 @@
                               ],
                               "branched_thread": "string",
                               "content": "Hello, how can I help you today?",
+                              "context": [
+                                {
+                                  "attributes": {},
+                                  "content": "string",
+                                  "title": "PR #10458",
+                                  "type": "archdev.pull_request"
+                                }
+                              ],
                               "created_at": "2024-01-01T00:00:00Z",
                               "has_replies": true,
                               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -67753,6 +68404,14 @@
                               ],
                               "branched_thread": "string",
                               "content": "Hello, how can I help you today?",
+                              "context": [
+                                {
+                                  "attributes": {},
+                                  "content": "string",
+                                  "title": "PR #10458",
+                                  "type": "archdev.pull_request"
+                                }
+                              ],
                               "created_at": "string",
                               "has_replies": true,
                               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -67880,6 +68539,14 @@
                                 ],
                                 "branched_thread": "string",
                                 "content": "Hello, how can I help you today?",
+                                "context": [
+                                  {
+                                    "attributes": {},
+                                    "content": "string",
+                                    "title": "PR #10458",
+                                    "type": "archdev.pull_request"
+                                  }
+                                ],
                                 "created_at": "2024-01-01T00:00:00Z",
                                 "has_replies": true,
                                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -68680,6 +69347,55 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "context": {
+                                "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                                "example": [
+                                  {
+                                    "attributes": {},
+                                    "content": "string",
+                                    "title": "PR #10458",
+                                    "type": "archdev.pull_request"
+                                  }
+                                ],
+                                "items": {
+                                  "description": "Structured context captured with a chat message and delivered to agents as data.",
+                                  "example": {
+                                    "attributes": {},
+                                    "content": "string",
+                                    "title": "PR #10458",
+                                    "type": "archdev.pull_request"
+                                  },
+                                  "properties": {
+                                    "attributes": {
+                                      "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                                      "example": {},
+                                      "type": "object"
+                                    },
+                                    "content": {
+                                      "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                                      "example": "string",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "description": "Optional human-readable label for this context block.",
+                                      "example": "PR #10458",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                                      "example": "archdev.pull_request",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "type"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
                               "created_at": {
                                 "description": "When the message was posted (ISO 8601).",
                                 "example": "string",
@@ -68907,6 +69623,14 @@
                                   ],
                                   "branched_thread": "string",
                                   "content": "Hello, how can I help you today?",
+                                  "context": [
+                                    {
+                                      "attributes": {},
+                                      "content": "string",
+                                      "title": "PR #10458",
+                                      "type": "archdev.pull_request"
+                                    }
+                                  ],
                                   "created_at": "2024-01-01T00:00:00Z",
                                   "has_replies": true,
                                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -70944,6 +71668,245 @@
         ]
       }
     },
+    "/api/v1/users/{user}/ssh_keys": {
+      "get": {
+        "description": "Returns a cursor-paginated page of SSH-key metadata for the authenticated user.",
+        "operationId": "get_api_v1_users__user_ssh_keys",
+        "parameters": [
+          {
+            "description": "User ID (`usr_...`) or `me`.",
+            "example": "string",
+            "in": "path",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum keys per page. Defaults to 50; maximum is 100.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor for the next page of older keys.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Cursor-paginated registered SSH-key metadata.",
+                  "example": {
+                    "after_cursor": "string",
+                    "before_cursor": "string",
+                    "data": [
+                      {
+                        "algorithm": "string",
+                        "created_at": "2024-01-01T00:00:00Z",
+                        "fingerprint": "string",
+                        "id": "ssk_0aBcDeFgHiJkLmNoPqRsTu",
+                        "label": "string",
+                        "revoked_at": "2024-01-01T00:00:00Z"
+                      }
+                    ],
+                    "has_more": true
+                  },
+                  "properties": {
+                    "after_cursor": {
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "before_cursor": {
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "data": {
+                      "example": [
+                        {
+                          "algorithm": "string",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "fingerprint": "string",
+                          "id": "ssk_0aBcDeFgHiJkLmNoPqRsTu",
+                          "label": "string",
+                          "revoked_at": "2024-01-01T00:00:00Z"
+                        }
+                      ],
+                      "items": {
+                        "description": "Metadata for a registered SSH public key. Key material is never returned.",
+                        "example": {
+                          "algorithm": "string",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "fingerprint": "string",
+                          "id": "ssk_0aBcDeFgHiJkLmNoPqRsTu",
+                          "label": "string",
+                          "revoked_at": "2024-01-01T00:00:00Z"
+                        },
+                        "properties": {
+                          "algorithm": {
+                            "description": "SSH algorithm. V1 accepts `ssh-ed25519`.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "description": "Registration time.",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "fingerprint": {
+                            "description": "OpenSSH SHA-256 fingerprint.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "Registered SSH key ID (`ssk_...`).",
+                            "example": "ssk_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "label": {
+                            "description": "User-visible label for the key.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "revoked_at": {
+                            "description": "Revocation time, or null while active.",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "label",
+                          "algorithm",
+                          "fingerprint",
+                          "created_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid cursor"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "summary": "List registered SSH keys",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "description": "Registers one comment-free Ed25519 public key for Git-over-SSH. The key is\nencrypted before storage; responses expose only its label, algorithm and\nOpenSSH SHA-256 fingerprint.\n\nThe caller must be the user named by `user` and must present a first-party\nsession or a `full_access` personal access token.\n",
+        "operationId": "post_api_v1_users__user_ssh_keys",
+        "parameters": [
+          {
+            "description": "User ID (`usr_...`) or `me`.",
+            "example": "string",
+            "in": "path",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "label": "string",
+                  "public_key": "string"
+                },
+                "properties": {
+                  "label": {
+                    "description": "A label such as `Work laptop`.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "public_key": {
+                    "description": "One `ssh-ed25519 <base64>` public key without options or a comment.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label",
+                  "public_key"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSSHKey"
+                }
+              }
+            },
+            "description": "Metadata for the registered key; no key material."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Register an SSH public key",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/users/{user}/tasks": {
       "get": {
         "description": "Returns tasks owned by the specified user or team. You can narrow results using the\noptional filters below. By default results are returned in reverse chronological\norder (most recently created first); use `sort` and `order` to sort by due date or\npriority instead.\n\nUser-authenticated callers may list their personal tasks or tasks for teams they\nhave joined. Privileged callers provide the owner in the route; the owner's\norganization is implied by that principal. An explicit `org` is optional and,\nwhen set, must match the owner's organization.\n",
@@ -71182,6 +72145,7 @@
                     "data": [
                       {
                         "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "aggregate_version": 1,
                         "blocked_by_count": 1,
                         "closed_at": "2024-01-01T00:00:00Z",
                         "comments_count": 1,
@@ -71271,6 +72235,7 @@
                       "example": [
                         {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -71346,6 +72311,7 @@
                         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                         "example": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -71422,6 +72388,12 @@
                             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "aggregate_version": {
+                            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                            "example": 1,
+                            "nullable": true,
+                            "type": "integer"
                           },
                           "blocked_by_count": {
                             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -72169,6 +73141,7 @@
                         "tasks": [
                           {
                             "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "aggregate_version": 1,
                             "blocked_by_count": 1,
                             "closed_at": "2024-01-01T00:00:00Z",
                             "comments_count": 1,
@@ -72259,6 +73232,7 @@
                           "tasks": [
                             {
                               "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "aggregate_version": 1,
                               "blocked_by_count": 1,
                               "closed_at": "2024-01-01T00:00:00Z",
                               "comments_count": 1,
@@ -72338,6 +73312,7 @@
                           "tasks": [
                             {
                               "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "aggregate_version": 1,
                               "blocked_by_count": 1,
                               "closed_at": "2024-01-01T00:00:00Z",
                               "comments_count": 1,
@@ -72416,6 +73391,7 @@
                             "example": [
                               {
                                 "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "aggregate_version": 1,
                                 "blocked_by_count": 1,
                                 "closed_at": "2024-01-01T00:00:00Z",
                                 "comments_count": 1,
@@ -72491,6 +73467,7 @@
                               "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                               "example": {
                                 "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                                "aggregate_version": 1,
                                 "blocked_by_count": 1,
                                 "closed_at": "2024-01-01T00:00:00Z",
                                 "comments_count": 1,
@@ -72567,6 +73544,12 @@
                                   "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                                   "nullable": true,
                                   "type": "string"
+                                },
+                                "aggregate_version": {
+                                  "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                                  "example": 1,
+                                  "nullable": true,
+                                  "type": "integer"
                                 },
                                 "blocked_by_count": {
                                   "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -73157,6 +74140,7 @@
                         "reason": "open_blockers",
                         "task": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -73252,6 +74236,7 @@
                           "reason": "open_blockers",
                           "task": {
                             "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "aggregate_version": 1,
                             "blocked_by_count": 1,
                             "closed_at": "2024-01-01T00:00:00Z",
                             "comments_count": 1,
@@ -73331,6 +74316,7 @@
                           "reason": "open_blockers",
                           "task": {
                             "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "aggregate_version": 1,
                             "blocked_by_count": 1,
                             "closed_at": "2024-01-01T00:00:00Z",
                             "comments_count": 1,
@@ -73427,6 +74413,7 @@
                             "description": "The task evaluated for readiness.",
                             "example": {
                               "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                              "aggregate_version": 1,
                               "blocked_by_count": 1,
                               "closed_at": "2024-01-01T00:00:00Z",
                               "comments_count": 1,
@@ -73503,6 +74490,12 @@
                                 "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                                 "nullable": true,
                                 "type": "string"
+                              },
+                              "aggregate_version": {
+                                "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                                "example": 1,
+                                "nullable": true,
+                                "type": "integer"
                               },
                               "blocked_by_count": {
                                 "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -74149,6 +75142,7 @@
                     "data": [
                       {
                         "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "aggregate_version": 1,
                         "blocked_by_count": 1,
                         "closed_at": "2024-01-01T00:00:00Z",
                         "comments_count": 1,
@@ -74237,6 +75231,7 @@
                       "example": [
                         {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -74312,6 +75307,7 @@
                         "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                         "example": {
                           "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "aggregate_version": 1,
                           "blocked_by_count": 1,
                           "closed_at": "2024-01-01T00:00:00Z",
                           "comments_count": 1,
@@ -74388,6 +75384,12 @@
                             "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "aggregate_version": {
+                            "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                            "example": 1,
+                            "nullable": true,
+                            "type": "integer"
                           },
                           "blocked_by_count": {
                             "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
@@ -75050,6 +76052,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -75447,6 +76457,14 @@
                             ],
                             "branched_thread": "string",
                             "content": "Hello, how can I help you today?",
+                            "context": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
                             "created_at": "2024-01-01T00:00:00Z",
                             "has_replies": true,
                             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -75841,6 +76859,14 @@
                             ],
                             "branched_thread": "string",
                             "content": "Hello, how can I help you today?",
+                            "context": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
                             "created_at": "2024-01-01T00:00:00Z",
                             "has_replies": true,
                             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -76461,6 +77487,14 @@
                               ],
                               "branched_thread": "string",
                               "content": "Hello, how can I help you today?",
+                              "context": [
+                                {
+                                  "attributes": {},
+                                  "content": "string",
+                                  "title": "PR #10458",
+                                  "type": "archdev.pull_request"
+                                }
+                              ],
                               "created_at": "2024-01-01T00:00:00Z",
                               "has_replies": true,
                               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -77254,6 +78288,55 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "context": {
+                                "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                                "example": [
+                                  {
+                                    "attributes": {},
+                                    "content": "string",
+                                    "title": "PR #10458",
+                                    "type": "archdev.pull_request"
+                                  }
+                                ],
+                                "items": {
+                                  "description": "Structured context captured with a chat message and delivered to agents as data.",
+                                  "example": {
+                                    "attributes": {},
+                                    "content": "string",
+                                    "title": "PR #10458",
+                                    "type": "archdev.pull_request"
+                                  },
+                                  "properties": {
+                                    "attributes": {
+                                      "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                                      "example": {},
+                                      "type": "object"
+                                    },
+                                    "content": {
+                                      "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                                      "example": "string",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "description": "Optional human-readable label for this context block.",
+                                      "example": "PR #10458",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                                      "example": "archdev.pull_request",
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "type"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
                               "created_at": {
                                 "description": "When the message was posted (ISO 8601).",
                                 "example": "string",
@@ -77481,6 +78564,14 @@
                                   ],
                                   "branched_thread": "string",
                                   "content": "Hello, how can I help you today?",
+                                  "context": [
+                                    {
+                                      "attributes": {},
+                                      "content": "string",
+                                      "title": "PR #10458",
+                                      "type": "archdev.pull_request"
+                                    }
+                                  ],
                                   "created_at": "2024-01-01T00:00:00Z",
                                   "has_replies": true,
                                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -83732,7 +84823,7 @@
                   }
                 ],
                 "items": {
-                  "description": "An OpenAI-compatible local function definition supplied while joining a personal thread.",
+                  "description": "An OpenAI-compatible local function definition advertised by a personal-thread connection.",
                   "example": {
                     "function": {
                       "description": "An example description.",
@@ -84412,6 +85503,14 @@
                     ],
                     "branched_thread": "string",
                     "content": "Hello, how can I help you today?",
+                    "context": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
                     "created_at": "2024-01-01T00:00:00Z",
                     "has_replies": true,
                     "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -84614,6 +85713,14 @@
                     ],
                     "branched_thread": "string",
                     "content": "Hello, how can I help you today?",
+                    "context": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
                     "created_at": "2024-01-01T00:00:00Z",
                     "has_replies": true,
                     "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -85050,6 +86157,14 @@
                   ],
                   "branched_thread": "string",
                   "content": "Hello, how can I help you today?",
+                  "context": [
+                    {
+                      "attributes": {},
+                      "content": "string",
+                      "title": "PR #10458",
+                      "type": "archdev.pull_request"
+                    }
+                  ],
                   "created_at": "2024-01-01T00:00:00Z",
                   "has_replies": true,
                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -85821,6 +86936,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -86023,6 +87146,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -90490,6 +91621,14 @@
                         ],
                         "branched_thread": "string",
                         "content": "Hello, how can I help you today?",
+                        "context": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
                         "created_at": "2024-01-01T00:00:00Z",
                         "has_replies": true,
                         "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -90629,6 +91768,14 @@
                         ],
                         "branched_thread": "string",
                         "content": "Hello, how can I help you today?",
+                        "context": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
                         "created_at": "string",
                         "has_replies": true,
                         "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -90756,6 +91903,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -91556,6 +92711,55 @@
                           "nullable": true,
                           "type": "string"
                         },
+                        "context": {
+                          "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                          "example": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
+                          "items": {
+                            "description": "Structured context captured with a chat message and delivered to agents as data.",
+                            "example": {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            },
+                            "properties": {
+                              "attributes": {
+                                "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                                "example": {},
+                                "type": "object"
+                              },
+                              "content": {
+                                "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "title": {
+                                "description": "Optional human-readable label for this context block.",
+                                "example": "PR #10458",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "type": {
+                                "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                                "example": "archdev.pull_request",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
                         "created_at": {
                           "description": "When the message was posted (ISO 8601).",
                           "example": "string",
@@ -91783,6 +92987,14 @@
                             ],
                             "branched_thread": "string",
                             "content": "Hello, how can I help you today?",
+                            "context": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
                             "created_at": "2024-01-01T00:00:00Z",
                             "has_replies": true,
                             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -92447,6 +93659,14 @@
                         ],
                         "branched_thread": "string",
                         "content": "Hello, how can I help you today?",
+                        "context": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
                         "created_at": "2024-01-01T00:00:00Z",
                         "has_replies": true,
                         "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -93067,6 +94287,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -93860,6 +95088,55 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "context": {
+                            "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                            "example": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
+                            "items": {
+                              "description": "Structured context captured with a chat message and delivered to agents as data.",
+                              "example": {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              },
+                              "properties": {
+                                "attributes": {
+                                  "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                                  "example": {},
+                                  "type": "object"
+                                },
+                                "content": {
+                                  "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "description": "Optional human-readable label for this context block.",
+                                  "example": "PR #10458",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                                  "example": "archdev.pull_request",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "type"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
                           "created_at": {
                             "description": "When the message was posted (ISO 8601).",
                             "example": "string",
@@ -94087,6 +95364,14 @@
                               ],
                               "branched_thread": "string",
                               "content": "Hello, how can I help you today?",
+                              "context": [
+                                {
+                                  "attributes": {},
+                                  "content": "string",
+                                  "title": "PR #10458",
+                                  "type": "archdev.pull_request"
+                                }
+                              ],
                               "created_at": "2024-01-01T00:00:00Z",
                               "has_replies": true,
                               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -96987,6 +98272,14 @@
                     ],
                     "branched_thread": "string",
                     "content": "Hello, how can I help you today?",
+                    "context": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
                     "created_at": "2024-01-01T00:00:00Z",
                     "has_replies": true,
                     "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -97607,6 +98900,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -98400,6 +99701,55 @@
                         "nullable": true,
                         "type": "string"
                       },
+                      "context": {
+                        "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                        "example": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
+                        "items": {
+                          "description": "Structured context captured with a chat message and delivered to agents as data.",
+                          "example": {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          },
+                          "properties": {
+                            "attributes": {
+                              "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                              "example": {},
+                              "type": "object"
+                            },
+                            "content": {
+                              "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                              "example": "string",
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "title": {
+                              "description": "Optional human-readable label for this context block.",
+                              "example": "PR #10458",
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "type": {
+                              "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                              "example": "archdev.pull_request",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
                       "created_at": {
                         "description": "When the message was posted (ISO 8601).",
                         "example": "string",
@@ -98627,6 +99977,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -101253,6 +102611,14 @@
                   ],
                   "branched_thread": "string",
                   "content": "Hello, how can I help you today?",
+                  "context": [
+                    {
+                      "attributes": {},
+                      "content": "string",
+                      "title": "PR #10458",
+                      "type": "archdev.pull_request"
+                    }
+                  ],
                   "created_at": "2024-01-01T00:00:00Z",
                   "has_replies": true,
                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -101395,6 +102761,14 @@
                     ],
                     "branched_thread": "string",
                     "content": "Hello, how can I help you today?",
+                    "context": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
                     "created_at": "2024-01-01T00:00:00Z",
                     "has_replies": true,
                     "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -101534,6 +102908,14 @@
                     ],
                     "branched_thread": "string",
                     "content": "Hello, how can I help you today?",
+                    "context": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
                     "created_at": "string",
                     "has_replies": true,
                     "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -101661,6 +103043,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -102461,6 +103851,55 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "context": {
+                      "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                      "example": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
+                      "items": {
+                        "description": "Structured context captured with a chat message and delivered to agents as data.",
+                        "example": {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        },
+                        "properties": {
+                          "attributes": {
+                            "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                            "example": {},
+                            "type": "object"
+                          },
+                          "content": {
+                            "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "title": {
+                            "description": "Optional human-readable label for this context block.",
+                            "example": "PR #10458",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "type": {
+                            "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                            "example": "archdev.pull_request",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
                     "created_at": {
                       "description": "When the message was posted (ISO 8601).",
                       "example": "string",
@@ -102688,6 +104127,14 @@
                         ],
                         "branched_thread": "string",
                         "content": "Hello, how can I help you today?",
+                        "context": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
                         "created_at": "2024-01-01T00:00:00Z",
                         "has_replies": true,
                         "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -103464,6 +104911,14 @@
                     ],
                     "branched_thread": "string",
                     "content": "Hello, how can I help you today?",
+                    "context": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
                     "created_at": "2024-01-01T00:00:00Z",
                     "has_replies": true,
                     "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -103666,6 +105121,14 @@
                     ],
                     "branched_thread": "string",
                     "content": "Hello, how can I help you today?",
+                    "context": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
                     "created_at": "2024-01-01T00:00:00Z",
                     "has_replies": true,
                     "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -104438,6 +105901,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -104640,6 +106111,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -109107,6 +110586,14 @@
                         ],
                         "branched_thread": "string",
                         "content": "Hello, how can I help you today?",
+                        "context": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
                         "created_at": "2024-01-01T00:00:00Z",
                         "has_replies": true,
                         "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -109246,6 +110733,14 @@
                         ],
                         "branched_thread": "string",
                         "content": "Hello, how can I help you today?",
+                        "context": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
                         "created_at": "string",
                         "has_replies": true,
                         "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -109373,6 +110868,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -110173,6 +111676,55 @@
                           "nullable": true,
                           "type": "string"
                         },
+                        "context": {
+                          "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                          "example": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
+                          "items": {
+                            "description": "Structured context captured with a chat message and delivered to agents as data.",
+                            "example": {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            },
+                            "properties": {
+                              "attributes": {
+                                "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                                "example": {},
+                                "type": "object"
+                              },
+                              "content": {
+                                "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "title": {
+                                "description": "Optional human-readable label for this context block.",
+                                "example": "PR #10458",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "type": {
+                                "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                                "example": "archdev.pull_request",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "type"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
                         "created_at": {
                           "description": "When the message was posted (ISO 8601).",
                           "example": "string",
@@ -110400,6 +111952,14 @@
                             ],
                             "branched_thread": "string",
                             "content": "Hello, how can I help you today?",
+                            "context": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
                             "created_at": "2024-01-01T00:00:00Z",
                             "has_replies": true,
                             "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -111064,6 +112624,14 @@
                         ],
                         "branched_thread": "string",
                         "content": "Hello, how can I help you today?",
+                        "context": [
+                          {
+                            "attributes": {},
+                            "content": "string",
+                            "title": "PR #10458",
+                            "type": "archdev.pull_request"
+                          }
+                        ],
                         "created_at": "2024-01-01T00:00:00Z",
                         "has_replies": true,
                         "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -111684,6 +113252,14 @@
                           ],
                           "branched_thread": "string",
                           "content": "Hello, how can I help you today?",
+                          "context": [
+                            {
+                              "attributes": {},
+                              "content": "string",
+                              "title": "PR #10458",
+                              "type": "archdev.pull_request"
+                            }
+                          ],
                           "created_at": "2024-01-01T00:00:00Z",
                           "has_replies": true,
                           "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -112477,6 +114053,55 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "context": {
+                            "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                            "example": [
+                              {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              }
+                            ],
+                            "items": {
+                              "description": "Structured context captured with a chat message and delivered to agents as data.",
+                              "example": {
+                                "attributes": {},
+                                "content": "string",
+                                "title": "PR #10458",
+                                "type": "archdev.pull_request"
+                              },
+                              "properties": {
+                                "attributes": {
+                                  "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                                  "example": {},
+                                  "type": "object"
+                                },
+                                "content": {
+                                  "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                                  "example": "string",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "description": "Optional human-readable label for this context block.",
+                                  "example": "PR #10458",
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                                  "example": "archdev.pull_request",
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "type"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
                           "created_at": {
                             "description": "When the message was posted (ISO 8601).",
                             "example": "string",
@@ -112704,6 +114329,14 @@
                               ],
                               "branched_thread": "string",
                               "content": "Hello, how can I help you today?",
+                              "context": [
+                                {
+                                  "attributes": {},
+                                  "content": "string",
+                                  "title": "PR #10458",
+                                  "type": "archdev.pull_request"
+                                }
+                              ],
                               "created_at": "2024-01-01T00:00:00Z",
                               "has_replies": true,
                               "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -115197,6 +116830,14 @@
           "params": {
             "example": {
               "content": "string",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "idempotency_key": "string",
               "reply_to": "string",
               "uploads": [
@@ -115207,6 +116848,54 @@
               "content": {
                 "example": "string",
                 "type": "string"
+              },
+              "context": {
+                "example": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
+                "items": {
+                  "description": "Structured context captured with a chat message and delivered to agents as data.",
+                  "example": {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  },
+                  "properties": {
+                    "attributes": {
+                      "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                      "example": {},
+                      "type": "object"
+                    },
+                    "content": {
+                      "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "Optional human-readable label for this context block.",
+                      "example": "PR #10458",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                      "example": "archdev.pull_request",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "idempotency_key": {
                 "example": "string",
@@ -115335,6 +117024,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -115475,6 +117172,14 @@
                   ],
                   "branched_thread": "string",
                   "content": "Hello, how can I help you today?",
+                  "context": [
+                    {
+                      "attributes": {},
+                      "content": "string",
+                      "title": "PR #10458",
+                      "type": "archdev.pull_request"
+                    }
+                  ],
                   "created_at": "2024-01-01T00:00:00Z",
                   "has_replies": true,
                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -116267,6 +117972,55 @@
                     "nullable": true,
                     "type": "string"
                   },
+                  "context": {
+                    "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                    "example": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
+                    "items": {
+                      "description": "Structured context captured with a chat message and delivered to agents as data.",
+                      "example": {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      },
+                      "properties": {
+                        "attributes": {
+                          "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                          "example": {},
+                          "type": "object"
+                        },
+                        "content": {
+                          "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                          "example": "string",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "title": {
+                          "description": "Optional human-readable label for this context block.",
+                          "example": "PR #10458",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                          "example": "archdev.pull_request",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
                   "created_at": {
                     "description": "When the message was posted (ISO 8601).",
                     "example": "string",
@@ -116494,6 +118248,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -116744,6 +118506,14 @@
           "params": {
             "example": {
               "content": "string",
+              "context": [
+                {
+                  "attributes": {},
+                  "content": "string",
+                  "title": "PR #10458",
+                  "type": "archdev.pull_request"
+                }
+              ],
               "idempotency_key": "string",
               "reply_to": "string"
             },
@@ -116751,6 +118521,54 @@
               "content": {
                 "example": "string",
                 "type": "string"
+              },
+              "context": {
+                "example": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
+                "items": {
+                  "description": "Structured context captured with a chat message and delivered to agents as data.",
+                  "example": {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  },
+                  "properties": {
+                    "attributes": {
+                      "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                      "example": {},
+                      "type": "object"
+                    },
+                    "content": {
+                      "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "title": {
+                      "description": "Optional human-readable label for this context block.",
+                      "example": "PR #10458",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "type": {
+                      "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                      "example": "archdev.pull_request",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
               },
               "idempotency_key": {
                 "example": "string",
@@ -116867,6 +118685,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -117007,6 +118833,14 @@
                   ],
                   "branched_thread": "string",
                   "content": "Hello, how can I help you today?",
+                  "context": [
+                    {
+                      "attributes": {},
+                      "content": "string",
+                      "title": "PR #10458",
+                      "type": "archdev.pull_request"
+                    }
+                  ],
                   "created_at": "2024-01-01T00:00:00Z",
                   "has_replies": true,
                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -117799,6 +119633,55 @@
                     "nullable": true,
                     "type": "string"
                   },
+                  "context": {
+                    "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                    "example": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
+                    "items": {
+                      "description": "Structured context captured with a chat message and delivered to agents as data.",
+                      "example": {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      },
+                      "properties": {
+                        "attributes": {
+                          "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                          "example": {},
+                          "type": "object"
+                        },
+                        "content": {
+                          "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                          "example": "string",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "title": {
+                          "description": "Optional human-readable label for this context block.",
+                          "example": "PR #10458",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                          "example": "archdev.pull_request",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
                   "created_at": {
                     "description": "When the message was posted (ISO 8601).",
                     "example": "string",
@@ -118026,6 +119909,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -118407,6 +120298,282 @@
             "properties": {},
             "type": "object"
           }
+        },
+        {
+          "description": "Replace the local tools advertised by this connection for later messages it posts",
+          "event": "api:chat:publish_local_tools",
+          "params": {
+            "example": {
+              "local_tool_provider_id": "string",
+              "local_tools": [
+                {
+                  "function": {
+                    "description": "An example description.",
+                    "name": "Example Name",
+                    "parameters": {}
+                  },
+                  "type": "function"
+                }
+              ]
+            },
+            "properties": {
+              "local_tool_provider_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "local_tools": {
+                "example": [
+                  {
+                    "function": {
+                      "description": "An example description.",
+                      "name": "Example Name",
+                      "parameters": {}
+                    },
+                    "type": "function"
+                  }
+                ],
+                "items": {
+                  "description": "An OpenAI-compatible local function definition advertised by a personal-thread connection.",
+                  "example": {
+                    "function": {
+                      "description": "An example description.",
+                      "name": "Example Name",
+                      "parameters": {}
+                    },
+                    "type": "function"
+                  },
+                  "properties": {
+                    "function": {
+                      "description": "A function implemented by the client connected to a personal thread.",
+                      "example": {
+                        "description": "An example description.",
+                        "name": "Example Name",
+                        "parameters": {}
+                      },
+                      "properties": {
+                        "description": {
+                          "example": "An example description.",
+                          "type": "string"
+                        },
+                        "name": {
+                          "example": "Example Name",
+                          "type": "string"
+                        },
+                        "parameters": {
+                          "example": {},
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "description",
+                        "parameters"
+                      ],
+                      "type": "object"
+                    },
+                    "type": {
+                      "enum": [
+                        "function"
+                      ],
+                      "example": "function",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "function"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "local_tool_provider_id",
+              "local_tools"
+            ],
+            "type": "object"
+          },
+          "returns": {
+            "description": "Server-issued identity for the local-tool set currently advertised by this connection.",
+            "example": {
+              "generation": 1,
+              "provider_id": "string"
+            },
+            "properties": {
+              "generation": {
+                "example": 1,
+                "type": "integer"
+              },
+              "provider_id": {
+                "example": "string",
+                "type": "string"
+              }
+            },
+            "required": [
+              "provider_id",
+              "generation"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "description": "Return one complete result batch for a connection-local tool request",
+          "event": "api:chat:local_tool_result",
+          "params": {
+            "example": {
+              "agent_id": "string",
+              "generation": 1,
+              "provider_id": "string",
+              "request_id": "string",
+              "results": []
+            },
+            "properties": {
+              "agent_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "generation": {
+                "example": 1,
+                "type": "integer"
+              },
+              "provider_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "request_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "results": {
+                "example": [],
+                "items": {
+                  "description": "One terminal local-tool outcome returned by the owning client connection.",
+                  "discriminator": {
+                    "propertyName": "status"
+                  },
+                  "oneOf": [
+                    {
+                      "description": "A successful local-tool outcome.",
+                      "example": {
+                        "call_id": "string",
+                        "content": "string",
+                        "status": "ok"
+                      },
+                      "properties": {
+                        "call_id": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "content": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "status": {
+                          "default": "ok",
+                          "enum": [
+                            "ok"
+                          ],
+                          "example": "ok",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "call_id",
+                        "status",
+                        "content"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "description": "A failed local-tool outcome.",
+                      "example": {
+                        "call_id": "string",
+                        "code": "string",
+                        "message": "string",
+                        "status": "error"
+                      },
+                      "properties": {
+                        "call_id": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "code": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "message": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "status": {
+                          "default": "error",
+                          "enum": [
+                            "error"
+                          ],
+                          "example": "error",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "call_id",
+                        "status",
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "description": "A cancelled local-tool outcome.",
+                      "example": {
+                        "call_id": "string",
+                        "reason": "string",
+                        "status": "cancelled"
+                      },
+                      "properties": {
+                        "call_id": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "reason": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "status": {
+                          "default": "cancelled",
+                          "enum": [
+                            "cancelled"
+                          ],
+                          "example": "cancelled",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "call_id",
+                        "status",
+                        "reason"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "provider_id",
+              "generation",
+              "agent_id",
+              "request_id",
+              "results"
+            ],
+            "type": "object"
+          },
+          "returns": {
+            "description": "Empty acknowledgement payload returned by channel message handlers that produce no data. The wire envelope is `{\"status\": \"ok\", \"response\": {}}`.",
+            "properties": {},
+            "type": "object"
+          }
         }
       ],
       "name": "ApiChatChannel",
@@ -118519,6 +120686,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -118668,6 +120843,14 @@
                   ],
                   "branched_thread": "string",
                   "content": "Hello, how can I help you today?",
+                  "context": [
+                    {
+                      "attributes": {},
+                      "content": "string",
+                      "title": "PR #10458",
+                      "type": "archdev.pull_request"
+                    }
+                  ],
                   "created_at": "2024-01-01T00:00:00Z",
                   "has_replies": true,
                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -119460,6 +121643,55 @@
                     "nullable": true,
                     "type": "string"
                   },
+                  "context": {
+                    "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                    "example": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
+                    "items": {
+                      "description": "Structured context captured with a chat message and delivered to agents as data.",
+                      "example": {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      },
+                      "properties": {
+                        "attributes": {
+                          "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                          "example": {},
+                          "type": "object"
+                        },
+                        "content": {
+                          "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                          "example": "string",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "title": {
+                          "description": "Optional human-readable label for this context block.",
+                          "example": "PR #10458",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                          "example": "archdev.pull_request",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
                   "created_at": {
                     "description": "When the message was posted (ISO 8601).",
                     "example": "string",
@@ -119687,6 +121919,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -120038,6 +122278,14 @@
                 ],
                 "branched_thread": "string",
                 "content": "Hello, how can I help you today?",
+                "context": [
+                  {
+                    "attributes": {},
+                    "content": "string",
+                    "title": "PR #10458",
+                    "type": "archdev.pull_request"
+                  }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
                 "has_replies": true,
                 "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -120179,6 +122427,14 @@
                   ],
                   "branched_thread": "string",
                   "content": "Hello, how can I help you today?",
+                  "context": [
+                    {
+                      "attributes": {},
+                      "content": "string",
+                      "title": "PR #10458",
+                      "type": "archdev.pull_request"
+                    }
+                  ],
                   "created_at": "2024-01-01T00:00:00Z",
                   "has_replies": true,
                   "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -120971,6 +123227,55 @@
                     "nullable": true,
                     "type": "string"
                   },
+                  "context": {
+                    "description": "Immutable structured context captured when the message was posted. Each entry has `type`, optional `title` and `content`, and scalar `attributes`. Always present; defaults to an empty array. Context is delivered to agents as escaped XML data, not as system instructions.",
+                    "example": [
+                      {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      }
+                    ],
+                    "items": {
+                      "description": "Structured context captured with a chat message and delivered to agents as data.",
+                      "example": {
+                        "attributes": {},
+                        "content": "string",
+                        "title": "PR #10458",
+                        "type": "archdev.pull_request"
+                      },
+                      "properties": {
+                        "attributes": {
+                          "description": "Scalar key-value fields describing the context, such as route, repository, or pull-request number.",
+                          "example": {},
+                          "type": "object"
+                        },
+                        "content": {
+                          "description": "Optional context body. The model receives it as escaped XML data, not a system instruction.",
+                          "example": "string",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "title": {
+                          "description": "Optional human-readable label for this context block.",
+                          "example": "PR #10458",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Stable context kind. Must start with a lowercase letter and contain only lowercase letters, numbers, dots, dashes, or underscores.",
+                          "example": "archdev.pull_request",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
                   "created_at": {
                     "description": "When the message was posted (ISO 8601).",
                     "example": "string",
@@ -121198,6 +123503,14 @@
                       ],
                       "branched_thread": "string",
                       "content": "Hello, how can I help you today?",
+                      "context": [
+                        {
+                          "attributes": {},
+                          "content": "string",
+                          "title": "PR #10458",
+                          "type": "archdev.pull_request"
+                        }
+                      ],
                       "created_at": "2024-01-01T00:00:00Z",
                       "has_replies": true,
                       "id": "msg_0aBcDeFgHiJkLmNoPqRsTu",
@@ -121609,6 +123922,146 @@
                 "type": "boolean"
               },
               "thread_id": {
+                "example": "string",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        {
+          "description": "Invoke local functions on the exact connection that published them",
+          "event": "local_tool_call",
+          "payload": {
+            "example": {
+              "agent_id": "string",
+              "expires_at": "2024-01-01T00:00:00Z",
+              "generation": 1,
+              "provider_id": "string",
+              "request": {
+                "calls": [
+                  {
+                    "arguments": {},
+                    "id": "string",
+                    "name": "Example Name"
+                  }
+                ],
+                "id": "string"
+              },
+              "thread_id": "string"
+            },
+            "properties": {
+              "agent_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "expires_at": {
+                "example": "2024-01-01T00:00:00Z",
+                "format": "date-time",
+                "type": "string"
+              },
+              "generation": {
+                "example": 1,
+                "type": "integer"
+              },
+              "provider_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "request": {
+                "description": "A correlated batch of local function calls targeted to one connection.",
+                "example": {
+                  "calls": [
+                    {
+                      "arguments": {},
+                      "id": "string",
+                      "name": "Example Name"
+                    }
+                  ],
+                  "id": "string"
+                },
+                "properties": {
+                  "calls": {
+                    "example": [
+                      {
+                        "arguments": {},
+                        "id": "string",
+                        "name": "Example Name"
+                      }
+                    ],
+                    "items": {
+                      "description": "One local function invocation requested by the model.",
+                      "example": {
+                        "arguments": {},
+                        "id": "string",
+                        "name": "Example Name"
+                      },
+                      "properties": {
+                        "arguments": {
+                          "example": {},
+                          "type": "object"
+                        },
+                        "id": {
+                          "example": "string",
+                          "type": "string"
+                        },
+                        "name": {
+                          "example": "Example Name",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "arguments"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "id": {
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "calls"
+                ],
+                "type": "object"
+              },
+              "thread_id": {
+                "example": "string",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        {
+          "description": "Stop local work because the server no longer accepts its result",
+          "event": "local_tool_cancelled",
+          "payload": {
+            "example": {
+              "generation": 1,
+              "provider_id": "string",
+              "reason": "string",
+              "request_id": "string"
+            },
+            "properties": {
+              "generation": {
+                "example": 1,
+                "type": "integer"
+              },
+              "provider_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "reason": {
+                "example": "string",
+                "type": "string"
+              },
+              "request_id": {
                 "example": "string",
                 "type": "string"
               }
@@ -122129,6 +124582,7 @@
               "tasks": [
                 {
                   "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                  "aggregate_version": 1,
                   "blocked_by_count": 1,
                   "closed_at": "2024-01-01T00:00:00Z",
                   "comments_count": 1,
@@ -122206,6 +124660,7 @@
                 "example": [
                   {
                     "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                    "aggregate_version": 1,
                     "blocked_by_count": 1,
                     "closed_at": "2024-01-01T00:00:00Z",
                     "comments_count": 1,
@@ -122281,6 +124736,7 @@
                   "description": "A task representing a unit of work, optionally assignable to a user or agent.",
                   "example": {
                     "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                    "aggregate_version": 1,
                     "blocked_by_count": 1,
                     "closed_at": "2024-01-01T00:00:00Z",
                     "comments_count": 1,
@@ -122357,6 +124813,12 @@
                       "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
                       "nullable": true,
                       "type": "string"
+                    },
+                    "aggregate_version": {
+                      "description": "Event-stream version for optimistic update fencing. Pass this value as `expected_version` on an update to reject concurrent writes.",
+                      "example": 1,
+                      "nullable": true,
+                      "type": "integer"
                     },
                     "blocked_by_count": {
                       "description": "Number of tasks marked as blocking this task, whether or not they are done (see `GET /tasks/{task}/blockers`). Computed on list/show reads; create/update responses may lag one read behind.",
