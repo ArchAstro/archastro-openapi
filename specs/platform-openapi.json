@@ -73102,6 +73102,8 @@
               "schema": {
                 "example": {
                   "alias": "string",
+                  "clear_full_name": true,
+                  "clear_profile_picture": true,
                   "full_name": "Example Name",
                   "metadata": {
                     "key": "value"
@@ -73117,6 +73119,16 @@
                     "description": "Short display alias shown in place of the full name in compact UI contexts.",
                     "example": "string",
                     "type": "string"
+                  },
+                  "clear_full_name": {
+                    "description": "Set to true to clear the optional display name. Cannot be combined with full_name.",
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "clear_profile_picture": {
+                    "description": "Set to true to remove the current profile picture. Cannot be combined with profile_picture.",
+                    "example": true,
+                    "type": "boolean"
                   },
                   "full_name": {
                     "description": "Updated display name for the user.",
