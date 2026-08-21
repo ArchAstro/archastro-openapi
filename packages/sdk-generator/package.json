@@ -1,6 +1,6 @@
 {
   "name": "@archastro/sdk-generator",
-  "version": "0.11.5",
+  "version": "0.11.6",
   "description": "Generate typed TypeScript, Python, Swift, Go, Elixir, and Rust SDKs (plus contract tests) from an OpenAPI spec.",
   "keywords": [
     "openapi",
