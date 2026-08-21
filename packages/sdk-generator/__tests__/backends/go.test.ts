@@ -233,6 +233,77 @@ describe("go model emitter", () => {
 });
 
 describe("go backend", () => {
+  it("populates inline union JSONValue inputs with a valid variant", () => {
+    const registry = new GoNameRegistry();
+    const channel = {
+      name: "Tools",
+      className: "ToolsChannel",
+      joins: [
+        {
+          topicPattern: "tools",
+          params: [],
+          returnType: { kind: "unknown" as const },
+        },
+      ],
+      messages: [
+        {
+          event: "tool_result",
+          params: [
+            {
+              name: "results",
+              required: true,
+              type: {
+                kind: "array" as const,
+                items: {
+                  kind: "union" as const,
+                  variants: [
+                    {
+                      kind: "object" as const,
+                      fields: [
+                        {
+                          name: "call_id",
+                          type: { kind: "primitive" as const, type: "string" as const },
+                          required: true,
+                        },
+                        {
+                          name: "status",
+                          type: { kind: "enum" as const, values: ["ok"] },
+                          required: true,
+                        },
+                        {
+                          name: "content",
+                          type: { kind: "primitive" as const, type: "string" as const },
+                          required: true,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+          returnType: { kind: "unknown" as const },
+        },
+      ],
+      pushes: [],
+    };
+
+    emitGoChannelFile("platform", channel, registry);
+    const contract = emitGoChannelContractTestFile(
+      channel,
+      { pkg: "platform", registry, schemas: [] },
+      "github.com/ArchAstro/archastro-go/platform",
+      (name) => name
+    );
+
+    const validResult =
+      'platform.JSONOf(map[string]any{"call_id": "test-id", "status": "ok", "content": "test content"})';
+    expect(contract).toContain(`Results: []platform.JSONValue{${validResult}}`);
+    expect(contract).toContain(
+      'platform.JSONOf([]any{map[string]any{"call_id": "test-id", "status": "ok", "content": "test content"}})'
+    );
+  });
+
   it("encodes required nullable channel parameters as explicit JSON null", () => {
     const registry = new GoNameRegistry();
     const channel = {
