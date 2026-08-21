@@ -2,11 +2,14 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ResourceDef, SchemaDef } from "../../src/ast/types.js";
+import type { ResourceDef, SchemaDef, TypeRef } from "../../src/ast/types.js";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generateTypeScript } from "../../src/backends/typescript/index.js";
 import { emitZodSchemaFile } from "../../src/backends/typescript/zod-emitter.js";
-import { emitResourceFile } from "../../src/backends/typescript/resource-emitter.js";
+import {
+  emitResourceFile,
+  typeRefToTS,
+} from "../../src/backends/typescript/resource-emitter.js";
 import { emitAuthFile } from "../../src/backends/typescript/auth-emitter.js";
 import { emitChannelFile } from "../../src/backends/typescript/channel-emitter.js";
 import { emitClientFile } from "../../src/backends/typescript/client-emitter.js";
@@ -1312,6 +1315,69 @@ describe("Multi-version TypeScript generation", () => {
 });
 
 describe("Zod emitter — enum edge cases", () => {
+  it.each<{
+    name: string;
+    items: TypeRef;
+    expected: string;
+  }>([
+    {
+      name: "enum",
+      items: {
+        kind: "enum",
+        values: ["personal", "organization"],
+      },
+      expected: '("personal" | "organization")[]',
+    },
+    {
+      name: "union",
+      items: {
+        kind: "union",
+        variants: [
+          { kind: "primitive", type: "string" },
+          { kind: "primitive", type: "integer" },
+        ],
+      },
+      expected: "(string | number)[]",
+    },
+    {
+      name: "optional",
+      items: {
+        kind: "optional",
+        inner: { kind: "primitive", type: "string" },
+      },
+      expected: "(string | undefined)[]",
+    },
+    {
+      name: "nullable",
+      items: {
+        kind: "nullable",
+        inner: { kind: "primitive", type: "string" },
+      },
+      expected: "(string | null)[]",
+    },
+  ])("parenthesizes $name item types before applying an array suffix", ({
+    items,
+    expected,
+  }) => {
+    const arrayType: TypeRef = { kind: "array", items };
+
+    expect(typeRefToTS(arrayType)).toBe(expected);
+
+    const out = emitZodSchemaFile([
+      {
+        name: "ArrayContainer",
+        fields: [
+          {
+            name: "values",
+            type: arrayType,
+            required: true,
+          },
+        ],
+      },
+    ]);
+    expect(out).toContain(`values: ${expected};`);
+  });
+
   it("emits z.literal for single-value enums (used as discriminator on union variants)", () => {
     const out = emitZodSchemaFile([
       {
