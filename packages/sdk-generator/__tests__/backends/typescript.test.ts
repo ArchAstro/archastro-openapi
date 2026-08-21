@@ -621,6 +621,44 @@ describe("Resource emitter uses requestRaw for raw responses", () => {
   });
 });
 
+describe("Resource emitter sanitizes dotted action names", () => {
+  const dottedActionAst = parseOpenApiSpec(
+    {
+      openapi: "3.0.0",
+      info: { title: "Dotted Action API", version: "1.0.0" },
+      paths: {
+        "/api/v1/scripts/llm.txt": {
+          get: {
+            operationId: "get_api_v1_scripts_llm.txt",
+            responses: {
+              "200": {
+                description: "Prompt text.",
+                content: { "text/plain": { schema: { type: "string" } } },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      name: "archastro-platform",
+      version: "0.1.0",
+      baseUrl: "https://platform.archastro.ai",
+      apiBase: "/api",
+      defaultVersion: "v1",
+    },
+  );
+  const scriptsResource = dottedActionAst.resources.find(
+    (resource) => resource.name === "scripts",
+  )!;
+  const output = emitResourceFile(scriptsResource, "/api/v1");
+
+  it("emits a valid camel-cased TypeScript method", () => {
+    expect(output).toContain("async llmTxt():");
+    expect(output).not.toContain("async llm.txt():");
+  });
+});
+
 describe("Resource emitter documents no-content responses", () => {
   const voidAst = parseOpenApiSpec(
     {

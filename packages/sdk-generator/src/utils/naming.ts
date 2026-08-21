@@ -3,7 +3,7 @@
  */
 export function camelCase(s: string): string {
   return s
-    .replace(/[-_]+(.)/g, (_, c: string) => c.toUpperCase())
+    .replace(/[-_.]+(.)/g, (_, c: string) => c.toUpperCase())
     .replace(/^[A-Z]/, (c) => c.toLowerCase());
 }
 
