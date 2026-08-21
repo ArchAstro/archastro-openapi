@@ -11363,6 +11363,55 @@
         ],
         "type": "object"
       },
+      "Command": {
+        "description": "A workflow command that a workflow node can invoke, including its identifier, human-readable name, and JSON schemas for its inputs and outputs.",
+        "example": {
+          "description": "An example description.",
+          "errorOutput": {},
+          "expectedInput": {},
+          "id": "send_email",
+          "name": "Example Name",
+          "successOutput": {}
+        },
+        "properties": {
+          "description": {
+            "description": "Human-readable description of what the command does, shown alongside the name in the workflow builder.",
+            "example": "An example description.",
+            "type": "string"
+          },
+          "errorOutput": {
+            "description": "JSON Schema describing the shape of an error output. `null` if the command does not produce structured error data.",
+            "example": {},
+            "type": "object"
+          },
+          "expectedInput": {
+            "description": "JSON Schema describing the input the command expects. `null` if the command takes no input.",
+            "example": {},
+            "type": "object"
+          },
+          "id": {
+            "description": "Unique string identifier for the command, used to reference it in workflow node configurations.",
+            "example": "send_email",
+            "type": "string"
+          },
+          "name": {
+            "description": "Human-readable display name for the command shown in the workflow builder.",
+            "example": "Example Name",
+            "type": "string"
+          },
+          "successOutput": {
+            "description": "JSON Schema describing the shape of a successful output. `null` if the command produces no output on success.",
+            "example": {},
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "type": "object"
+      },
       "ComputerExecResult": {
         "description": "The result of executing a shell command on an agent's computer environment. Contains the captured output and the process exit code.",
         "example": {
@@ -12022,6 +12071,181 @@
         ],
         "type": "object"
       },
+      "CurrentUser": {
+        "description": "The authenticated user's profile, live session context, and optional effective access.",
+        "example": {
+          "alias": "string",
+          "app": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+          "app_name": "Example Name",
+          "effective_access": {
+            "billing": [
+              {
+                "administrator": true,
+                "principal_type": "user"
+              }
+            ],
+            "entitlements": [
+              {
+                "granted": true,
+                "key": "string",
+                "provided_by": [
+                  "personal"
+                ],
+                "value": true,
+                "value_type": "boolean"
+              }
+            ]
+          },
+          "email": "user@example.com",
+          "id": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+          "is_system_user": true,
+          "metadata": {
+            "key": "value"
+          },
+          "name": "Example Name",
+          "notification_settings": {},
+          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+          "org_name": "Example Name",
+          "org_role": "string",
+          "org_slug": "example-slug",
+          "profile_picture": {
+            "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+            "height": 600,
+            "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+            "mime_type": "application/json",
+            "refresh_url": "https://example.com",
+            "url": "https://example.com",
+            "width": 800
+          },
+          "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+          "sandbox_name": "Example Name",
+          "timezone": "America/New_York"
+        },
+        "properties": {
+          "alias": {
+            "description": "Short handle or alias of the user.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "app": {
+            "description": "ID of the token-scoped app (`dap_...`).",
+            "example": "dap_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
+            "type": "string"
+          },
+          "app_name": {
+            "description": "Display name of the token-scoped app.",
+            "example": "Example Name",
+            "nullable": true,
+            "type": "string"
+          },
+          "effective_access": {
+            "$ref": "#/components/schemas/EffectiveAccess",
+            "description": "Present only when the request supplies one or more `entitlement[]` values."
+          },
+          "email": {
+            "description": "Email address of the user.",
+            "example": "user@example.com",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "User ID (`usr_...`).",
+            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "is_system_user": {
+            "description": "Whether the authenticated account is an internal system user.",
+            "example": true,
+            "type": "boolean"
+          },
+          "metadata": {
+            "description": "Arbitrary user metadata.",
+            "example": {
+              "key": "value"
+            },
+            "type": "object"
+          },
+          "name": {
+            "description": "Full display name of the user.",
+            "example": "Example Name",
+            "nullable": true,
+            "type": "string"
+          },
+          "notification_settings": {
+            "description": "The authenticated user's notification preferences.",
+            "example": {},
+            "type": "object"
+          },
+          "org": {
+            "description": "ID of the current organization (`org_...`).",
+            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
+            "type": "string"
+          },
+          "org_name": {
+            "description": "Display name of the current organization.",
+            "example": "Example Name",
+            "nullable": true,
+            "type": "string"
+          },
+          "org_role": {
+            "description": "The authenticated user's role in the current organization.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "org_slug": {
+            "description": "Stable slug of the current organization.",
+            "example": "example-slug",
+            "nullable": true,
+            "type": "string"
+          },
+          "profile_picture": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageSource"
+              }
+            ],
+            "description": "Resolved profile picture metadata.",
+            "example": {
+              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+              "height": 600,
+              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+              "mime_type": "application/json",
+              "refresh_url": "https://example.com",
+              "url": "https://example.com",
+              "width": 800
+            },
+            "nullable": true
+          },
+          "sandbox": {
+            "description": "ID of the current sandbox (`sbx_...`).",
+            "example": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
+            "type": "string"
+          },
+          "sandbox_name": {
+            "description": "Display name of the current sandbox.",
+            "example": "Example Name",
+            "nullable": true,
+            "type": "string"
+          },
+          "timezone": {
+            "description": "The user's IANA timezone.",
+            "example": "America/New_York",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "notification_settings",
+          "is_system_user"
+        ],
+        "type": "object"
+      },
       "CustomObject": {
         "description": "A custom object belonging to an organization. Custom objects store arbitrary structured data defined by a schema type and are scoped to an org, team, or user.",
         "example": {
@@ -12561,6 +12785,135 @@
         ],
         "type": "object"
       },
+      "EffectiveAccess": {
+        "description": "Live effective access and billing authority for the authenticated user.",
+        "example": {
+          "billing": [
+            {
+              "administrator": true,
+              "principal_type": "user"
+            }
+          ],
+          "entitlements": [
+            {
+              "granted": true,
+              "key": "string",
+              "provided_by": [
+                "personal"
+              ],
+              "value": true,
+              "value_type": "boolean"
+            }
+          ]
+        },
+        "properties": {
+          "billing": {
+            "description": "Administration authority for the personal and current-organization principals.",
+            "items": {
+              "$ref": "#/components/schemas/EffectiveAccessBillingPrincipal"
+            },
+            "type": "array"
+          },
+          "entitlements": {
+            "description": "Requested catalog entitlements in request order.",
+            "items": {
+              "$ref": "#/components/schemas/EffectiveAccessEntitlement"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "entitlements",
+          "billing"
+        ],
+        "type": "object"
+      },
+      "EffectiveAccessBillingPrincipal": {
+        "description": "Billing administration authority for one Viewer-derived principal kind.",
+        "example": {
+          "administrator": true,
+          "principal_type": "user"
+        },
+        "properties": {
+          "administrator": {
+            "description": "Whether the authenticated user may administer this principal's billing account.",
+            "example": true,
+            "type": "boolean"
+          },
+          "principal_type": {
+            "enum": [
+              "user",
+              "org"
+            ],
+            "example": "user",
+            "type": "string"
+          }
+        },
+        "required": [
+          "principal_type",
+          "administrator"
+        ],
+        "type": "object"
+      },
+      "EffectiveAccessEntitlement": {
+        "description": "A billing-derived effective entitlement for the authenticated user.",
+        "example": {
+          "granted": true,
+          "key": "string",
+          "provided_by": [
+            "personal"
+          ],
+          "value": true,
+          "value_type": "boolean"
+        },
+        "properties": {
+          "granted": {
+            "description": "Whether any eligible source grants the key.",
+            "example": true,
+            "type": "boolean"
+          },
+          "key": {
+            "description": "Stable entitlement catalog key.",
+            "example": "string",
+            "type": "string"
+          },
+          "provided_by": {
+            "description": "Privacy-safe principal kinds that contribute to the effective value.",
+            "example": [
+              "personal"
+            ],
+            "items": {
+              "enum": [
+                "personal",
+                "organization"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "value": {
+            "description": "Merged entitlement value, or `null` when the key is not granted.",
+            "example": true,
+            "nullable": true,
+            "type": "boolean"
+          },
+          "value_type": {
+            "description": "Catalog type used to interpret `value`.",
+            "enum": [
+              "boolean"
+            ],
+            "example": "boolean",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "granted",
+          "value_type",
+          "provided_by"
+        ],
+        "type": "object"
+      },
       "Error": {
         "description": "A failed local-tool outcome.",
         "example": {
@@ -13085,6 +13438,102 @@
         ],
         "type": "object"
       },
+      "ExpressionResult": {
+        "description": "Schema for the result of evaluating an expression",
+        "example": {
+          "output": [
+            {}
+          ]
+        },
+        "properties": {
+          "output": {
+            "default": [],
+            "description": "Output lines from println calls, each with :line (source line number), :text, and optional :values (JSON-serializable structured data)",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "result": {
+            "description": "The evaluated JSON-safe result"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object"
+      },
+      "ExpressionValidation": {
+        "description": "Schema for expression validation responses",
+        "example": {
+          "error": "Unexpected token at line 3",
+          "findings": [
+            {}
+          ],
+          "ok": true,
+          "symbols": [
+            {}
+          ],
+          "valid": true,
+          "warnings": [
+            "string"
+          ]
+        },
+        "properties": {
+          "error": {
+            "description": "Validation error message",
+            "example": "Unexpected token at line 3",
+            "type": "string"
+          },
+          "findings": {
+            "description": "Structured findings with position info for editor diagnostics",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "ok": {
+            "description": "Whether the validation call succeeded",
+            "example": true,
+            "type": "boolean"
+          },
+          "symbols": {
+            "description": "Inferred symbol types at source positions (name, type, line, column)",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "valid": {
+            "description": "Whether the expression is valid",
+            "example": true,
+            "type": "boolean"
+          },
+          "warnings": {
+            "description": "Semantic analysis warnings (non-blocking)",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "type": "object"
+      },
       "Extraction": {
         "description": "An extraction job: yields text from a document or website into a destination namespace, without committing knowledge to an agent.",
         "example": {
@@ -13305,6 +13754,48 @@
         },
         "required": [
           "id"
+        ],
+        "type": "object"
+      },
+      "GraphValidation": {
+        "description": "Schema for graph validation responses",
+        "example": {
+          "error": "Cycle detected between nodes 'node_1' and 'node_3'",
+          "findings": [
+            {}
+          ],
+          "ok": true,
+          "valid": true
+        },
+        "properties": {
+          "error": {
+            "description": "Error message if graph construction or validation failed",
+            "example": "Cycle detected between nodes 'node_1' and 'node_3'",
+            "type": "string"
+          },
+          "findings": {
+            "description": "Structured findings from static analysis (unreachable nodes, dead-ends, cycles)",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "ok": {
+            "description": "Whether graph construction succeeded",
+            "example": true,
+            "type": "boolean"
+          },
+          "valid": {
+            "description": "Whether the graph passed structural validation and analysis",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
         ],
         "type": "object"
       },
@@ -15172,6 +15663,148 @@
         ],
         "type": "object"
       },
+      "NodeField": {
+        "description": "Schema for a field definition within a node type",
+        "example": {
+          "allowExpression": true,
+          "description": "An example description.",
+          "key": "prompt",
+          "label": "Prompt",
+          "options": [
+            {}
+          ],
+          "required": true,
+          "type": "string"
+        },
+        "properties": {
+          "allowExpression": {
+            "description": "Whether the field accepts expressions",
+            "example": true,
+            "type": "boolean"
+          },
+          "defaultValue": {
+            "description": "Default JSON-safe value for the field"
+          },
+          "description": {
+            "description": "Field description",
+            "example": "An example description.",
+            "type": "string"
+          },
+          "key": {
+            "description": "Field identifier",
+            "example": "prompt",
+            "type": "string"
+          },
+          "label": {
+            "description": "Display label",
+            "example": "Prompt",
+            "type": "string"
+          },
+          "options": {
+            "description": "Available options for select fields",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "required": {
+            "default": false,
+            "description": "Whether the field is required",
+            "example": true,
+            "type": "boolean"
+          },
+          "type": {
+            "description": "Field type (string, number, boolean, expression, etc.)",
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "type"
+        ],
+        "type": "object"
+      },
+      "NodeType": {
+        "description": "Schema for a workflow node type definition",
+        "example": {
+          "badge": "HTTP",
+          "category": "Logic",
+          "color": "#2563EB",
+          "description": "An example description.",
+          "docs": "string",
+          "fields": [
+            {
+              "allowExpression": true,
+              "description": "An example description.",
+              "key": "prompt",
+              "label": "Prompt",
+              "options": [
+                {}
+              ],
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "id": "http_request",
+          "label": "HTTP Request"
+        },
+        "properties": {
+          "badge": {
+            "description": "Short badge text for UI",
+            "example": "HTTP",
+            "type": "string"
+          },
+          "category": {
+            "description": "Category for grouping (e.g., Logic, Network, Utility)",
+            "example": "Logic",
+            "type": "string"
+          },
+          "color": {
+            "description": "Hex color for UI display",
+            "example": "#2563EB",
+            "type": "string"
+          },
+          "description": {
+            "description": "Node description",
+            "example": "An example description.",
+            "type": "string"
+          },
+          "docs": {
+            "description": "Extended documentation",
+            "example": "string",
+            "type": "string"
+          },
+          "fields": {
+            "description": "Field definitions for this node type",
+            "items": {
+              "$ref": "#/components/schemas/NodeField"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Unique node type identifier",
+            "example": "http_request",
+            "type": "string"
+          },
+          "label": {
+            "description": "Display label",
+            "example": "HTTP Request",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "fields"
+        ],
+        "type": "object"
+      },
       "Notification": {
         "description": "An inbox notification delivered to a recipient user. Includes type-specific render data resolved at request time.",
         "example": {
@@ -16090,6 +16723,61 @@
         ],
         "type": "object"
       },
+      "RuntimeEnvVar": {
+        "description": "A single runtime environment variable available within a script execution context, including its key, description, and origin.",
+        "example": {
+          "description": "An example description.",
+          "key": "DATABASE_URL",
+          "source": "app"
+        },
+        "properties": {
+          "description": {
+            "description": "Human-readable explanation of the variable's purpose. `null` if no description has been set.",
+            "example": "An example description.",
+            "type": "string"
+          },
+          "key": {
+            "description": "The name of the environment variable as it appears in the script runtime (e.g. `DATABASE_URL`).",
+            "example": "DATABASE_URL",
+            "type": "string"
+          },
+          "source": {
+            "description": "Origin of the environment variable. One of `\"app\"` (set on the application) or `\"org\"` (inherited from the organization).",
+            "example": "app",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "source"
+        ],
+        "type": "object"
+      },
+      "RuntimeEnvVarList": {
+        "description": "The collection of runtime environment variables available to the current script execution context.",
+        "example": {
+          "data": [
+            {
+              "description": "An example description.",
+              "key": "DATABASE_URL",
+              "source": "app"
+            }
+          ]
+        },
+        "properties": {
+          "data": {
+            "description": "Array of runtime environment variable objects available in the current script execution context.",
+            "items": {
+              "$ref": "#/components/schemas/RuntimeEnvVar"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "type": "object"
+      },
       "Sandbox": {
         "description": "An isolated developer sandbox environment used for testing integrations without affecting production data or sending real emails.",
         "example": {
@@ -16282,6 +16970,548 @@
           "id",
           "type",
           "status"
+        ],
+        "type": "object"
+      },
+      "ScriptLanguageSpec": {
+        "description": "Schema for ArchAstro script editor metadata",
+        "example": {
+          "builtins": [
+            {}
+          ],
+          "keywords": [
+            "string"
+          ],
+          "languageId": "archastro",
+          "namespaces": [
+            {}
+          ],
+          "operators": [
+            "string"
+          ],
+          "reservedNames": [
+            "string"
+          ],
+          "snippets": [
+            {}
+          ],
+          "specialIdentifiers": [
+            {}
+          ],
+          "typeDefinitions": [
+            {}
+          ],
+          "typeSystem": {},
+          "version": 1
+        },
+        "properties": {
+          "builtins": {
+            "description": "Builtin function docs",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "keywords": {
+            "description": "Language keywords",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "languageId": {
+            "description": "Monaco language identifier",
+            "example": "archastro",
+            "type": "string"
+          },
+          "namespaces": {
+            "description": "Importable namespace docs",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "operators": {
+            "description": "Language operators",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "reservedNames": {
+            "description": "Names that cannot be rebound",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "snippets": {
+            "description": "Editor snippet templates",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "specialIdentifiers": {
+            "description": "Special symbols such as JSONPath root/current",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "typeDefinitions": {
+            "description": "Named type definitions (event interfaces, etc.) with fields",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "typeSystem": {
+            "description": "Type-system primitives, generics, annotations, inference, and runtime-check guidance",
+            "example": {},
+            "type": "object"
+          },
+          "version": {
+            "description": "Schema version",
+            "example": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "languageId",
+          "version",
+          "keywords",
+          "operators",
+          "builtins",
+          "namespaces"
+        ],
+        "type": "object"
+      },
+      "ScriptRunResult": {
+        "description": "Schema for the result of executing a script in the editor",
+        "example": {
+          "error": "string",
+          "findings": [
+            {}
+          ],
+          "output": [
+            {}
+          ]
+        },
+        "properties": {
+          "error": {
+            "description": "Error message when script execution failed",
+            "example": "string",
+            "type": "string"
+          },
+          "findings": {
+            "default": [],
+            "description": "Structured diagnostics with position info for editor markers (severity, message, line, column, end_line, end_column)",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "output": {
+            "default": [],
+            "description": "Output lines from println calls, each with :line (source line number), :text, and optional :values",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "result": {
+            "description": "The evaluated JSON-safe result (null when execution failed)"
+          }
+        },
+        "type": "object"
+      },
+      "ScriptTestAssertion": {
+        "description": "One `test.expect(...).<matcher>` call from a ScriptTest run.\n\nMatchers never raise (the script language has no exceptions) — each call\nemits a structured assertion entry that the test runner harvests into the\nper-test report. Pass/fail is captured on `:pass`; `:expected` and\n`:actual` carry the matcher's inputs for diff rendering.\n",
+        "example": {
+          "describe": [
+            "string"
+          ],
+          "it": "returns the expected result",
+          "kind": "assertion",
+          "line": 1,
+          "matcher": "toEqual",
+          "pass": true
+        },
+        "properties": {
+          "actual": {
+            "description": "Actual value the matcher was called with — any JSON-safe value"
+          },
+          "describe": {
+            "default": [],
+            "description": "Outer-to-inner describe path when the assertion fired",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "expected": {
+            "description": "Expected value (or arguments to the matcher) — any JSON-safe value: scalar, map, or list"
+          },
+          "it": {
+            "description": "Name of the enclosing `test.it(...)` block",
+            "example": "returns the expected result",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Output entry kind, always `\"assertion\"` for this schema",
+            "example": "assertion",
+            "type": "string"
+          },
+          "line": {
+            "description": "Source line of the `expect(...)` call",
+            "example": 1,
+            "type": "integer"
+          },
+          "matcher": {
+            "description": "Matcher name (toEqual, toBe, toBeOk, toBeError, toContain, toMatch, toHaveLength)",
+            "example": "toEqual",
+            "type": "string"
+          },
+          "pass": {
+            "description": "True when the matcher succeeded",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "pass"
+        ],
+        "type": "object"
+      },
+      "ScriptTestCase": {
+        "description": "One `test.it(...)` block from a ScriptTest run.\n\nBuilt by the harvester from the raw output entries — pairs the case's\nmetadata with the assertions it produced and any runtime error that\naborted the body. An `it` block that emits zero assertions is treated\nas a failure (`pass: false`) so silent mistakes don't pass quietly.\n",
+        "example": {
+          "assertions": [
+            {
+              "describe": [
+                "string"
+              ],
+              "it": "returns the expected result",
+              "kind": "assertion",
+              "line": 1,
+              "matcher": "toEqual",
+              "pass": true
+            }
+          ],
+          "describe": [
+            "string"
+          ],
+          "error": "string",
+          "name": "Example Name",
+          "pass": true
+        },
+        "properties": {
+          "assertions": {
+            "default": [],
+            "description": "Every `test.expect(...)` matcher that ran inside this case",
+            "items": {
+              "$ref": "#/components/schemas/ScriptTestAssertion"
+            },
+            "type": "array"
+          },
+          "describe": {
+            "default": [],
+            "description": "Outer-to-inner describe path enclosing this case",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "error": {
+            "description": "Runtime error that aborted the body of this `it` block, when one occurred",
+            "example": "string",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name passed to `test.it(...)`",
+            "example": "Example Name",
+            "type": "string"
+          },
+          "pass": {
+            "description": "True when the case has at least one assertion and every assertion passed",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "pass"
+        ],
+        "type": "object"
+      },
+      "ScriptTestOutputEntry": {
+        "description": "One println/log entry interleaved with a ScriptTest run.\n\nAfter the test harvester filters out test-control entries (`it`,\n`assertion`, `it_error`), only `println` and `log.<level>` calls remain\nin the report's `output` field. Both shapes share `text`/`values`/`line`\n(line is auto-annotated by the evaluator post-call); `level` and\n`timestamp` are only present on `log.*` entries.\n",
+        "example": {
+          "level": "info",
+          "line": 1,
+          "text": "Hello, world!",
+          "timestamp": "2024-01-01T00:00:00Z",
+          "values": []
+        },
+        "properties": {
+          "level": {
+            "description": "Log level (`debug`, `info`, `warn`, `error`) — present on log.* entries only",
+            "example": "info",
+            "type": "string"
+          },
+          "line": {
+            "description": "Source line of the println/log call",
+            "example": 1,
+            "type": "integer"
+          },
+          "text": {
+            "description": "Joined text representation of the args",
+            "example": "Hello, world!",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "UTC timestamp — present on log.* entries only",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "values": {
+            "default": [],
+            "description": "Original args coerced to JSON-safe values — mixed scalars, maps, and lists since the call sites accept arbitrary expressions",
+            "example": [],
+            "items": {},
+            "type": "array"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "ScriptTestRunResult": {
+        "description": "Schema for the result of running a ScriptTest",
+        "example": {
+          "assertion_count": 1,
+          "error": "string",
+          "findings": [
+            {}
+          ],
+          "output": [
+            {
+              "level": "info",
+              "line": 1,
+              "text": "Hello, world!",
+              "timestamp": "2024-01-01T00:00:00Z",
+              "values": []
+            }
+          ],
+          "passed": true,
+          "suites": [
+            {
+              "describe": [
+                "string"
+              ],
+              "name": "Example Name",
+              "tests": [
+                {
+                  "assertions": [
+                    {
+                      "describe": [
+                        "string"
+                      ],
+                      "it": "returns the expected result",
+                      "kind": "assertion",
+                      "line": 1,
+                      "matcher": "toEqual",
+                      "pass": true
+                    }
+                  ],
+                  "describe": [
+                    "string"
+                  ],
+                  "error": "string",
+                  "name": "Example Name",
+                  "pass": true
+                }
+              ]
+            }
+          ],
+          "tests": [
+            {
+              "assertions": [
+                {
+                  "describe": [
+                    "string"
+                  ],
+                  "it": "returns the expected result",
+                  "kind": "assertion",
+                  "line": 1,
+                  "matcher": "toEqual",
+                  "pass": true
+                }
+              ],
+              "describe": [
+                "string"
+              ],
+              "error": "string",
+              "name": "Example Name",
+              "pass": true
+            }
+          ]
+        },
+        "properties": {
+          "assertion_count": {
+            "default": 0,
+            "description": "Total number of `test.expect(...)` matcher calls that ran",
+            "example": 1,
+            "type": "integer"
+          },
+          "error": {
+            "description": "Top-level error message when a runtime error fired outside any `it` block (parse/tokenize errors return 422 instead)",
+            "example": "string",
+            "type": "string"
+          },
+          "findings": {
+            "default": [],
+            "description": "Structured diagnostics with position info for editor markers when the run errored before any tests could run",
+            "example": [
+              {}
+            ],
+            "items": {
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "output": {
+            "default": [],
+            "description": "Non-test output entries (println, log.*) interleaved during the run",
+            "items": {
+              "$ref": "#/components/schemas/ScriptTestOutputEntry"
+            },
+            "type": "array"
+          },
+          "passed": {
+            "description": "True when every test in every suite passed",
+            "example": true,
+            "type": "boolean"
+          },
+          "suites": {
+            "default": [],
+            "description": "One entry per describe path",
+            "items": {
+              "$ref": "#/components/schemas/ScriptTestSuite"
+            },
+            "type": "array"
+          },
+          "tests": {
+            "default": [],
+            "description": "Flat list of every `it` that ran, each with assertions and pass flag",
+            "items": {
+              "$ref": "#/components/schemas/ScriptTestCase"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "passed"
+        ],
+        "type": "object"
+      },
+      "ScriptTestSuite": {
+        "description": "One `test.describe(...)` group from a ScriptTest run.\n\nSuites are derived from the unique describe paths the harvester sees, so\nthere's no synthetic \"ungrouped\" suite — `it` blocks emitted outside any\n`describe` show up in the top-level `tests` array on the parent report\ninstead.\n",
+        "example": {
+          "describe": [
+            "string"
+          ],
+          "name": "Example Name",
+          "tests": [
+            {
+              "assertions": [
+                {
+                  "describe": [
+                    "string"
+                  ],
+                  "it": "returns the expected result",
+                  "kind": "assertion",
+                  "line": 1,
+                  "matcher": "toEqual",
+                  "pass": true
+                }
+              ],
+              "describe": [
+                "string"
+              ],
+              "error": "string",
+              "name": "Example Name",
+              "pass": true
+            }
+          ]
+        },
+        "properties": {
+          "describe": {
+            "description": "Outer-to-inner describe path identifying this suite",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "description": "Human-readable suite name (`describe` path joined by ` > `)",
+            "example": "Example Name",
+            "type": "string"
+          },
+          "tests": {
+            "default": [],
+            "description": "Every `test.it(...)` case run inside this describe",
+            "items": {
+              "$ref": "#/components/schemas/ScriptTestCase"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "describe",
+          "name"
         ],
         "type": "object"
       },
@@ -38304,7 +39534,7 @@
             "description": "Not found"
           },
           "409": {
-            "description": "Conflict - an object already occupies this row_key"
+            "description": "Conflict - an object already occupies this row_key or the workspace limit is reached"
           },
           "422": {
             "description": "Validation failed"
@@ -43532,6 +44762,274 @@
           }
         },
         "summary": "Create a sandbox key",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/scripts/language": {
+      "get": {
+        "description": "Returns the full language specification for the ArchAstro scripting engine,\nincluding keywords, operators, built-in functions, namespaces, code snippets,\nand type system information.\n\nUse this response to power editor features such as syntax highlighting,\nautocompletion, hover documentation, and snippet insertion. The specification\nis static for a given platform version; you do not need to poll it on every\nsession.\n\nRequires an authenticated viewer. No additional app scope is needed.\n",
+        "operationId": "get_api_v1_scripts_language",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScriptLanguageSpec"
+                }
+              }
+            },
+            "description": "The script language specification for the current platform version."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Retrieve script language metadata",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/scripts/llm.txt": {
+      "get": {
+        "description": "Returns the plain-text system prompt used by script-authoring assistants.\nThe prompt is rendered from the current language specification so builtins,\nnamespaces, snippets, and type-system guidance stay synchronized with the\nrunning platform.\n",
+        "operationId": "get_api_v1_scripts_llm.txt",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Plain-text system prompt for script-authoring assistants."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Retrieve the script-authoring LLM prompt",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/scripts/run": {
+      "post": {
+        "description": "Executes the provided script source and returns the result value together\nwith any `print` output captured during the run. Use this endpoint to\nevaluate scripts interactively during development, or to drive automation\nfrom external tooling.\n\nThe script runs with the authenticated viewer's identity by default. Pass\n`run_as_user` to impersonate a specific user, or `run_as_agent` to run as\na specific agent. These two params are mutually exclusive — supplying both\nreturns a 422 error.\n\nRuntime environment variables defined for the app are automatically injected\ninto the script's `variables.env` scope. When the script raises a runtime\nerror, the response still returns HTTP 200 with `error`, `findings`, and any\npartial output; the error is also recorded in the app's activity feed.\n",
+        "operationId": "post_api_v1_scripts_run",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "run_as_agent": "string",
+                  "run_as_user": "string",
+                  "scope": {},
+                  "script": "string"
+                },
+                "properties": {
+                  "run_as_agent": {
+                    "description": "Agent ID (`agt_...`) to impersonate during execution. When set, the script's `system.viewer` is replaced with a viewer for this agent. Mutually exclusive with `run_as_user`. `null` by default.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "run_as_user": {
+                    "description": "User ID (`usr_...`) to impersonate during execution. When set, the script's `system.viewer` is replaced with a viewer for this user. Mutually exclusive with `run_as_agent`. `null` by default.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "scope": {
+                    "default": {},
+                    "description": "Initial scope injected into the script execution context. Use this to supply `variables`, `system`, or other top-level scope keys.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "script": {
+                    "default": "",
+                    "description": "The script source to execute. Defaults to an empty string.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScriptRunResult"
+                }
+              }
+            },
+            "description": "The script execution result, including the return value, captured output, and any runtime error or diagnostic findings."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "run_as_user and run_as_agent are mutually exclusive"
+          }
+        },
+        "summary": "Execute a workflow script",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/scripts/runtime_env_vars": {
+      "get": {
+        "description": "Returns metadata for all runtime environment variables available to scripts\nrunning within the specified app. The response lists each variable's name\nand description but does not include resolved values.\n\nUse this to surface the available `env.*` identifiers in script editor\nautocompletion or to inspect which variables are configured for an app\nbefore running a script.\n\nRequires an authenticated viewer scoped to the specified app.\n",
+        "operationId": "get_api_v1_scripts_runtime_env_vars",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeEnvVarList"
+                }
+              }
+            },
+            "description": "Paginated list of runtime environment variable metadata for the app."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "App-scoped token required. Use a token scoped to the target app."
+          }
+        },
+        "summary": "List runtime environment variables for scripts",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/scripts/test": {
+      "post": {
+        "description": "Executes a Jest-style script test source (`describe` / `it` / `expect`) and\nreturns a structured assertion report. Use this endpoint to run unit tests\nagainst script logic during development or in CI pipelines.\n\nImports of the form `import(\"script:<lookup_key>\")` inside the test script\nresolve against the `scripts` map supplied in the request body first, then\nfall back to deployed scripts in the caller's app. This lets you test local\nchanges to scripts before deploying them.\n\nRuntime environment variables defined for the app are automatically injected\ninto `variables.env` within the execution scope.\n\nWhen a mid-run runtime error occurs (after some tests have already executed),\nthe endpoint returns HTTP 200 with `passed: false`, the partial per-test\nbreakdown, and a top-level `error` and `findings` describing the crash. When\nthe test source itself cannot be parsed, the endpoint returns HTTP 422 with\nthe syntax error message.\n",
+        "operationId": "post_api_v1_scripts_test",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "scope": {},
+                  "script": "string",
+                  "scripts": {}
+                },
+                "properties": {
+                  "scope": {
+                    "default": {},
+                    "description": "Optional overrides for the execution scope. Accepts `variables`, `system`, or other top-level scope keys.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "script": {
+                    "default": "",
+                    "description": "The test script source to execute. Should contain `describe` / `it` / `expect` blocks.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "scripts": {
+                    "default": {},
+                    "description": "Optional map of local script sources keyed by lookup key (e.g. `\"my_script\"`). Used to resolve `import(\"script:<lookup_key>\")` calls before falling back to deployed scripts in the caller's app.",
+                    "example": {},
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScriptTestRunResult"
+                }
+              }
+            },
+            "description": "The assertion report for the test run, including per-suite and per-test results, assertion counts, captured output, and any runtime error or diagnostic findings."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Script could not be parsed"
+          }
+        },
+        "summary": "Run a script test suite",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/scripts/validate": {
+      "post": {
+        "description": "Parses and statically analyzes the provided script source, returning a list\nof diagnostic findings (errors and warnings) without executing the script.\nUse this endpoint to power real-time syntax and type checking in script\neditors.\n\nThe response always returns HTTP 200. Check the `findings` array in the\nreturned validation result for any errors or warnings. An empty `findings`\nlist means the script passed all static checks.\n\nRequires an authenticated viewer. No additional app scope is needed.\n",
+        "operationId": "post_api_v1_scripts_validate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "script": "string"
+                },
+                "properties": {
+                  "script": {
+                    "default": "",
+                    "description": "The script source to validate. Defaults to an empty string.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpressionValidation"
+                }
+              }
+            },
+            "description": "Static analysis result containing a list of diagnostic findings for the script."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Validate a workflow script",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -70900,20 +72398,42 @@
       "get": {
         "description": "Returns the user associated with the authenticated session or bearer\ntoken. This is the canonical way to resolve \"who am I?\" after\nauthentication.\n\nThe response includes the user's profile, notification settings, and\nprofile picture, along with the app, organization, and sandbox the\ntoken is scoped to and their display names — enough to establish full\nsession context in a single call. Unauthenticated requests return 401.\n",
         "operationId": "get_api_v1_users_me",
-        "parameters": [],
+        "parameters": [
+          {
+            "description": "Entitlement catalog keys to evaluate. Supplying this expansion additionally requires `entitlements:read`.",
+            "example": [
+              "string"
+            ],
+            "in": "query",
+            "name": "entitlement",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/CurrentUser"
                 }
               }
             },
             "description": "The authenticated user object."
           },
+          "400": {
+            "description": "Unknown entitlement catalog key"
+          },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient OAuth scope"
           }
         },
         "summary": "Retrieve the current user",
@@ -71601,6 +73121,7 @@
                   "full_name": {
                     "description": "Updated display name for the user.",
                     "example": "Example Name",
+                    "nullable": true,
                     "type": "string"
                   },
                   "metadata": {
@@ -71617,6 +73138,7 @@
                       "filename": "string",
                       "mime_type": "application/json"
                     },
+                    "nullable": true,
                     "properties": {
                       "data": {
                         "description": "Base64-encoded binary content of the image file.",
@@ -82016,6 +83538,555 @@
           }
         },
         "summary": "Submit workflow work output and wake its durable execution",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/commands": {
+      "get": {
+        "description": "Returns the full set of workflow commands registered with the workflow host.\nCommands represent discrete operations that a workflow node can invoke — each\ncarries its own input and output schemas used by the workflow builder.\n\nThis endpoint requires a valid developer session. The list is not paginated;\nall registered commands are returned in a single response.\n",
+        "operationId": "get_api_v1_workflows_commands",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Command"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Array of all registered workflow command definitions."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "List available workflow commands",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/events/{name}/sample": {
+      "get": {
+        "description": "Returns a representative sample payload for the specified workflow event type.\nUse this to inspect the structure of an event before configuring a workflow\ntrigger or building an event handler.\n\nRequires a valid developer session. Returns 404 if the event name is not\nregistered in the platform event catalog.\n",
+        "operationId": "get_api_v1_workflows_events__name_sample",
+        "parameters": [
+          {
+            "description": "Fully-qualified event type name registered in the catalog, e.g. `\"thread.created\"`. Returns 404 if the name is not recognized.",
+            "example": "Example Name",
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Representative payload for the requested workflow event.",
+                  "example": {
+                    "sample": {}
+                  },
+                  "properties": {
+                    "sample": {
+                      "description": "Representative event payload.",
+                      "example": {},
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "sample"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Event not found"
+          }
+        },
+        "summary": "Retrieve a sample event payload",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/expressions/run": {
+      "post": {
+        "description": "Evaluates a single workflow expression string against a caller-supplied variable scope\nand returns the computed result. Use this endpoint to test and iterate on expressions\nduring workflow development before embedding them in a workflow graph.\n\nThe expression is evaluated synchronously. If evaluation fails (syntax error, runtime\nexception, or type mismatch), the endpoint returns a 422 with a human-readable reason\nrather than a 200 with an error payload. Successful responses always include any\n`println` output captured during evaluation.\n\nRequires an authenticated developer session. The expression runs in an isolated\ncontext and cannot access platform resources beyond what you supply in `scope`.\n",
+        "operationId": "post_api_v1_workflows_expressions_run",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "expression": "string",
+                  "scope": {}
+                },
+                "properties": {
+                  "expression": {
+                    "default": "",
+                    "description": "The workflow expression source to evaluate. Defaults to an empty string.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "scope": {
+                    "default": {},
+                    "description": "Key-value map of variables available to the expression at evaluation time. Defaults to an empty map.",
+                    "example": {},
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpressionResult"
+                }
+              }
+            },
+            "description": "The result of evaluating the expression, including any captured print output."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Expression evaluation failed"
+          }
+        },
+        "summary": "Run a workflow expression",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/expressions/validate": {
+      "post": {
+        "description": "Parses and statically analyses a workflow expression string without executing it.\nReturns structured findings, inferred symbol types, and any warnings so that editors\nand build-time tooling can surface diagnostics before the expression is used in a\nlive workflow.\n\nThe response always includes an `ok` flag indicating whether the validation call\nitself succeeded, and a separate `valid` flag indicating whether the expression\npassed analysis. A 200 is returned regardless of whether the expression is valid;\na 401 is returned if the caller is not authenticated.\n\nRequires an authenticated developer session.\n",
+        "operationId": "post_api_v1_workflows_expressions_validate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "expression": "string"
+                },
+                "properties": {
+                  "expression": {
+                    "default": "",
+                    "description": "The workflow expression source to validate. Defaults to an empty string.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpressionValidation"
+                }
+              }
+            },
+            "description": "Validation outcome including parse errors, warnings, symbol types, and structured editor diagnostics."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Validate a workflow expression",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/graph/validate": {
+      "post": {
+        "description": "Submits a workflow graph definition for static analysis and returns a\nstructured validation report. The graph is checked for structural correctness\n(valid node and edge references) and then analyzed for logical issues such as\nunreachable nodes, dead-end paths, and cycles.\n\nThis endpoint is non-destructive — it does not persist any data. Use it\nduring development to surface problems with a graph definition before saving\nor executing it. Requires developer-level authentication.\n",
+        "operationId": "post_api_v1_workflows_graph_validate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "graph": {}
+                },
+                "properties": {
+                  "graph": {
+                    "description": "Complete workflow graph definition to validate, containing node and edge declarations.",
+                    "example": {},
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "graph"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphValidation"
+                }
+              }
+            },
+            "description": "Validation report describing whether the graph is structurally sound and any findings from static analysis."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Validate a workflow graph",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/llm.txt": {
+      "get": {
+        "description": "Returns the plain-text system prompt used by workflow-authoring assistants.\nThe prompt is rendered from the registered node types and commands so its\nauthoring guidance stays synchronized with the running platform.\n",
+        "operationId": "get_api_v1_workflows_llm.txt",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Plain-text system prompt for workflow-authoring assistants."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Retrieve the workflow-authoring LLM prompt",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/node_types": {
+      "get": {
+        "description": "Returns an array of all node type definitions registered with the workflow host. Node\ntypes describe the available building blocks for constructing workflow graphs, including\neach type's label, category, color, and configurable field definitions.\n\nThis endpoint requires a valid authenticated session. It does not support pagination\n— all registered node types are returned in a single response. The list reflects the\nnode types available at the time of the request; types are registered at startup and\ndo not change at runtime.\n",
+        "operationId": "get_api_v1_workflows_node_types",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NodeType"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Array of all registered workflow node type definitions."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "List workflow node types",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/node_types/{node_type}": {
+      "get": {
+        "description": "Returns the full definition for a single workflow node type, identified by its\nstring identifier. The response includes the node type's label, description, category,\ndisplay properties, and the complete list of configurable field definitions.\n\nReturns 404 if no node type with the given identifier is registered. This endpoint\nrequires a valid authenticated session.\n",
+        "operationId": "get_api_v1_workflows_node_types__node_type",
+        "parameters": [
+          {
+            "description": "Identifier of the node type to retrieve, e.g. `\"http_request\"` or `\"conditional\"`.",
+            "example": "string",
+            "in": "path",
+            "name": "node_type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodeType"
+                }
+              }
+            },
+            "description": "The requested workflow node type definition."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Node type not found"
+          }
+        },
+        "summary": "Retrieve a workflow node type",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/run": {
+      "post": {
+        "description": "Executes a single workflow node or a complete workflow graph and returns the result.\nSupply either `node` (to run one node in isolation) or `graph` (to execute a full\ndirected graph); the two parameters are mutually exclusive and exactly one must be\nprovided.\n\nThe authenticated developer is used as the default workflow principal for entitlement\nchecks on billable operations such as LLM calls. Supply `run_as_user` or\n`run_as_agent` to override the acting identity for the execution — at most one\noverride may be set per request.\n\nExecution errors are logged to the activity feed under the acting identity so they\nappear alongside automation-driven workflow errors in operator dashboards. A 422\nresponse is returned when execution fails; the response body includes the error\nmessage and any partial records produced before the failure.\n",
+        "operationId": "post_api_v1_workflows_run",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "context": {},
+                  "env": {},
+                  "graph": {},
+                  "node": {},
+                  "payload": {},
+                  "run_as_agent": "string",
+                  "run_as_user": "string"
+                },
+                "properties": {
+                  "context": {
+                    "default": {},
+                    "description": "Additional execution context made available to workflow nodes at runtime. Merged with the authenticated viewer context set by the platform. Defaults to an empty object if omitted.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "env": {
+                    "default": {},
+                    "description": "Evaluator environment variables injected into expression contexts during execution. The platform automatically merges developer-tier runtime env vars before evaluation. Defaults to an empty object if omitted.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "graph": {
+                    "description": "A complete workflow graph to execute. Must be an object conforming to the `WorkflowGraph` schema (keys: `start_node`, `nodes`, etc.). Mutually exclusive with `node` — supply exactly one.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "node": {
+                    "description": "A single workflow node to execute in isolation. Must be an object with at minimum a `type` key identifying the node kind, plus any node-specific configuration values. Mutually exclusive with `graph` — supply exactly one.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "payload": {
+                    "default": {},
+                    "description": "Arbitrary input data passed into the workflow as the initial payload. Defaults to an empty object if omitted.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "run_as_agent": {
+                    "description": "Agent ID (`agt_...`) of the agent to impersonate for the execution. When set, workflow nodes run with this agent as the acting principal instead of the authenticated developer. The agent must belong to the current app. Mutually exclusive with `run_as_user`. `null` by default (runs as the authenticated developer).",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "run_as_user": {
+                    "description": "User ID (`usr_...`) of the user to impersonate for the execution. When set, workflow nodes run with this user as the acting principal instead of the authenticated developer. Mutually exclusive with `run_as_agent`. `null` by default (runs as the authenticated developer).",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Synchronous result from running either a single node or a complete graph.",
+                  "example": {
+                    "context": {},
+                    "env": {},
+                    "error": "string",
+                    "files": [
+                      {}
+                    ],
+                    "log": [
+                      "string"
+                    ],
+                    "nextNodeId": "string",
+                    "records": [
+                      {}
+                    ],
+                    "startNodeId": "string",
+                    "status": "string",
+                    "wait": {}
+                  },
+                  "properties": {
+                    "context": {
+                      "description": "Execution context.",
+                      "example": {},
+                      "type": "object"
+                    },
+                    "env": {
+                      "description": "Execution environment.",
+                      "example": {},
+                      "type": "object"
+                    },
+                    "error": {
+                      "description": "Execution error message.",
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "files": {
+                      "description": "Files created during graph execution.",
+                      "example": [
+                        {}
+                      ],
+                      "items": {
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "log": {
+                      "description": "Node execution log lines.",
+                      "example": [
+                        "string"
+                      ],
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "nextNodeId": {
+                      "description": "Next node ID, when execution yielded.",
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "output": {
+                      "description": "Node output or graph output lines."
+                    },
+                    "payload": {
+                      "description": "Final or node-produced JSON-safe payload."
+                    },
+                    "records": {
+                      "description": "Graph execution records.",
+                      "example": [
+                        {}
+                      ],
+                      "items": {
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "startNodeId": {
+                      "description": "Graph start node ID.",
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description": "Graph execution status.",
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "wait": {
+                      "description": "Yielded wait state.",
+                      "example": {},
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Execution failed"
+          }
+        },
+        "summary": "Execute a workflow node or graph",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/workflows/sample": {
+      "get": {
+        "description": "Returns a minimal, runnable `WorkflowGraph` YAML document that illustrates the\nstructure of a workflow graph. Use this as a starting point when building or\ntesting your own workflow definitions.\n\nThe response is returned as plain YAML (`application/x-yaml`) rather than JSON.\nThe sample graph includes a trigger node, a transform node, and an event-emit\nnode wired together in sequence.\n",
+        "operationId": "get_api_v1_workflows_sample",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/x-yaml": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Minimal runnable WorkflowGraph YAML document."
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Retrieve a sample workflow graph",
         "x-auth": [
           "publishable_key",
           "bearer"
