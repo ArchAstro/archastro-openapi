@@ -152,6 +152,10 @@ export function goTypedValue(
       );
     }
     case "union":
+      // Inline unions are represented as JSONValue in generated Go method
+      // inputs. Populate the first variant's required fields so the typed
+      // request and the contract assertion use the same schema-valid value.
+      return `${ctx.pkg}.JSONOf(${generateDummyValue(typeRef, fieldName, "go")})`;
     case "unknown":
       return `${ctx.pkg}.JSONOf(map[string]any{})`;
     case "void":
