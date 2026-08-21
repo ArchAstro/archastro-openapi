@@ -202,7 +202,7 @@ function typeRefToTS(ref: TypeRef): string {
       }
       break;
     case "array":
-      return `${typeRefToTS(ref.items)}[]`;
+      return `${arrayItemTypeToTS(ref.items)}[]`;
     case "object": {
       if (ref.fields.length === 0) return "Record<string, unknown>";
       const fields = ref.fields
@@ -230,6 +230,17 @@ function typeRefToTS(ref: TypeRef): string {
     case "void":
       return "void";
   }
+}
+
+function arrayItemTypeToTS(ref: TypeRef): string {
+  const itemType = typeRefToTS(ref);
+
+  return ref.kind === "enum" ||
+    ref.kind === "union" ||
+    ref.kind === "optional" ||
+    ref.kind === "nullable"
+    ? `(${itemType})`
+    : itemType;
 }
 
 function withZodDescription(expr: string, description: string | undefined): string {
