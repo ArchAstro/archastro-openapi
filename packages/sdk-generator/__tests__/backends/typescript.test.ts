@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import * as ts from "typescript";
 import type { ResourceDef, SchemaDef, TypeRef } from "../../src/ast/types.js";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
 import { generateTypeScript } from "../../src/backends/typescript/index.js";
@@ -262,6 +263,89 @@ describe("Zod emitter includes schema and field documentation", () => {
     expect(output).toContain("id: string;");
     expect(output).toContain('id: z.string().describe("Stable thing ID.")');
     expect(output).toContain('}).describe("A documented thing.")');
+  });
+});
+
+describe("Zod emitter required unknown fields", () => {
+  const output = emitZodSchemaFile([
+    {
+      name: "ExpressionResult",
+      fields: [
+        {
+          name: "result",
+          type: { kind: "unknown" },
+          required: true,
+        },
+        {
+          name: "metadata",
+          type: {
+            kind: "optional",
+            inner: { kind: "unknown" },
+          },
+          required: false,
+        },
+      ],
+    },
+  ]);
+
+  it("excludes undefined from a required unknown value", () => {
+    expect(output).toContain("result: unknown;");
+    expect(output).toContain(
+      "result: z.custom<{} | null>((value) => value !== undefined),",
+    );
+  });
+
+  it("retains optional unknown values", () => {
+    expect(output).toContain("metadata?: unknown | undefined;");
+    expect(output).toContain(
+      "metadata: z.custom<{} | null>((value) => value !== undefined).optional(),",
+    );
+  });
+
+  it("type-checks and requires the unknown value at runtime", async () => {
+    const generatedDir = mkdtempSync(resolve(__dirname, "required-unknown-"));
+    const sourcePath = resolve(generatedDir, "schema.ts");
+    const runtimePath = resolve(generatedDir, "schema.mjs");
+
+    try {
+      writeFileSync(sourcePath, output, "utf8");
+      const program = ts.createProgram([sourcePath], {
+        module: ts.ModuleKind.NodeNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeNext,
+        noEmit: true,
+        skipLibCheck: true,
+        strict: true,
+        target: ts.ScriptTarget.ES2022,
+      });
+      const diagnostics = ts.getPreEmitDiagnostics(program);
+      expect(
+        ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+          getCanonicalFileName: (fileName) => fileName,
+          getCurrentDirectory: () => generatedDir,
+          getNewLine: () => "\n",
+        }),
+      ).toBe("");
+
+      const runtime = ts.transpileModule(output, {
+        compilerOptions: {
+          module: ts.ModuleKind.ES2022,
+          target: ts.ScriptTarget.ES2022,
+        },
+      });
+      writeFileSync(runtimePath, runtime.outputText, "utf8");
+      const { expressionResultSchema } = await import(
+        `${pathToFileURL(runtimePath).href}?run=${Date.now()}`
+      );
+
+      expect(expressionResultSchema.safeParse({}).success).toBe(false);
+      expect(expressionResultSchema.safeParse({ result: undefined }).success)
+        .toBe(false);
+      for (const result of [null, true, 3, "text", [], {}, { nested: [1] }]) {
+        expect(expressionResultSchema.safeParse({ result }).success).toBe(true);
+      }
+    } finally {
+      rmSync(generatedDir, { recursive: true, force: true });
+    }
   });
 });
 

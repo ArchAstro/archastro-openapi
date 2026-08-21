@@ -180,7 +180,7 @@ export function typeRefToZod(ref: TypeRef): string {
       return `z.record(${typeRefToZod(ref.valueType)})`;
 
     case "unknown":
-      return "z.unknown()";
+      return "z.custom<{} | null>((value) => value !== undefined)";
 
     case "void":
       return "z.void()";
