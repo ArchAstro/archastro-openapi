@@ -713,6 +713,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -771,6 +774,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -1117,6 +1123,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -1175,6 +1184,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -1249,6 +1261,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -1335,6 +1350,16 @@
                             "example": "https://example.com",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "installed_config_ids": {
+                            "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                            "example": [
+                              "string"
+                            ],
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
                           },
                           "kind": {
                             "description": "Resource type. Always `\"Solution\"`.",
@@ -1760,6 +1785,7 @@
                           "kind",
                           "templates",
                           "owners",
+                          "installed_config_ids",
                           "upgrade_available"
                         ],
                         "type": "object"
@@ -1775,6 +1801,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -1861,6 +1890,16 @@
                             "example": "https://example.com",
                             "nullable": true,
                             "type": "string"
+                          },
+                          "installed_config_ids": {
+                            "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                            "example": [
+                              "string"
+                            ],
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
                           },
                           "kind": {
                             "description": "Resource type. Always `\"Solution\"`.",
@@ -2286,6 +2325,7 @@
                           "kind",
                           "templates",
                           "owners",
+                          "installed_config_ids",
                           "upgrade_available"
                         ],
                         "type": "object"
@@ -2840,6 +2880,9 @@
               "events": {},
               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
               "image_url": "https://example.com",
+              "installed_config_ids": [
+                "string"
+              ],
               "kind": "Solution",
               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
               "latest_version": "1.0.0",
@@ -2898,6 +2941,9 @@
               "events": {},
               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
               "image_url": "https://example.com",
+              "installed_config_ids": [
+                "string"
+              ],
               "kind": "Solution",
               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
               "latest_version": "1.0.0",
@@ -3112,6 +3158,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -3170,6 +3219,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -3821,6 +3873,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -3879,6 +3934,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -4247,6 +4305,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -4305,6 +4366,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -5452,6 +5516,9 @@
             "events": {},
             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "image_url": "https://example.com",
+            "installed_config_ids": [
+              "string"
+            ],
             "kind": "Solution",
             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "latest_version": "1.0.0",
@@ -5510,6 +5577,9 @@
             "events": {},
             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "image_url": "https://example.com",
+            "installed_config_ids": [
+              "string"
+            ],
             "kind": "Solution",
             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "latest_version": "1.0.0",
@@ -5856,12 +5926,12 @@
             "description": "Summary of the parent AgentTemplate config (`cfg_...`) being applied in this upgrade."
           },
           "resource": {
-            "description": "Resource-type-specific identity details. Tools: `tool_type`, `builtin_tool_key`, `name_prefix`, `handler_type`, `instruction`. Routines: `handler_type`, `preset_name`, `event_type`, `schedule`, `trigger_context`. Skills: `instruction`. Computers: `region`. Only populated keys are present; `null` when nothing is known.",
+            "description": "Resource-type-specific identity details. Tools: `tool_type`, `builtin_tool_key`, `name_prefix`, `handler_type`, `instruction`. Routines: `handler_type`, `preset_name`, `event_type`, `schedule`, `trigger_context`. Skills: `instruction`. Computers: `region`. Knowledge: `mode`, `knowledge_key`, `extraction_output_ref`. Only populated keys are present; `null` when nothing is known.",
             "example": {},
             "type": "object"
           },
           "resource_type": {
-            "description": "Type of the child resource being changed. One of `\"agent\"`, `\"tool\"`, `\"routine\"`, `\"skill\"`, or `\"computer\"`.",
+            "description": "Type of the resource being changed. One of `\"agent\"`, `\"tool\"`, `\"routine\"`, `\"skill\"`, `\"computer\"`, or `\"knowledge\"`.",
             "example": "tool",
             "type": "string"
           },
@@ -5969,6 +6039,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -6027,6 +6100,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -6102,6 +6178,9 @@
             "events": {},
             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "image_url": "https://example.com",
+            "installed_config_ids": [
+              "string"
+            ],
             "kind": "Solution",
             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "latest_version": "1.0.0",
@@ -7195,6 +7274,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -7253,6 +7335,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -7380,6 +7465,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -7438,6 +7526,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -7975,6 +8066,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -8033,6 +8127,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -8419,6 +8516,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -8477,6 +8577,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -8647,6 +8750,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -8705,6 +8811,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -8832,6 +8941,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -8890,6 +9002,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -9427,6 +9542,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -9485,6 +9603,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -9821,6 +9942,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -9879,6 +10003,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -10380,6 +10507,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -10438,6 +10568,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -10565,6 +10698,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -10623,6 +10759,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -11160,6 +11299,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -11218,6 +11360,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -12589,6 +12734,49 @@
         ],
         "type": "object"
       },
+      "D1Database": {
+        "description": "Provider object fields for a D1 database.",
+        "example": {
+          "id": "string",
+          "jurisdiction": "string",
+          "name": "Example Name",
+          "read_replication": {},
+          "type": "d1_database"
+        },
+        "properties": {
+          "id": {
+            "description": "Provider-assigned object identifier.",
+            "example": "string",
+            "type": "string"
+          },
+          "jurisdiction": {
+            "example": "string",
+            "type": "string"
+          },
+          "name": {
+            "example": "Example Name",
+            "type": "string"
+          },
+          "read_replication": {
+            "example": {},
+            "type": "object"
+          },
+          "type": {
+            "default": "d1_database",
+            "enum": [
+              "d1_database"
+            ],
+            "example": "d1_database",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
       "Deployment": {
         "description": "Deployment metadata.",
         "example": {
@@ -12610,6 +12798,24 @@
           }
         },
         "type": "object"
+      },
+      "Details": {
+        "description": "Service-specific external object payload selected by `type`.",
+        "discriminator": {
+          "mapping": {
+            "d1_database": "#/components/schemas/D1Database",
+            "r2_bucket": "#/components/schemas/R2Bucket"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/R2Bucket"
+          },
+          {
+            "$ref": "#/components/schemas/D1Database"
+          }
+        ]
       },
       "DeviceAuthorizationDetailsResponse": {
         "description": "User-visible details for a pending OAuth 2.0 device authorization.",
@@ -13531,6 +13737,79 @@
         },
         "required": [
           "ok"
+        ],
+        "type": "object"
+      },
+      "ExternalObject": {
+        "description": "An owner-scoped object provisioned through an external integration.",
+        "example": {
+          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+          "created_at": "2024-01-01T00:00:00Z",
+          "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
+          "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+          "service": "cloudflare",
+          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+          "updated_at": "2024-01-01T00:00:00Z",
+          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+        },
+        "properties": {
+          "agent": {
+            "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "created_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "ArchAstro external object ID (`ext_...`).",
+            "example": "ext_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "integration": {
+            "description": "Integration ID (`int_...`).",
+            "example": "int_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "object": {
+            "$ref": "#/components/schemas/Details",
+            "description": "Service-specific object payload."
+          },
+          "org": {
+            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "service": {
+            "default": "cloudflare",
+            "enum": [
+              "cloudflare"
+            ],
+            "example": "cloudflare",
+            "type": "string"
+          },
+          "team": {
+            "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          },
+          "updated_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "user": {
+            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "integration",
+          "service",
+          "object",
+          "created_at",
+          "updated_at"
         ],
         "type": "object"
       },
@@ -16595,6 +16874,49 @@
         ],
         "type": "object"
       },
+      "R2Bucket": {
+        "description": "Provider object fields for an R2 bucket.",
+        "example": {
+          "id": "string",
+          "location": "string",
+          "name": "Example Name",
+          "storage_class": "string",
+          "type": "r2_bucket"
+        },
+        "properties": {
+          "id": {
+            "description": "Provider-assigned object identifier.",
+            "example": "string",
+            "type": "string"
+          },
+          "location": {
+            "example": "string",
+            "type": "string"
+          },
+          "name": {
+            "example": "Example Name",
+            "type": "string"
+          },
+          "storage_class": {
+            "example": "string",
+            "type": "string"
+          },
+          "type": {
+            "default": "r2_bucket",
+            "enum": [
+              "r2_bucket"
+            ],
+            "example": "r2_bucket",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
       "RoutinePreset": {
         "description": "A named preset that defines the execution model and constraints for a routine. Presets are shared definitions; individual routines reference a preset by name.",
         "example": {
@@ -16720,6 +17042,42 @@
         "required": [
           "data",
           "has_more"
+        ],
+        "type": "object"
+      },
+      "RuntimeCapability": {
+        "description": "Short-lived bootstrap values for one hosted external-object runtime.",
+        "example": {
+          "bindings": {},
+          "capability": "string",
+          "expires_at": "2024-01-01T00:00:00Z",
+          "gateway_url": "https://example.com"
+        },
+        "properties": {
+          "bindings": {
+            "example": {},
+            "type": "object"
+          },
+          "capability": {
+            "description": "Opaque bearer capability. Keep server-side and do not persist it.",
+            "example": "string",
+            "type": "string"
+          },
+          "expires_at": {
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "gateway_url": {
+            "example": "https://example.com",
+            "type": "string"
+          }
+        },
+        "required": [
+          "gateway_url",
+          "capability",
+          "bindings",
+          "expires_at"
         ],
         "type": "object"
       },
@@ -17544,7 +17902,7 @@
         },
         "properties": {
           "agents": {
-            "description": "IDs of every agent attached to this binding, including legacy concierge attachments. Use `resident_agent` and `route_kind` for the effective runtime route.",
+            "description": "IDs of every agent attached to this binding, including attachments left over from retired flows. Use `resident_agent` and `route_kind` for the effective runtime route.",
             "example": [
               "string"
             ],
@@ -17634,12 +17992,11 @@
             "type": "string"
           },
           "route_kind": {
-            "description": "Effective Slack ingress route. `fda` — a resident on a team-bound channel, replying through the Forward Deployed Agent chain. `resident` — a resident on an internal channel, replying through the channel mirror. `observer` — no resident is attached, so the channel is recorded and nobody replies. `concierge` — no longer returned anywhere; until Track F it was the value for a channel with no resident, meaning the shared concierge agent answered there. The value is retained in this enum so consumers matching on it do not break, and its removal rides a deliberate API change.",
+            "description": "Effective Slack ingress route. `fda` — a resident on a team-bound channel, replying through the Forward Deployed Agent chain. `resident` — a resident on an internal channel, replying through the channel mirror. `observer` — no resident is attached, so the channel is recorded and nobody replies.",
             "enum": [
               "fda",
               "resident",
-              "observer",
-              "concierge"
+              "observer"
             ],
             "example": "fda",
             "type": "string"
@@ -18492,6 +18849,9 @@
             "events": {},
             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "image_url": "https://example.com",
+            "installed_config_ids": [
+              "string"
+            ],
             "kind": "Solution",
             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "latest_version": "1.0.0",
@@ -18947,6 +19307,9 @@
               "events": {},
               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
               "image_url": "https://example.com",
+              "installed_config_ids": [
+                "string"
+              ],
               "kind": "Solution",
               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
               "latest_version": "1.0.0",
@@ -19065,6 +19428,9 @@
           "events": {},
           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
           "image_url": "https://example.com",
+          "installed_config_ids": [
+            "string"
+          ],
           "kind": "Solution",
           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
           "latest_version": "1.0.0",
@@ -19151,6 +19517,16 @@
             "example": "https://example.com",
             "nullable": true,
             "type": "string"
+          },
+          "installed_config_ids": {
+            "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "kind": {
             "description": "Resource type. Always `\"Solution\"`.",
@@ -19307,6 +19683,7 @@
           "kind",
           "templates",
           "owners",
+          "installed_config_ids",
           "upgrade_available"
         ],
         "type": "object"
@@ -19610,6 +19987,9 @@
             "events": {},
             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "image_url": "https://example.com",
+            "installed_config_ids": [
+              "string"
+            ],
             "kind": "Solution",
             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
             "latest_version": "1.0.0",
@@ -20442,7 +20822,7 @@
             "type": "string"
           },
           "status": {
-            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
             "example": "open",
             "type": "string"
           },
@@ -20908,6 +21288,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -20966,6 +21349,9 @@
                 "events": {},
                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "image_url": "https://example.com",
+                "installed_config_ids": [
+                  "string"
+                ],
                 "kind": "Solution",
                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                 "latest_version": "1.0.0",
@@ -21141,6 +21527,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -21199,6 +21588,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -21437,6 +21829,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -21495,6 +21890,9 @@
                     "events": {},
                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "image_url": "https://example.com",
+                    "installed_config_ids": [
+                      "string"
+                    ],
                     "kind": "Solution",
                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                     "latest_version": "1.0.0",
@@ -21912,6 +22310,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -21970,6 +22371,9 @@
                   "events": {},
                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "image_url": "https://example.com",
+                  "installed_config_ids": [
+                    "string"
+                  ],
                   "kind": "Solution",
                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                   "latest_version": "1.0.0",
@@ -24120,6 +24524,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -24178,6 +24585,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -24524,6 +24934,9 @@
                                         "events": {},
                                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "image_url": "https://example.com",
+                                        "installed_config_ids": [
+                                          "string"
+                                        ],
                                         "kind": "Solution",
                                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "latest_version": "1.0.0",
@@ -24582,6 +24995,9 @@
                                         "events": {},
                                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "image_url": "https://example.com",
+                                        "installed_config_ids": [
+                                          "string"
+                                        ],
                                         "kind": "Solution",
                                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "latest_version": "1.0.0",
@@ -24656,6 +25072,9 @@
                                           "events": {},
                                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                           "image_url": "https://example.com",
+                                          "installed_config_ids": [
+                                            "string"
+                                          ],
                                           "kind": "Solution",
                                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                           "latest_version": "1.0.0",
@@ -24742,6 +25161,16 @@
                                             "example": "https://example.com",
                                             "nullable": true,
                                             "type": "string"
+                                          },
+                                          "installed_config_ids": {
+                                            "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                            "example": [
+                                              "string"
+                                            ],
+                                            "items": {
+                                              "type": "string"
+                                            },
+                                            "type": "array"
                                           },
                                           "kind": {
                                             "description": "Resource type. Always `\"Solution\"`.",
@@ -25167,6 +25596,7 @@
                                           "kind",
                                           "templates",
                                           "owners",
+                                          "installed_config_ids",
                                           "upgrade_available"
                                         ],
                                         "type": "object"
@@ -25182,6 +25612,9 @@
                                           "events": {},
                                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                           "image_url": "https://example.com",
+                                          "installed_config_ids": [
+                                            "string"
+                                          ],
                                           "kind": "Solution",
                                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                           "latest_version": "1.0.0",
@@ -25268,6 +25701,16 @@
                                             "example": "https://example.com",
                                             "nullable": true,
                                             "type": "string"
+                                          },
+                                          "installed_config_ids": {
+                                            "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                            "example": [
+                                              "string"
+                                            ],
+                                            "items": {
+                                              "type": "string"
+                                            },
+                                            "type": "array"
                                           },
                                           "kind": {
                                             "description": "Resource type. Always `\"Solution\"`.",
@@ -25693,6 +26136,7 @@
                                           "kind",
                                           "templates",
                                           "owners",
+                                          "installed_config_ids",
                                           "upgrade_available"
                                         ],
                                         "type": "object"
@@ -38065,6 +38509,7 @@
                   "kind": "string",
                   "mime_type": "application/json",
                   "raw_content": "string",
+                  "system": true,
                   "team": "string",
                   "user": "string"
                 },
@@ -38098,6 +38543,11 @@
                     "description": "Raw content bytes to validate. Parsed according to `mime_type` before schema validation.",
                     "example": "string",
                     "type": "string"
+                  },
+                  "system": {
+                    "description": "Set to true to validate as a system-owned config. Mutually exclusive with `team`, `user`, and `agent`.",
+                    "example": true,
+                    "type": "boolean"
                   },
                   "team": {
                     "description": "Team ID (`team_...`) that would own the config. Used for owner-aware validation rules. Mutually exclusive with `user` and `agent`.",
@@ -40849,6 +41299,790 @@
           }
         },
         "summary": "Read a subscription queue",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/external_object_capabilities": {
+      "delete": {
+        "operationId": "delete_api_v1_external_object_capabilities",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "Revoke every active external-object capability for a hosted workload",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "operationId": "post_api_v1_external_object_capabilities",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "bindings": {},
+                  "subject": "string"
+                },
+                "properties": {
+                  "bindings": {
+                    "example": {},
+                    "type": "object"
+                  },
+                  "subject": {
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "subject",
+                  "bindings"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeCapability"
+                }
+              }
+            },
+            "description": "Gateway bootstrap values for one hosted workload"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          },
+          "502": {
+            "description": "Service unavailable"
+          }
+        },
+        "summary": "Issue a revocable capability for hosted external-object bindings",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/external_objects": {
+      "get": {
+        "operationId": "get_api_v1_external_objects",
+        "parameters": [
+          {
+            "example": "cloudflare",
+            "in": "query",
+            "name": "service",
+            "required": false,
+            "schema": {
+              "enum": [
+                "cloudflare"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "example": "r2_bucket",
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "r2_bucket",
+                "d1_database"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "example": 1,
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "example": 1,
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "example": "string",
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [
+                      {
+                        "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                        "created_at": "2024-01-01T00:00:00Z",
+                        "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
+                        "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+                        "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                        "service": "cloudflare",
+                        "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                        "updated_at": "2024-01-01T00:00:00Z",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                      }
+                    ],
+                    "has_next": true,
+                    "has_prev": true,
+                    "page": 1,
+                    "page_size": 1,
+                    "total_entries": 1,
+                    "total_pages": 1
+                  },
+                  "properties": {
+                    "data": {
+                      "example": [
+                        {
+                          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
+                          "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "service": "cloudflare",
+                          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                          "updated_at": "2024-01-01T00:00:00Z",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                        }
+                      ],
+                      "items": {
+                        "description": "An owner-scoped object provisioned through an external integration.",
+                        "example": {
+                          "agent": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
+                          "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "service": "cloudflare",
+                          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                          "updated_at": "2024-01-01T00:00:00Z",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
+                        },
+                        "properties": {
+                          "agent": {
+                            "example": "agi_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "ArchAstro external object ID (`ext_...`).",
+                            "example": "ext_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "integration": {
+                            "description": "Integration ID (`int_...`).",
+                            "example": "int_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "object": {
+                            "description": "Service-specific object payload.",
+                            "discriminator": {
+                              "propertyName": "type"
+                            },
+                            "oneOf": [
+                              {
+                                "description": "Provider object fields for an R2 bucket.",
+                                "example": {
+                                  "id": "string",
+                                  "location": "string",
+                                  "name": "Example Name",
+                                  "storage_class": "string",
+                                  "type": "r2_bucket"
+                                },
+                                "properties": {
+                                  "id": {
+                                    "description": "Provider-assigned object identifier.",
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "location": {
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "storage_class": {
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "default": "r2_bucket",
+                                    "enum": [
+                                      "r2_bucket"
+                                    ],
+                                    "example": "r2_bucket",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "name"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "description": "Provider object fields for a D1 database.",
+                                "example": {
+                                  "id": "string",
+                                  "jurisdiction": "string",
+                                  "name": "Example Name",
+                                  "read_replication": {},
+                                  "type": "d1_database"
+                                },
+                                "properties": {
+                                  "id": {
+                                    "description": "Provider-assigned object identifier.",
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "jurisdiction": {
+                                    "example": "string",
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "example": "Example Name",
+                                    "type": "string"
+                                  },
+                                  "read_replication": {
+                                    "example": {},
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "default": "d1_database",
+                                    "enum": [
+                                      "d1_database"
+                                    ],
+                                    "example": "d1_database",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "id",
+                                  "name"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "org": {
+                            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "service": {
+                            "default": "cloudflare",
+                            "enum": [
+                              "cloudflare"
+                            ],
+                            "example": "cloudflare",
+                            "type": "string"
+                          },
+                          "team": {
+                            "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "user": {
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "integration",
+                          "service",
+                          "object",
+                          "created_at",
+                          "updated_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "has_next": {
+                      "example": true,
+                      "type": "boolean"
+                    },
+                    "has_prev": {
+                      "example": true,
+                      "type": "boolean"
+                    },
+                    "page": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "page_size": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "total_entries": {
+                      "example": 1,
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "example": 1,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page",
+                    "page_size",
+                    "total_entries",
+                    "total_pages",
+                    "has_next",
+                    "has_prev"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "List external objects",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "operationId": "post_api_v1_external_objects",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "agent": "string",
+                  "org": "string",
+                  "service": "cloudflare",
+                  "team": "string",
+                  "user": "string"
+                },
+                "properties": {
+                  "agent": {
+                    "description": "Owning agent ID (`agt_...`). Supply exactly one owner field.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "object": {
+                    "description": "Provisioning fields selected by external object type.",
+                    "discriminator": {
+                      "propertyName": "type"
+                    },
+                    "oneOf": [
+                      {
+                        "description": "Fields used to provision an R2 bucket.",
+                        "example": {
+                          "location_hint": "string",
+                          "name": "Example Name",
+                          "storage_class": "string",
+                          "type": "r2_bucket"
+                        },
+                        "properties": {
+                          "location_hint": {
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "name": {
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "storage_class": {
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "type": {
+                            "default": "r2_bucket",
+                            "enum": [
+                              "r2_bucket"
+                            ],
+                            "example": "r2_bucket",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "name"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "description": "Fields used to provision a D1 database.",
+                        "example": {
+                          "jurisdiction": "string",
+                          "location_hint": "string",
+                          "name": "Example Name",
+                          "type": "d1_database"
+                        },
+                        "properties": {
+                          "jurisdiction": {
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "location_hint": {
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "name": {
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "type": {
+                            "default": "d1_database",
+                            "enum": [
+                              "d1_database"
+                            ],
+                            "example": "d1_database",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "name"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "org": {
+                    "description": "Owning organization ID (`org_...`). Supply exactly one owner field.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "service": {
+                    "enum": [
+                      "cloudflare"
+                    ],
+                    "example": "cloudflare",
+                    "type": "string"
+                  },
+                  "team": {
+                    "description": "Owning team ID (`tem_...`). Supply exactly one owner field.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "user": {
+                    "description": "Owning user ID (`usr_...`). Supply exactly one owner field.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "service",
+                  "object"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalObject"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          },
+          "502": {
+            "description": "Provider returned an error"
+          }
+        },
+        "summary": "Provision an external object through an integration service",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/external_objects/{external_object}": {
+      "delete": {
+        "operationId": "delete_api_v1_external_objects__external_object",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "external_object",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "502": {
+            "description": "Provider returned an error"
+          }
+        },
+        "summary": "Delete an external object",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "get": {
+        "operationId": "get_api_v1_external_objects__external_object",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "external_object",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalObject"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "summary": "Show an external object",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "patch": {
+        "operationId": "patch_api_v1_external_objects__external_object",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "external_object",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "object": {
+                    "description": "Mutable fields selected by external object type.",
+                    "discriminator": {
+                      "propertyName": "type"
+                    },
+                    "oneOf": [
+                      {
+                        "description": "Mutable fields for an R2 bucket.",
+                        "example": {
+                          "storage_class": "string",
+                          "type": "r2_bucket"
+                        },
+                        "properties": {
+                          "storage_class": {
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "type": {
+                            "default": "r2_bucket",
+                            "enum": [
+                              "r2_bucket"
+                            ],
+                            "example": "r2_bucket",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "storage_class"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "description": "Mutable fields for a D1 database.",
+                        "example": {
+                          "read_replication_mode": "auto",
+                          "type": "d1_database"
+                        },
+                        "properties": {
+                          "read_replication_mode": {
+                            "enum": [
+                              "auto",
+                              "disabled"
+                            ],
+                            "example": "auto",
+                            "type": "string"
+                          },
+                          "type": {
+                            "default": "d1_database",
+                            "enum": [
+                              "d1_database"
+                            ],
+                            "example": "d1_database",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "read_replication_mode"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "object"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalObject"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Invalid parameters; Validation failed"
+          },
+          "502": {
+            "description": "Provider returned an error"
+          }
+        },
+        "summary": "Update an external object",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -45265,6 +46499,85 @@
         ]
       }
     },
+    "/api/v1/slack_channel_bindings/assign": {
+      "post": {
+        "description": "Makes the given agent the channel's sole resident (one resident per\nchannel: any previously attached agent is detached in the same\ntransaction and its mirror-thread read grant is revoked immediately).\nCreates a bare internal binding first when the channel has none.\n\nFetches the channel's `is_private` / `is_ext_shared` flags live from\nSlack (server-side, best-effort) to feed the fail-closed residency\ngates: a channel shared with an external workspace but not yet bound to\na customer team fails with `team_required_for_shared_channel` (bind the\nteam first via `upsert`/setup), and a private channel is member-managed\n— mutation without platform-verified in-channel evidence fails with\n`channel_membership_required`.\n\nWhen the binding is bound to a customer team, the agent is also\nenrolled as a member of that team (same pairing as `upsert`).\n",
+        "operationId": "post_api_v1_slack_channel_bindings_assign",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "agent_user_id": "string",
+                  "channel_id": "string",
+                  "slack_team_id": "string"
+                },
+                "properties": {
+                  "agent_user_id": {
+                    "description": "Agent user ID to assign as the channel's sole resident.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "channel_id": {
+                    "description": "Slack channel ID whose resident is being assigned (e.g. `C01234ABCDE`). A bare internal binding is created when the channel has none.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "slack_team_id": {
+                    "description": "Slack workspace team ID that the channel belongs to (e.g. `T01234ABCDE`). Identifies which Slack integration to use.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "slack_team_id",
+                  "channel_id",
+                  "agent_user_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlackChannelBinding"
+                }
+              }
+            },
+            "description": "The binding after assignment, with the attached agent list."
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden; The Slack integration referenced by this binding is not visible to the caller; This private channel is member-managed; managing its agent requires being a member of the channel"
+          },
+          "404": {
+            "description": "Not found; Agent not found"
+          },
+          "409": {
+            "description": "This channel is shared with an external workspace; bind it to a customer team before assigning an agent"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "Assign a Slack channel's resident agent",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/slack_channel_bindings/provision": {
       "post": {
         "description": "Opens a Slack Connect channel with a new customer — creating one and sending\nthe invite, or adopting a shared channel you already have — and records who is\nadding whom so the addition can finish once the customer accepts.\n\nThe returned binding is **pending**: nothing mirrors, and no per-customer Team,\nagent, or solution instance exists yet. Acceptance is asynchronous and may\nnever come. When it does, the addition completes in the background under the\nidentity of the admin who called this endpoint, re-checked live at that moment.\nA caller who has since lost their admin role does not get a substitute — the\naddition is refused and a human re-adds the customer.\n\nThe caller must be an admin of the Slack integration's own organization. This\nis the same authority the completion demands, checked here so a customer is\nnever invited into a channel whose addition can never finish.\n\nDeliberately not exposed as a script binding: this sends mail to a person\noutside the org, so it stays a vendor-admin HTTP surface.\n",
@@ -48386,7 +49699,7 @@
                     "type": "string"
                   },
                   "status": {
-                    "description": "Updated status: `open`, `in_progress`, or `done`.",
+                    "description": "Updated status: `open`, `in_progress`, `in_review`, or `done`.",
                     "example": "string",
                     "type": "string"
                   },
@@ -49322,7 +50635,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -50242,7 +51555,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -52007,7 +53320,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -54775,6 +56088,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -54833,6 +56149,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -55007,6 +56326,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -55065,6 +56387,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -55236,6 +56561,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -55294,6 +56622,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -55464,6 +56795,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -55522,6 +56856,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -55869,6 +57206,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -55927,6 +57267,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -56001,6 +57344,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -56087,6 +57433,16 @@
                                         "example": "https://example.com",
                                         "nullable": true,
                                         "type": "string"
+                                      },
+                                      "installed_config_ids": {
+                                        "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                        "example": [
+                                          "string"
+                                        ],
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
                                       },
                                       "kind": {
                                         "description": "Resource type. Always `\"Solution\"`.",
@@ -56512,6 +57868,7 @@
                                       "kind",
                                       "templates",
                                       "owners",
+                                      "installed_config_ids",
                                       "upgrade_available"
                                     ],
                                     "type": "object"
@@ -56527,6 +57884,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -56613,6 +57973,16 @@
                                         "example": "https://example.com",
                                         "nullable": true,
                                         "type": "string"
+                                      },
+                                      "installed_config_ids": {
+                                        "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                        "example": [
+                                          "string"
+                                        ],
+                                        "items": {
+                                          "type": "string"
+                                        },
+                                        "type": "array"
                                       },
                                       "kind": {
                                         "description": "Resource type. Always `\"Solution\"`.",
@@ -57038,6 +58408,7 @@
                                       "kind",
                                       "templates",
                                       "owners",
+                                      "installed_config_ids",
                                       "upgrade_available"
                                     ],
                                     "type": "object"
@@ -57879,7 +59250,7 @@
             }
           },
           {
-            "description": "Filter tasks by status. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Omit to return tasks in all statuses.",
+            "description": "Filter tasks by status. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Omit to return tasks in all statuses.",
             "example": "string",
             "in": "query",
             "name": "status",
@@ -58695,7 +60066,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -58938,7 +60309,7 @@
                         "type": "string"
                       },
                       "status": {
-                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
+                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
                         "example": "open",
                         "type": "string"
                       },
@@ -59851,7 +61222,7 @@
                                   "type": "string"
                                 },
                                 "status": {
-                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                                   "example": "open",
                                   "type": "string"
                                 },
@@ -60910,7 +62281,7 @@
                                 "type": "string"
                               },
                               "status": {
-                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                                 "example": "open",
                                 "type": "string"
                               },
@@ -61059,7 +62430,7 @@
             }
           },
           {
-            "description": "Filter results by status. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Omit to include all statuses.",
+            "description": "Filter results by status. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Omit to include all statuses.",
             "example": "string",
             "in": "query",
             "name": "status",
@@ -61804,7 +63175,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -62186,6 +63557,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -62244,6 +63618,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -62591,6 +63968,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -62649,6 +64029,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -62993,6 +64376,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -63051,6 +64437,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -65065,6 +66454,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -65123,6 +66515,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -65249,6 +66644,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -65307,6 +66705,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -65653,6 +67054,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -65711,6 +67115,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -65785,6 +67192,9 @@
                                         "events": {},
                                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "image_url": "https://example.com",
+                                        "installed_config_ids": [
+                                          "string"
+                                        ],
                                         "kind": "Solution",
                                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "latest_version": "1.0.0",
@@ -65871,6 +67281,16 @@
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
+                                        },
+                                        "installed_config_ids": {
+                                          "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                          "example": [
+                                            "string"
+                                          ],
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "type": "array"
                                         },
                                         "kind": {
                                           "description": "Resource type. Always `\"Solution\"`.",
@@ -66296,6 +67716,7 @@
                                         "kind",
                                         "templates",
                                         "owners",
+                                        "installed_config_ids",
                                         "upgrade_available"
                                       ],
                                       "type": "object"
@@ -66311,6 +67732,9 @@
                                         "events": {},
                                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "image_url": "https://example.com",
+                                        "installed_config_ids": [
+                                          "string"
+                                        ],
                                         "kind": "Solution",
                                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "latest_version": "1.0.0",
@@ -66397,6 +67821,16 @@
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
+                                        },
+                                        "installed_config_ids": {
+                                          "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                          "example": [
+                                            "string"
+                                          ],
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "type": "array"
                                         },
                                         "kind": {
                                           "description": "Resource type. Always `\"Solution\"`.",
@@ -66822,6 +68256,7 @@
                                         "kind",
                                         "templates",
                                         "owners",
+                                        "installed_config_ids",
                                         "upgrade_available"
                                       ],
                                       "type": "object"
@@ -73477,7 +74912,7 @@
             }
           },
           {
-            "description": "Filter tasks by status. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Omit to return tasks in all statuses.",
+            "description": "Filter tasks by status. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Omit to return tasks in all statuses.",
             "example": "string",
             "in": "query",
             "name": "status",
@@ -74293,7 +75728,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -74536,7 +75971,7 @@
                         "type": "string"
                       },
                       "status": {
-                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
+                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
                         "example": "open",
                         "type": "string"
                       },
@@ -75449,7 +76884,7 @@
                                   "type": "string"
                                 },
                                 "status": {
-                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                                   "example": "open",
                                   "type": "string"
                                 },
@@ -76395,7 +77830,7 @@
                                 "type": "string"
                               },
                               "status": {
-                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                                 "example": "open",
                                 "type": "string"
                               },
@@ -76544,7 +77979,7 @@
             }
           },
           {
-            "description": "Filter results by status. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`. Omit to include all statuses.",
+            "description": "Filter results by status. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Omit to include all statuses.",
             "example": "string",
             "in": "query",
             "name": "status",
@@ -77289,7 +78724,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -77718,6 +79153,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -77776,6 +79214,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -78123,6 +79564,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -78181,6 +79625,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -78525,6 +79972,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -78583,6 +80033,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -80597,6 +82050,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -80655,6 +82111,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -80781,6 +82240,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -80839,6 +82301,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -81185,6 +82650,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -81243,6 +82711,9 @@
                                       "events": {},
                                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "image_url": "https://example.com",
+                                      "installed_config_ids": [
+                                        "string"
+                                      ],
                                       "kind": "Solution",
                                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                       "latest_version": "1.0.0",
@@ -81317,6 +82788,9 @@
                                         "events": {},
                                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "image_url": "https://example.com",
+                                        "installed_config_ids": [
+                                          "string"
+                                        ],
                                         "kind": "Solution",
                                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "latest_version": "1.0.0",
@@ -81403,6 +82877,16 @@
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
+                                        },
+                                        "installed_config_ids": {
+                                          "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                          "example": [
+                                            "string"
+                                          ],
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "type": "array"
                                         },
                                         "kind": {
                                           "description": "Resource type. Always `\"Solution\"`.",
@@ -81828,6 +83312,7 @@
                                         "kind",
                                         "templates",
                                         "owners",
+                                        "installed_config_ids",
                                         "upgrade_available"
                                       ],
                                       "type": "object"
@@ -81843,6 +83328,9 @@
                                         "events": {},
                                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "image_url": "https://example.com",
+                                        "installed_config_ids": [
+                                          "string"
+                                        ],
                                         "kind": "Solution",
                                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                         "latest_version": "1.0.0",
@@ -81929,6 +83417,16 @@
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
+                                        },
+                                        "installed_config_ids": {
+                                          "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                          "example": [
+                                            "string"
+                                          ],
+                                          "items": {
+                                            "type": "string"
+                                          },
+                                          "type": "array"
                                         },
                                         "kind": {
                                           "description": "Resource type. Always `\"Solution\"`.",
@@ -82354,6 +83852,7 @@
                                         "kind",
                                         "templates",
                                         "owners",
+                                        "installed_config_ids",
                                         "upgrade_available"
                                       ],
                                       "type": "object"
@@ -84715,6 +86214,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -84773,6 +86275,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -85119,6 +86624,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -85177,6 +86685,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -85251,6 +86762,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -85337,6 +86851,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -85762,6 +87286,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -85777,6 +87302,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -85863,6 +87391,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -86288,6 +87826,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -87148,6 +88687,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -87206,6 +88748,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -87333,6 +88878,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -87391,6 +88939,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -87928,6 +89479,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -87986,6 +89540,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -88372,6 +89929,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -88430,6 +89990,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -88581,6 +90144,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -88639,6 +90205,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -88766,6 +90335,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -88824,6 +90396,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -89361,6 +90936,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -89419,6 +90997,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -89573,6 +91154,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -89631,6 +91215,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -89977,6 +91564,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -90035,6 +91625,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -90109,6 +91702,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -90195,6 +91791,16 @@
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
+                              },
+                              "installed_config_ids": {
+                                "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                "example": [
+                                  "string"
+                                ],
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
                               },
                               "kind": {
                                 "description": "Resource type. Always `\"Solution\"`.",
@@ -90620,6 +92226,7 @@
                               "kind",
                               "templates",
                               "owners",
+                              "installed_config_ids",
                               "upgrade_available"
                             ],
                             "type": "object"
@@ -90635,6 +92242,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -90721,6 +92331,16 @@
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
+                              },
+                              "installed_config_ids": {
+                                "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                "example": [
+                                  "string"
+                                ],
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
                               },
                               "kind": {
                                 "description": "Resource type. Always `\"Solution\"`.",
@@ -91146,6 +92766,7 @@
                               "kind",
                               "templates",
                               "owners",
+                              "installed_config_ids",
                               "upgrade_available"
                             ],
                             "type": "object"
@@ -91330,6 +92951,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -91388,6 +93012,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -91541,6 +93168,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -91599,6 +93229,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -91751,6 +93384,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -91809,6 +93445,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -92155,6 +93794,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -92213,6 +93855,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -92287,6 +93932,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -92373,6 +94021,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -92798,6 +94456,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -92813,6 +94472,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -92899,6 +94561,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -93324,6 +94996,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -95874,6 +97547,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -95932,6 +97608,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -97946,6 +99625,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -98004,6 +99686,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -98130,6 +99815,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -98188,6 +99876,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -98534,6 +100225,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -98592,6 +100286,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -98666,6 +100363,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -98752,6 +100452,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -99177,6 +100887,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -99192,6 +100903,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -99278,6 +100992,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -99703,6 +101427,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -100487,6 +102212,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -100545,6 +102273,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -102559,6 +104290,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -102617,6 +104351,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -102743,6 +104480,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -102801,6 +104541,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -103147,6 +104890,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -103205,6 +104951,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -103279,6 +105028,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -103365,6 +105117,16 @@
                                   "example": "https://example.com",
                                   "nullable": true,
                                   "type": "string"
+                                },
+                                "installed_config_ids": {
+                                  "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                  "example": [
+                                    "string"
+                                  ],
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
                                 },
                                 "kind": {
                                   "description": "Resource type. Always `\"Solution\"`.",
@@ -103790,6 +105552,7 @@
                                 "kind",
                                 "templates",
                                 "owners",
+                                "installed_config_ids",
                                 "upgrade_available"
                               ],
                               "type": "object"
@@ -103805,6 +105568,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -103891,6 +105657,16 @@
                                   "example": "https://example.com",
                                   "nullable": true,
                                   "type": "string"
+                                },
+                                "installed_config_ids": {
+                                  "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                  "example": [
+                                    "string"
+                                  ],
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
                                 },
                                 "kind": {
                                   "description": "Resource type. Always `\"Solution\"`.",
@@ -104316,6 +106092,7 @@
                                 "kind",
                                 "templates",
                                 "owners",
+                                "installed_config_ids",
                                 "upgrade_available"
                               ],
                               "type": "object"
@@ -106556,6 +108333,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -106614,6 +108394,9 @@
                       "events": {},
                       "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "image_url": "https://example.com",
+                      "installed_config_ids": [
+                        "string"
+                      ],
                       "kind": "Solution",
                       "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                       "latest_version": "1.0.0",
@@ -106741,6 +108524,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -106799,6 +108585,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -107336,6 +109125,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -107394,6 +109186,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -107546,6 +109341,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -107604,6 +109402,9 @@
                         "events": {},
                         "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_url": "https://example.com",
+                        "installed_config_ids": [
+                          "string"
+                        ],
                         "kind": "Solution",
                         "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                         "latest_version": "1.0.0",
@@ -107731,6 +109532,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -107789,6 +109593,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -108326,6 +110133,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -108384,6 +110194,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -108538,6 +110351,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -108596,6 +110412,9 @@
                           "events": {},
                           "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_url": "https://example.com",
+                          "installed_config_ids": [
+                            "string"
+                          ],
                           "kind": "Solution",
                           "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                           "latest_version": "1.0.0",
@@ -108942,6 +110761,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -109000,6 +110822,9 @@
                             "events": {},
                             "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "image_url": "https://example.com",
+                            "installed_config_ids": [
+                              "string"
+                            ],
                             "kind": "Solution",
                             "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                             "latest_version": "1.0.0",
@@ -109074,6 +110899,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -109160,6 +110988,16 @@
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
+                              },
+                              "installed_config_ids": {
+                                "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                "example": [
+                                  "string"
+                                ],
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
                               },
                               "kind": {
                                 "description": "Resource type. Always `\"Solution\"`.",
@@ -109585,6 +111423,7 @@
                               "kind",
                               "templates",
                               "owners",
+                              "installed_config_ids",
                               "upgrade_available"
                             ],
                             "type": "object"
@@ -109600,6 +111439,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -109686,6 +111528,16 @@
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
+                              },
+                              "installed_config_ids": {
+                                "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                "example": [
+                                  "string"
+                                ],
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
                               },
                               "kind": {
                                 "description": "Resource type. Always `\"Solution\"`.",
@@ -110111,6 +111963,7 @@
                               "kind",
                               "templates",
                               "owners",
+                              "installed_config_ids",
                               "upgrade_available"
                             ],
                             "type": "object"
@@ -110295,6 +112148,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -110353,6 +112209,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -110506,6 +112365,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -110564,6 +112426,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -110716,6 +112581,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -110774,6 +112642,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -111120,6 +112991,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -111178,6 +113052,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -111252,6 +113129,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -111338,6 +113218,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -111763,6 +113653,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -111778,6 +113669,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -111864,6 +113758,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -112289,6 +114193,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -114839,6 +116744,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -114897,6 +116805,9 @@
                               "events": {},
                               "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "image_url": "https://example.com",
+                              "installed_config_ids": [
+                                "string"
+                              ],
                               "kind": "Solution",
                               "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                               "latest_version": "1.0.0",
@@ -116911,6 +118822,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -116969,6 +118883,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -117095,6 +119012,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -117153,6 +119073,9 @@
                                 "events": {},
                                 "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "image_url": "https://example.com",
+                                "installed_config_ids": [
+                                  "string"
+                                ],
                                 "kind": "Solution",
                                 "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                 "latest_version": "1.0.0",
@@ -117499,6 +119422,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -117557,6 +119483,9 @@
                                   "events": {},
                                   "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "image_url": "https://example.com",
+                                  "installed_config_ids": [
+                                    "string"
+                                  ],
                                   "kind": "Solution",
                                   "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                   "latest_version": "1.0.0",
@@ -117631,6 +119560,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -117717,6 +119649,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -118142,6 +120084,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -118157,6 +120100,9 @@
                                     "events": {},
                                     "id": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "image_url": "https://example.com",
+                                    "installed_config_ids": [
+                                      "string"
+                                    ],
                                     "kind": "Solution",
                                     "latest_solution": "id_0aBcDeFgHiJkLmNoPqRsTu",
                                     "latest_version": "1.0.0",
@@ -118243,6 +120189,16 @@
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
+                                    },
+                                    "installed_config_ids": {
+                                      "description": "Config IDs (`cfg_...`) of this Solution's installations in the viewer's organization. The array is empty when the Solution is visible only from the system catalog.",
+                                      "example": [
+                                        "string"
+                                      ],
+                                      "items": {
+                                        "type": "string"
+                                      },
+                                      "type": "array"
                                     },
                                     "kind": {
                                       "description": "Resource type. Always `\"Solution\"`.",
@@ -118668,6 +120624,7 @@
                                     "kind",
                                     "templates",
                                     "owners",
+                                    "installed_config_ids",
                                     "upgrade_available"
                                   ],
                                   "type": "object"
@@ -127267,7 +129224,7 @@
                       "type": "string"
                     },
                     "status": {
-                      "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, or `\"done\"`.",
+                      "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
                       "example": "open",
                       "type": "string"
                     },
