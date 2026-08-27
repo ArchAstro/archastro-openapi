@@ -41870,7 +41870,7 @@
             "description": "Conflict"
           },
           "422": {
-            "description": "Invalid parameters; Validation failed"
+            "description": "Integration is not connected. Authorize the integration first.; Invalid parameters; Validation failed"
           },
           "502": {
             "description": "Provider returned an error"
@@ -45189,6 +45189,7 @@
                       {
                         "domain": "acme.com",
                         "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                        "kind": "company",
                         "name": "Example Name"
                       }
                     ],
@@ -45206,6 +45207,7 @@
                         {
                           "domain": "acme.com",
                           "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "kind": "company",
                           "name": "Example Name"
                         }
                       ],
@@ -45214,17 +45216,27 @@
                         "example": {
                           "domain": "acme.com",
                           "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "kind": "company",
                           "name": "Example Name"
                         },
                         "properties": {
                           "domain": {
-                            "description": "Primary domain associated with the organization, e.g. `\"acme.com\"`.",
+                            "description": "Company domain. For personal orgs, the owner email is returned only to a viewer in that org.",
                             "example": "acme.com",
                             "type": "string"
                           },
                           "id": {
                             "description": "Organization ID (`org_...`).",
                             "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "description": "Whether this is a company-domain org or a person-owned personal org.",
+                            "enum": [
+                              "company",
+                              "personal"
+                            ],
+                            "example": "company",
                             "type": "string"
                           },
                           "name": {
@@ -45236,7 +45248,7 @@
                         "required": [
                           "id",
                           "name",
-                          "domain"
+                          "kind"
                         ],
                         "type": "object"
                       },
@@ -49464,6 +49476,9 @@
           },
           "404": {
             "description": "Task not found"
+          },
+          "409": {
+            "description": "Task changed since it was read"
           },
           "422": {
             "description": "Invalid parameters"
@@ -74217,6 +74232,124 @@
         ]
       }
     },
+    "/api/v1/users/{user}/integrations/{provider}/access_token": {
+      "get": {
+        "description": "Returns a valid GitHub access token for one integration owned by the\nauthenticated user. Expired tokens are refreshed before the response is\nreturned.\n\nThis endpoint accepts the user's own bearer token, or the app's secret key\nacting server-to-server for one of its users. Developer, agent, team, and\ncross-user viewers cannot retrieve the credential. Responses are marked\n`Cache-Control: no-store`.\n",
+        "operationId": "get_api_v1_users__user_integrations__provider_access_token",
+        "parameters": [
+          {
+            "description": "User ID (`usr_...`). The authenticated user, or a user of the app whose secret key is presented.",
+            "example": "string",
+            "in": "path",
+            "name": "user",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Integration provider. Only `github` is accepted.",
+            "example": "string",
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "The valid GitHub credential and its integration metadata.",
+                  "example": {
+                    "access_token": "string",
+                    "expires_at": "2024-01-01T00:00:00Z",
+                    "integration": "string",
+                    "provider": "string",
+                    "scopes": [
+                      "string"
+                    ],
+                    "workspace_key": "string"
+                  },
+                  "properties": {
+                    "access_token": {
+                      "description": "GitHub access token. Treat this value as a secret.",
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "expires_at": {
+                      "description": "Access-token expiry, or null for non-expiring tokens.",
+                      "example": "2024-01-01T00:00:00Z",
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "integration": {
+                      "description": "Integration ID (`int_...`).",
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "provider": {
+                      "description": "Always `github`.",
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "scopes": {
+                      "description": "Recorded GitHub OAuth scopes.",
+                      "example": [
+                        "string"
+                      ],
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "workspace_key": {
+                      "description": "GitHub login associated with the credential.",
+                      "example": "string",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "access_token",
+                    "integration",
+                    "provider",
+                    "scopes"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not found; OAuth provider not found"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          },
+          "502": {
+            "description": "Service unavailable"
+          }
+        },
+        "summary": "Retrieve a GitHub integration access token",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/users/{user}/invites": {
       "post": {
         "description": "Creates a new invite for the authenticated user. The invite can optionally be\nscoped to a specific thread, a persona, or carry arbitrary metadata. The\ncaller receives the new invite object at HTTP 201.\n\nThe invite key is always generated server-side (192-bit URL-safe random\nstring) and cannot be supplied by the caller.\n\nThe path `:user` must match the authenticated user. If a `thread_id` is\nprovided, the authenticated user must have permission to invite others to that\nthread; team threads are not supported and return an error. Supplying a\n`thread_id` that does not exist or that belongs to a different user returns\nan error. If a key collision occurs during creation the call returns a 409\nconflict — simply retry to generate a new key.\n",
@@ -74351,12 +74484,14 @@
                         "domain": "acme.com",
                         "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "industry": "fintech",
+                        "kind": "company",
                         "name": "Example Name",
                         "onboarding_solution_lookup_key": "string",
                         "onboarding_track": "vendor",
                         "owned_products": [
                           "agent-rooms"
                         ],
+                        "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                         "slug": "example-slug",
                         "status": "active",
@@ -74375,12 +74510,14 @@
                           "domain": "acme.com",
                           "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "industry": "fintech",
+                          "kind": "company",
                           "name": "Example Name",
                           "onboarding_solution_lookup_key": "string",
                           "onboarding_track": "vendor",
                           "owned_products": [
                             "agent-rooms"
                           ],
+                          "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "slug": "example-slug",
                           "status": "active",
@@ -74396,12 +74533,14 @@
                           "domain": "acme.com",
                           "id": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "industry": "fintech",
+                          "kind": "company",
                           "name": "Example Name",
                           "onboarding_solution_lookup_key": "string",
                           "onboarding_track": "vendor",
                           "owned_products": [
                             "agent-rooms"
                           ],
+                          "owner_user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "dsb_0aBcDeFgHiJkLmNoPqRsTu",
                           "slug": "example-slug",
                           "status": "active",
@@ -74435,6 +74574,15 @@
                             "example": "fintech",
                             "type": "string"
                           },
+                          "kind": {
+                            "description": "Whether this is a company-domain org or a person-owned personal org.",
+                            "enum": [
+                              "company",
+                              "personal"
+                            ],
+                            "example": "company",
+                            "type": "string"
+                          },
                           "name": {
                             "description": "Display name of the organization. `null` if the org has not set a name.",
                             "example": "Example Name",
@@ -74459,6 +74607,11 @@
                               "type": "string"
                             },
                             "type": "array"
+                          },
+                          "owner_user": {
+                            "description": "Owner user ID for a personal org. `null` for company orgs.",
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
                           },
                           "sandbox": {
                             "description": "ID of the sandbox environment scoped to this organization (`snd_...`). `null` for organizations in production mode.",
@@ -74488,7 +74641,8 @@
                           }
                         },
                         "required": [
-                          "id"
+                          "id",
+                          "kind"
                         ],
                         "type": "object"
                       },
@@ -85839,7 +85993,7 @@
     },
     "/oauth/token": {
       "post": {
-        "description": "Issues an access token and a refresh token in exchange for a valid grant.\nThree grant types are supported: `\"authorization_code\"`, `\"refresh_token\"`,\nand `\"urn:ietf:params:oauth:grant-type:device_code\"`.\n\nFor `\"authorization_code\"` grants, supply `code`, `client`, `redirect_uri`, and\noptionally `code_verifier` for PKCE flows. Each authorization code is single-use;\nconsuming it a second time returns `invalid_grant`.\n\nFor `\"refresh_token\"` grants, supply `refresh_token`. The endpoint rotates the\nrefresh token on every call and returns a fresh pair of tokens.\n\nFor device-code grants, supply `device_code` and `client`. Poll this endpoint\nafter receiving `authorization_pending` until the user approves or the code\nexpires. Slow down polling if you receive `slow_down`.\n\nThis endpoint is rate-limited to 20 requests per IP per 60 seconds. Exceeding\nthe limit returns HTTP 429 with `\"error\": \"too_many_requests\"`.\n",
+        "description": "Issues an access token and a refresh token in exchange for a valid grant.\nThree grant types are supported: `\"authorization_code\"`, `\"refresh_token\"`,\nand `\"urn:ietf:params:oauth:grant-type:device_code\"`.\n\nFor `\"authorization_code\"` grants, supply `code`, `client`, `redirect_uri`, and\noptionally `code_verifier` for PKCE flows. Each authorization code is single-use;\nconsuming it a second time returns `invalid_grant`.\n\nFor `\"refresh_token\"` grants, supply `refresh_token`. Resource-bound public\nclients must also supply `client`. The endpoint rotates the refresh token on\nevery call and returns a fresh pair of tokens.\n\nFor device-code grants, supply `device_code` and `client`. Poll this endpoint\nafter receiving `authorization_pending` until the user approves or the code\nexpires. Slow down polling if you receive `slow_down`.\n\nThis endpoint is rate-limited to 20 requests per IP per 60 seconds. Exceeding\nthe limit returns HTTP 429 with `\"error\": \"too_many_requests\"`.\n",
         "operationId": "post_oauth_token",
         "parameters": [],
         "requestBody": {
@@ -85857,7 +86011,7 @@
                 },
                 "properties": {
                   "client": {
-                    "description": "OAuth client ID identifying the application requesting tokens. Required for `\"authorization_code\"` and device-code grants.",
+                    "description": "OAuth client ID identifying the application requesting tokens. Required for `\"authorization_code\"`, device-code, and resource-bound refresh grants.",
                     "example": "string",
                     "type": "string"
                   },
