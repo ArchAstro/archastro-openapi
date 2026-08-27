@@ -12250,6 +12250,7 @@
           "name": "Example Name",
           "notification_settings": {},
           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+          "org_kind": "company",
           "org_name": "Example Name",
           "org_role": "string",
           "org_slug": "example-slug",
@@ -12326,6 +12327,16 @@
           "org": {
             "description": "ID of the current organization (`org_...`).",
             "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+            "nullable": true,
+            "type": "string"
+          },
+          "org_kind": {
+            "description": "Whether the current organization is company-domain or person-owned.",
+            "enum": [
+              "company",
+              "personal"
+            ],
+            "example": "company",
             "nullable": true,
             "type": "string"
           },
