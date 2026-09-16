@@ -13777,7 +13777,8 @@
         "example": {
           "output": [
             {}
-          ]
+          ],
+          "result": 42
         },
         "properties": {
           "output": {
@@ -13792,7 +13793,8 @@
             "type": "array"
           },
           "result": {
-            "description": "The evaluated JSON-safe result"
+            "description": "The evaluated JSON-safe result",
+            "example": 42
           }
         },
         "required": [
@@ -13875,6 +13877,11 @@
           "created_at": "2024-01-01T00:00:00Z",
           "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
           "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+          "object": {
+            "id": "b5f2c1d8e9a04736",
+            "name": "agent-assets",
+            "type": "r2_bucket"
+          },
           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
           "service": "cloudflare",
           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
@@ -41967,6 +41974,11 @@
                         "created_at": "2024-01-01T00:00:00Z",
                         "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
                         "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+                        "object": {
+                          "id": "b5f2c1d8e9a04736",
+                          "name": "agent-assets",
+                          "type": "r2_bucket"
+                        },
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "service": "cloudflare",
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
@@ -41989,6 +42001,11 @@
                           "created_at": "2024-01-01T00:00:00Z",
                           "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
                           "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+                          "object": {
+                            "id": "b5f2c1d8e9a04736",
+                            "name": "agent-assets",
+                            "type": "r2_bucket"
+                          },
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "service": "cloudflare",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
@@ -42003,6 +42020,11 @@
                           "created_at": "2024-01-01T00:00:00Z",
                           "id": "ext_0aBcDeFgHiJkLmNoPqRsTu",
                           "integration": "int_0aBcDeFgHiJkLmNoPqRsTu",
+                          "object": {
+                            "id": "b5f2c1d8e9a04736",
+                            "name": "agent-assets",
+                            "type": "r2_bucket"
+                          },
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "service": "cloudflare",
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
@@ -42033,6 +42055,11 @@
                             "description": "Service-specific object payload.",
                             "discriminator": {
                               "propertyName": "type"
+                            },
+                            "example": {
+                              "id": "b5f2c1d8e9a04736",
+                              "name": "agent-assets",
+                              "type": "r2_bucket"
                             },
                             "oneOf": [
                               {
