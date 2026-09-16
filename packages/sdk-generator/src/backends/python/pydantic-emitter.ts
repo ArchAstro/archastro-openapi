@@ -271,6 +271,20 @@ function pythonLiteral(value: unknown): string {
   if (value === null || value === undefined) return "None";
   if (typeof value === "boolean") return value ? "True" : "False";
   if (typeof value === "string") return JSON.stringify(value);
+  // Collections need element-wise conversion: `String([])` is the empty
+  // string and `String({})` is "[object Object]", both of which emit
+  // syntactically invalid Python (`Field(default=, ...)`). Pydantic v2
+  // copies a model's default per instance, so a literal mutable default
+  // is safe here and keeps the emitted value readable.
+  if (Array.isArray(value)) {
+    return `[${value.map(pythonLiteral).join(", ")}]`;
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).map(
+      ([key, entry]) => `${JSON.stringify(key)}: ${pythonLiteral(entry)}`
+    );
+    return `{${entries.join(", ")}}`;
+  }
   return String(value);
 }
 
