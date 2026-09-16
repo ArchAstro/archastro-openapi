@@ -287,10 +287,12 @@
           "image_url": "https://example.com",
           "model": "dall-e-3",
           "revised_prompt": "A photorealistic image of a sunset over the ocean with warm golden hues.",
+          "session_id": "string",
           "size": "1024x1024",
           "usage": {
             "key": "value"
           },
+          "usage_attempt_count": 1,
           "width": 1024
         },
         "properties": {
@@ -334,6 +336,11 @@
             "example": "A photorealistic image of a sunset over the ocean with warm golden hues.",
             "type": "string"
           },
+          "session_id": {
+            "description": "UUID grouping this image request's provider attempts for usage and billing.",
+            "example": "string",
+            "type": "string"
+          },
           "size": {
             "description": "Canonical size string as returned by the provider, e.g. `\"1024x1024\"`. `null` when not reported.",
             "example": "1024x1024",
@@ -345,6 +352,11 @@
               "key": "value"
             },
             "type": "object"
+          },
+          "usage_attempt_count": {
+            "description": "Number of provider responses contributing usage records to this request, including image-generation retries.",
+            "example": 1,
+            "type": "integer"
           },
           "width": {
             "description": "Width of the generated image in pixels. `null` when the provider does not report dimensions.",
@@ -1346,7 +1358,7 @@
                             "type": "string"
                           },
                           "image_url": {
-                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                             "example": "https://example.com",
                             "nullable": true,
                             "type": "string"
@@ -1886,7 +1898,7 @@
                             "type": "string"
                           },
                           "image_url": {
-                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                             "example": "https://example.com",
                             "nullable": true,
                             "type": "string"
@@ -5685,6 +5697,11 @@
           "name_prefix": "string",
           "parameters": {},
           "parameters_config": "cfg_0aBcDeFgHiJkLmNoPqRsTu",
+          "setup": {
+            "next_action": "string",
+            "protocol_status": "not_checked",
+            "reason": "string"
+          },
           "status": "active",
           "updated_at": "2024-01-01T00:00:00Z"
         },
@@ -5787,8 +5804,22 @@
             "example": "cfg_0aBcDeFgHiJkLmNoPqRsTu",
             "type": "string"
           },
+          "setup": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Setup"
+              }
+            ],
+            "description": "Current MCP setup assessment, not a historical downgrade reason or upstream protocol probe.",
+            "example": {
+              "next_action": "string",
+              "protocol_status": "not_checked",
+              "reason": "string"
+            },
+            "nullable": true
+          },
           "status": {
-            "description": "Current status of the tool. One of `\"active\"` or `\"disabled\"`.",
+            "description": "Current status of the tool. One of `\"active\"` or `\"draft\"`.",
             "example": "active",
             "type": "string"
           },
@@ -5830,6 +5861,11 @@
               "name_prefix": "string",
               "parameters": {},
               "parameters_config": "cfg_0aBcDeFgHiJkLmNoPqRsTu",
+              "setup": {
+                "next_action": "string",
+                "protocol_status": "not_checked",
+                "reason": "string"
+              },
               "status": "active",
               "updated_at": "2024-01-01T00:00:00Z"
             }
@@ -6462,6 +6498,7 @@
           "file": "string",
           "file_name": "Example Name",
           "file_url": "https://example.com",
+          "group_key": "string",
           "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
           "image_source": {
             "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -6475,6 +6512,7 @@
           "name": "Example Name",
           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
           "sandbox": "string",
+          "system": true,
           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
           "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
           "updated_at": "2024-01-01T00:00:00Z",
@@ -6523,6 +6561,12 @@
             "example": "https://example.com",
             "type": "string"
           },
+          "group_key": {
+            "description": "Optional nonunique, case-sensitive grouping key, limited to 1024 UTF-8 bytes. Null when unset; belongs to the artifact, not a content version.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
           "id": {
             "description": "Artifact ID (`art_...`).",
             "example": "art_0aBcDeFgHiJkLmNoPqRsTu",
@@ -6546,6 +6590,11 @@
             "description": "Identifier of the sandbox environment associated with this artifact. `null` if not sandbox-scoped.",
             "example": "string",
             "type": "string"
+          },
+          "system": {
+            "description": "True when the artifact has no user, team, or agent owner. An organization may own a system artifact.",
+            "example": true,
+            "type": "boolean"
           },
           "team": {
             "description": "ID of the team that owns this artifact (`tea_...`). `null` if not team-scoped.",
@@ -6759,6 +6808,7 @@
       "AuthTokens": {
         "description": "Credential bundle returned after a successful authentication exchange. Contains the access token, refresh token, and the authenticated user.",
         "example": {
+          "account_created": false,
           "expires_in": 3600,
           "metadata": {
             "key": "value"
@@ -6791,6 +6841,11 @@
           }
         },
         "properties": {
+          "account_created": {
+            "description": "`true` when this request created the account (the same moment the platform records the signup), `false` for a returning sign-in or a token refresh. Registration always returns `true`; password login and refresh always return `false`.",
+            "example": false,
+            "type": "boolean"
+          },
           "expires_in": {
             "description": "Number of seconds until `token` expires. After this period, use `refresh_token` to obtain a new access token.",
             "example": 3600,
@@ -6831,7 +6886,8 @@
           "refresh_token",
           "user",
           "token_type",
-          "expires_in"
+          "expires_in",
+          "account_created"
         ],
         "type": "object"
       },
@@ -9848,7 +9904,7 @@
         "discriminator": {
           "mapping": {
             "cancelled": "#/components/schemas/Cancelled",
-            "error": "#/components/schemas/Error",
+            "error": "#/components/schemas/ChatLocalToolResultError",
             "ok": "#/components/schemas/Ok"
           },
           "propertyName": "status"
@@ -9858,12 +9914,50 @@
             "$ref": "#/components/schemas/Ok"
           },
           {
-            "$ref": "#/components/schemas/Error"
+            "$ref": "#/components/schemas/ChatLocalToolResultError"
           },
           {
             "$ref": "#/components/schemas/Cancelled"
           }
         ]
+      },
+      "ChatLocalToolResultError": {
+        "description": "A failed local-tool outcome.",
+        "example": {
+          "call_id": "string",
+          "code": "string",
+          "message": "string",
+          "status": "error"
+        },
+        "properties": {
+          "call_id": {
+            "example": "string",
+            "type": "string"
+          },
+          "code": {
+            "example": "string",
+            "type": "string"
+          },
+          "message": {
+            "example": "string",
+            "type": "string"
+          },
+          "status": {
+            "default": "error",
+            "enum": [
+              "error"
+            ],
+            "example": "error",
+            "type": "string"
+          }
+        },
+        "required": [
+          "call_id",
+          "status",
+          "code",
+          "message"
+        ],
+        "type": "object"
       },
       "ChatMarkThreadReadResponse": {
         "description": "Response returned after marking a chat thread as read. Confirms that the read marker was successfully recorded for the authenticated user.",
@@ -12226,7 +12320,14 @@
             "billing": [
               {
                 "administrator": true,
-                "principal_type": "user"
+                "principal_type": "user",
+                "trials": [
+                  {
+                    "ends_at": "2024-01-01T00:00:00Z",
+                    "payment_method_stored": true,
+                    "plan": "string"
+                  }
+                ]
               }
             ],
             "entitlements": [
@@ -13003,12 +13104,19 @@
         "type": "object"
       },
       "EffectiveAccess": {
-        "description": "Live effective access and billing authority for the authenticated user.",
+        "description": "Live effective access, billing authority, and relevant trials for the authenticated user.",
         "example": {
           "billing": [
             {
               "administrator": true,
-              "principal_type": "user"
+              "principal_type": "user",
+              "trials": [
+                {
+                  "ends_at": "2024-01-01T00:00:00Z",
+                  "payment_method_stored": true,
+                  "plan": "string"
+                }
+              ]
             }
           ],
           "entitlements": [
@@ -13025,7 +13133,7 @@
         },
         "properties": {
           "billing": {
-            "description": "Administration authority for the personal and current-organization principals.",
+            "description": "Administration authority and requested-entitlement-relevant trials for the personal and current-organization principals.",
             "items": {
               "$ref": "#/components/schemas/EffectiveAccessBillingPrincipal"
             },
@@ -13046,10 +13154,17 @@
         "type": "object"
       },
       "EffectiveAccessBillingPrincipal": {
-        "description": "Billing administration authority for one Viewer-derived principal kind.",
+        "description": "Billing authority and relevant active trials for one Viewer-derived principal kind.",
         "example": {
           "administrator": true,
-          "principal_type": "user"
+          "principal_type": "user",
+          "trials": [
+            {
+              "ends_at": "2024-01-01T00:00:00Z",
+              "payment_method_stored": true,
+              "plan": "string"
+            }
+          ]
         },
         "properties": {
           "administrator": {
@@ -13064,11 +13179,51 @@
             ],
             "example": "user",
             "type": "string"
+          },
+          "trials": {
+            "description": "Currently active trials for this Viewer-derived principal. Contains no billing-account or provider identifiers.",
+            "items": {
+              "$ref": "#/components/schemas/EffectiveAccessBillingTrial"
+            },
+            "type": "array"
           }
         },
         "required": [
           "principal_type",
-          "administrator"
+          "administrator",
+          "trials"
+        ],
+        "type": "object"
+      },
+      "EffectiveAccessBillingTrial": {
+        "description": "Privacy-safe current trial state for one Viewer-derived billing principal.",
+        "example": {
+          "ends_at": "2024-01-01T00:00:00Z",
+          "payment_method_stored": true,
+          "plan": "string"
+        },
+        "properties": {
+          "ends_at": {
+            "description": "Effective trial end: the earlier of its accepted boundary and enrollment end.",
+            "example": "2024-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "payment_method_stored": {
+            "description": "Whether a provider webhook has confirmed a stored payment method.",
+            "example": true,
+            "type": "boolean"
+          },
+          "plan": {
+            "description": "Catalog plan whose trial is active.",
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan",
+          "ends_at",
+          "payment_method_stored"
         ],
         "type": "object"
       },
@@ -13128,44 +13283,6 @@
           "granted",
           "value_type",
           "provided_by"
-        ],
-        "type": "object"
-      },
-      "Error": {
-        "description": "A failed local-tool outcome.",
-        "example": {
-          "call_id": "string",
-          "code": "string",
-          "message": "string",
-          "status": "error"
-        },
-        "properties": {
-          "call_id": {
-            "example": "string",
-            "type": "string"
-          },
-          "code": {
-            "example": "string",
-            "type": "string"
-          },
-          "message": {
-            "example": "string",
-            "type": "string"
-          },
-          "status": {
-            "default": "error",
-            "enum": [
-              "error"
-            ],
-            "example": "error",
-            "type": "string"
-          }
-        },
-        "required": [
-          "call_id",
-          "status",
-          "code",
-          "message"
         ],
         "type": "object"
       },
@@ -17884,6 +18001,40 @@
         ],
         "type": "object"
       },
+      "Setup": {
+        "description": "Current MCP setup assessment, not a historical downgrade reason or upstream protocol probe.",
+        "example": {
+          "next_action": "string",
+          "protocol_status": "not_checked",
+          "reason": "string"
+        },
+        "properties": {
+          "next_action": {
+            "description": "Recommended next step for MCP setup.",
+            "example": "string",
+            "type": "string"
+          },
+          "protocol_status": {
+            "description": "MCP protocol health is not checked by this assessment.",
+            "enum": [
+              "not_checked"
+            ],
+            "example": "not_checked",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Reason for the current MCP setup state.",
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "next_action",
+          "protocol_status"
+        ],
+        "type": "object"
+      },
       "SlackChannelBinding": {
         "description": "A binding that connects a Slack channel to an ArchAstro team and one or more agents, enabling those agents to receive and respond to messages in that channel.",
         "example": {
@@ -19524,7 +19675,7 @@
             "type": "string"
           },
           "image_url": {
-            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
             "example": "https://example.com",
             "nullable": true,
             "type": "string"
@@ -20833,7 +20984,7 @@
             "type": "string"
           },
           "status": {
-            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
             "example": "open",
             "type": "string"
           },
@@ -20973,6 +21124,37 @@
         "required": [
           "id",
           "body"
+        ],
+        "type": "object"
+      },
+      "TaskExternalLink": {
+        "description": "An indexed external object linked to a task.",
+        "example": {
+          "external_scope": "string",
+          "object_id": "string",
+          "object_type": "string"
+        },
+        "properties": {
+          "external_scope": {
+            "description": "External container identity.",
+            "example": "string",
+            "type": "string"
+          },
+          "object_id": {
+            "description": "Object identity within that container.",
+            "example": "string",
+            "type": "string"
+          },
+          "object_type": {
+            "description": "External object kind.",
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "external_scope",
+          "object_type",
+          "object_id"
         ],
         "type": "object"
       },
@@ -25168,7 +25350,7 @@
                                             "type": "string"
                                           },
                                           "image_url": {
-                                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                             "example": "https://example.com",
                                             "nullable": true,
                                             "type": "string"
@@ -25708,7 +25890,7 @@
                                             "type": "string"
                                           },
                                           "image_url": {
-                                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                            "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                             "example": "https://example.com",
                                             "nullable": true,
                                             "type": "string"
@@ -33420,7 +33602,7 @@
     },
     "/api/v1/agents/{agent}/search": {
       "post": {
-        "description": "Performs a semantic search over an agent's knowledge base and returns a ranked,\n`kind`-discriminated list of matching items.\n\nTwo item kinds may appear in `data`:\n\n- `\"chunk\"` — chunk-level results from the agent's context store. Present for all agents.\n- `\"document\"` — document-level results. Present only when the agent has an active\n  `archastro/knowledge` installation.\n\nResults from both kinds are scored with Reciprocal Rank Fusion (RRF), normalized to\nbe comparable across kinds, then merged into a single ranked list. On a relevance tie,\nchunks appear before documents. The total number of results is capped at `max_results`\nacross both kinds.\n\nUse `mode` to choose the retrieval strategy: `\"hybrid\"` (default) combines vector and\nfull-text search; `\"vector\"` and `\"fulltext\"` select each strategy independently.\n",
+        "description": "Performs a semantic search over an agent's knowledge base and returns a ranked,\n`kind`-discriminated list of matching items.\n\nThreads are automatically indexed as conversational memory, including prior agent\nanswers. A match is not necessarily independent source evidence. Result `type`\nidentifies the source: `thread/messages` is conversation memory; use `source_types`\nwith the desired corpus slugs (for example `knowledge/documents`) to exclude it.\n`kind` describes storage granularity, not whether the content is conversation memory.\n\nTwo item kinds may appear in `data`:\n\n- `\"chunk\"` — chunk-level results from the agent's context store. Present for all agents.\n- `\"document\"` — document-level results. Present only when the agent has an active\n  `archastro/knowledge` installation.\n\nResults from both kinds are scored with Reciprocal Rank Fusion (RRF), normalized to\nbe comparable across kinds, then merged into a single ranked list. On a relevance tie,\nchunks appear before documents. The total number of results is capped at `max_results`\nacross both kinds.\n\nUse `mode` to choose the retrieval strategy: `\"hybrid\"` (default) combines vector and\nfull-text search; `\"vector\"` and `\"fulltext\"` select each strategy independently.\n",
         "operationId": "post_api_v1_agents__agent_search",
         "parameters": [
           {
@@ -33475,7 +33657,7 @@
                     "type": "integer"
                   },
                   "source_types": {
-                    "description": "Array of source-type slugs used to filter chunk results, e.g. `[\"web\", \"file\"]`. Omit to include all source types.",
+                    "description": "Exact source-type slugs filtering both chunks and documents, e.g. `[\"knowledge/documents\"]` for authored documents or `[\"thread/messages\"]` for conversation memory. Omit or pass an empty array to include all source types.",
                     "example": [
                       "string"
                     ],
@@ -33593,7 +33775,8 @@
                               "snippet": "This document describes the onboarding workflow for new users, including account setup, initial configuration steps, and a guided tour of the main features…",
                               "title": "Example Title",
                               "total_lines": 42,
-                              "total_size": 1024
+                              "total_size": 1024,
+                              "type": "string"
                             },
                             "properties": {
                               "id": {
@@ -33636,6 +33819,11 @@
                                 "description": "Total byte size of the document's text content encoded as UTF-8. `0` for empty documents.",
                                 "example": 1024,
                                 "type": "integer"
+                              },
+                              "type": {
+                                "description": "Parent source-type slug, e.g. `knowledge/documents`. Returns `unknown` when the source is not loaded.",
+                                "example": "string",
+                                "type": "string"
                               }
                             },
                             "required": [
@@ -35426,6 +35614,7 @@
                   "output_format": "string",
                   "prompt": "string",
                   "quality": "string",
+                  "session_id": "string",
                   "size": "string",
                   "style": "string",
                   "width": 1
@@ -35505,6 +35694,11 @@
                     "example": "string",
                     "type": "string"
                   },
+                  "session_id": {
+                    "description": "Optional session UUID for grouping provider attempts in usage records. Generated when omitted.",
+                    "example": "string",
+                    "type": "string"
+                  },
                   "size": {
                     "description": "Output dimensions as a WxH string, e.g. `\"1024x1024\"`. Applies to OpenAI-compatible models. Omit to use the model's default.",
                     "example": "string",
@@ -35548,6 +35742,9 @@
           "401": {
             "description": "Unauthorized"
           },
+          "402": {
+            "description": "Payment required"
+          },
           "422": {
             "description": "Image editing failed"
           }
@@ -35578,6 +35775,7 @@
                   "output_format": "string",
                   "prompt": "string",
                   "quality": "string",
+                  "session_id": "string",
                   "size": "string",
                   "style": "string",
                   "width": 1
@@ -35628,6 +35826,11 @@
                     "example": "string",
                     "type": "string"
                   },
+                  "session_id": {
+                    "description": "Optional session UUID for grouping provider attempts in usage records. Generated when omitted.",
+                    "example": "string",
+                    "type": "string"
+                  },
                   "size": {
                     "description": "Output dimensions as a WxH string, e.g. `\"1024x1024\"`. Applies to OpenAI-compatible models. Omit to use the model's default.",
                     "example": "string",
@@ -35669,6 +35872,9 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "402": {
+            "description": "Payment required"
           },
           "422": {
             "description": "Image generation failed"
@@ -35839,6 +36045,171 @@
         ]
       }
     },
+    "/api/v1/artifacts": {
+      "post": {
+        "description": "Creates a new artifact and stores its file content. A file payload is required;\nsupply it via the `file.data` (Base64-encoded by default), `file.filename`, and\n`file.mime_type` fields. The artifact is scoped to the owner resolved from the\nrequest body — either a team, a user, or an explicit system owner. When no\nowner is supplied and the viewer is an authenticated user, the artifact\ndefaults to that user.\n\nFor company-readable snapshots, pass `system: true` and `org`. Organization\nmembers can read these artifacts; organization admins and system viewers can\ncreate them. Scripts may supply text directly using `file.encoding: \"utf8\"`.\n\nOptionally associate the artifact with an existing thread or agent by passing\n`thread` or `agent`. Legacy requests that wrap fields in an `artifact` object\nare still accepted.\n",
+        "operationId": "post_api_v1_artifacts",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "agent": "string",
+                  "artifact": {},
+                  "description": "An example description.",
+                  "file": {
+                    "data": "string",
+                    "encoding": "base64",
+                    "filename": "string",
+                    "mime_type": "application/json"
+                  },
+                  "group_key": "string",
+                  "idempotency_key": "string",
+                  "name": "Example Name",
+                  "org": "string",
+                  "permissions": {},
+                  "system": true,
+                  "team": "string",
+                  "thread": "string",
+                  "user": "string"
+                },
+                "properties": {
+                  "agent": {
+                    "description": "Agent ID (`agt_...`) to associate with the artifact.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "artifact": {
+                    "description": "Legacy wrapper object containing artifact attributes. Prefer top-level fields.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "description": {
+                    "description": "Optional longer artifact description.",
+                    "example": "An example description.",
+                    "type": "string"
+                  },
+                  "file": {
+                    "description": "File payload for the initial artifact version.",
+                    "example": {
+                      "data": "string",
+                      "encoding": "base64",
+                      "filename": "string",
+                      "mime_type": "application/json"
+                    },
+                    "properties": {
+                      "data": {
+                        "description": "File content encoded according to file.encoding (base64 by default).",
+                        "example": "string",
+                        "type": "string"
+                      },
+                      "encoding": {
+                        "description": "Data encoding; defaults to base64. Use utf8 for script-generated text.",
+                        "enum": [
+                          "base64",
+                          "utf8"
+                        ],
+                        "example": "base64",
+                        "type": "string"
+                      },
+                      "filename": {
+                        "description": "Original filename.",
+                        "example": "string",
+                        "type": "string"
+                      },
+                      "mime_type": {
+                        "description": "MIME type for the file.",
+                        "example": "application/json",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "data"
+                    ],
+                    "type": "object"
+                  },
+                  "group_key": {
+                    "description": "Optional nonunique, case-sensitive grouping key, limited to 1024 UTF-8 bytes. Artifact ID remains identity.",
+                    "example": "string",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "idempotency_key": {
+                    "description": "Optional PR-evidence retry key, limited to 255 characters. Requires both team and thread. Matching app, team, thread, name, and key values return the original artifact.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Human-readable artifact name.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "org": {
+                    "description": "Organization owning a system artifact. Requires an organization admin or system viewer.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "permissions": {
+                    "description": "Optional artifact permissions map.",
+                    "example": {},
+                    "type": "object"
+                  },
+                  "system": {
+                    "description": "When true, create a system-owned artifact. Mutually exclusive with `team` and `user`.",
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "team": {
+                    "description": "Team ID (`tem_...`) that should own the artifact. Mutually exclusive with `user`.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "thread": {
+                    "description": "Thread ID (`thr_...`) to associate with the artifact.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "user": {
+                    "description": "User ID (`usr_...`) that should own the artifact. Defaults to the authenticated user when omitted and no team is supplied.",
+                    "example": "string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Artifact"
+                }
+              }
+            },
+            "description": "The newly created artifact."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        },
+        "summary": "Create an artifact",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/artifacts/{artifact}": {
       "delete": {
         "description": "Permanently deletes the artifact and all associated file versions. This\noperation is irreversible — deleted artifacts and their file content cannot\nbe recovered.\n\nThe authenticated user must have write access to the artifact's owning team\nor organization. Returns 404 if the artifact does not exist or is not\naccessible to the caller.\n",
@@ -35947,6 +36318,7 @@
                   "file_content_type": "string",
                   "file_name": "Example Name",
                   "from_version": 1,
+                  "group_key": "string",
                   "name": "Example Name"
                 },
                 "properties": {
@@ -36003,6 +36375,12 @@
                     "description": "The artifact's current version number, used for optimistic concurrency control. Returns 409 if this value does not match the server's current version.",
                     "example": 1,
                     "type": "integer"
+                  },
+                  "group_key": {
+                    "description": "Nonunique grouping key, limited to 1024 UTF-8 bytes. Omit to preserve; null clears. Grouping-only updates do not increment the content version and from_version does not protect against concurrent metadata updates.",
+                    "example": "string",
+                    "nullable": true,
+                    "type": "string"
                   },
                   "name": {
                     "description": "New display name for the artifact. Omit to leave the existing name unchanged.",
@@ -36298,7 +36676,7 @@
     },
     "/api/v1/auth/login/link": {
       "post": {
-        "description": "Sends a magic link to the given email address so an existing user can sign in\nwithout a password. The user clicks the link in their email and is redirected to\n`redirect_uri` with a token; pass that token to `/auth/verify_link` to obtain\nsession tokens.\n\nIf no account exists for the email, the endpoint still returns success to prevent\nemail enumeration — no link is sent in that case. Both `email` and `redirect_uri`\nare required. Requests are rate-limited per IP (10 per minute) and per email-IP pair\n(3 per minute) — exceeding either limit returns HTTP 429. Returns HTTP 204 on success.\n",
+        "description": "Sends a magic link to the given email address so an existing user can sign in\nwithout a password. The user clicks the link in their email and is redirected to\n`redirect_uri` with a token; pass that token to `/api/v1/auth/verify/link` to obtain\nsession tokens.\n\nIf no account exists for the email, the endpoint still returns success to prevent\nemail enumeration — no link is sent in that case. Both `email` and `redirect_uri`\nare required. Requests are rate-limited per IP (10 per minute) and per email-IP pair\n(3 per minute) — exceeding either limit returns HTTP 429. Returns HTTP 204 on success.\n",
         "operationId": "post_api_v1_auth_login_link",
         "parameters": [],
         "requestBody": {
@@ -36405,7 +36783,7 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "description": "Creates a new user account and returns an access token, refresh token, and the new\nuser object. Two registration paths are supported:\n\n- **Team registration**: supply `team_invite` with a valid team invite ID. The new\n  user is added to that team immediately upon registration. Returns HTTP 404 if the\n  invite is not found.\n- **Standard registration**: supply `password`. An `invite_code` may optionally be\n  included for invite-gated apps; an invalid code returns HTTP 404.\n\nExactly one of `team_invite` or `password` must be provided; omitting both returns\nHTTP 400. Password registration must be enabled for the app; disabled apps return\nHTTP 403. The response status is HTTP 201 on success.\n",
+        "description": "Creates a new user account and returns an access token, refresh token, and the new\nuser object. Two registration paths are supported:\n\n- **Team registration**: supply `team_invite` with a valid team invite ID. The new\n  user is added to that team immediately upon registration. Returns HTTP 404 if the\n  invite is not found.\n- **Standard registration**: supply `password`. An `invite_code` may optionally be\n  included for invite-gated apps; an invalid code returns HTTP 404.\n\nProvide `team_invite` or `password`; when both are supplied, team registration\ntakes precedence. Omitting both returns HTTP 400. Unknown fields return HTTP 400\nwith field-level guidance. Use `full_name` for the profile name (returned as\n`user.name`); `name` is not an input field. `alias` is a separate optional handle.\nLegacy `team_invite_id` remains accepted; `team_invite` takes precedence.\nPassword registration must be enabled for the app; disabled apps return\nHTTP 403. The response status is HTTP 201 on success.\n",
         "operationId": "post_api_v1_auth_register",
         "parameters": [],
         "requestBody": {
@@ -36508,7 +36886,7 @@
     },
     "/api/v1/auth/register/link": {
       "post": {
-        "description": "Starts a passwordless registration flow by sending a verification link to the given\nemail address. The recipient clicks the link and is redirected to `redirect_uri` with\na token; pass that token to `/auth/verify_link` to complete registration and obtain\nsession tokens.\n\nProfile fields (`full_name`, `alias`, `timezone`) are captured now and applied when\nthe link is verified. Requests are rate-limited per IP (10 per minute) and per\nemail-IP pair (3 per minute) — exceeding either limit returns HTTP 429. Returns\nHTTP 204 on success.\n",
+        "description": "Starts a passwordless registration flow by sending a verification link to the given\nemail address. The recipient clicks the link and is redirected to `redirect_uri` with\na token; pass that token to `/api/v1/auth/verify/link` to complete registration and obtain\nsession tokens.\n\nProfile fields (`full_name`, `alias`, `timezone`) and, with `set_org`, the `org`\ndetails are captured now and applied when the link is verified; nothing is created\nbefore the click. Requests are rate-limited per IP (10 per minute) and per\nemail-IP pair (3 per minute) — exceeding either limit returns HTTP 429. Returns\nHTTP 204 on success.\n",
         "operationId": "post_api_v1_auth_register_link",
         "parameters": [],
         "requestBody": {
@@ -36519,6 +36897,14 @@
                   "alias": "string",
                   "email": "user@example.com",
                   "full_name": "Example Name",
+                  "org": {
+                    "enabled_auth_methods": [
+                      "string"
+                    ],
+                    "name": "Example Name",
+                    "slug": "example-slug",
+                    "website": "string"
+                  },
                   "redirect_uri": "https://example.com",
                   "set_org": true,
                   "timezone": "America/New_York"
@@ -36538,6 +36924,45 @@
                     "description": "Full name for the new account.",
                     "example": "Example Name",
                     "type": "string"
+                  },
+                  "org": {
+                    "description": "Company details for the organization a `set_org` registration creates at confirmation. Ignored when the domain org already exists or the mailbox is personal (which keeps the platform's own identity and takes only the sign-in methods).",
+                    "example": {
+                      "enabled_auth_methods": [
+                        "string"
+                      ],
+                      "name": "Example Name",
+                      "slug": "example-slug",
+                      "website": "string"
+                    },
+                    "properties": {
+                      "enabled_auth_methods": {
+                        "description": "Sign-in methods the new organization starts with. Empty keeps the platform default.",
+                        "example": [
+                          "string"
+                        ],
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "name": {
+                        "description": "Organization display name.",
+                        "example": "Example Name",
+                        "type": "string"
+                      },
+                      "slug": {
+                        "description": "Organization slug. Must be spelled from the email's own domain: the platform default (domain stem) or the whole domain with separators dashed.",
+                        "example": "example-slug",
+                        "type": "string"
+                      },
+                      "website": {
+                        "description": "Organization website URL (http or https).",
+                        "example": "string",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
                   },
                   "redirect_uri": {
                     "description": "URL the user is redirected to after clicking the registration link. The token is appended as a query parameter.",
@@ -36587,7 +37012,7 @@
     },
     "/api/v1/auth/request/link": {
       "post": {
-        "description": "Sends a passwordless magic link to the given email address. If an account with that\nemail already exists, a login link is sent. If no account exists, a registration link\nis sent and the recipient completes sign-up by clicking through. This unified endpoint\nlets you implement a single email-entry UI that handles both cases transparently.\n\nThe `redirect_uri` is validated against the app's registered hosts; an unregistered\nURI returns HTTP 400. Both `email` and `redirect_uri` are required. Requests are\nrate-limited per IP (10 per minute) and per email-IP pair (3 per minute). Returns\nHTTP 204 on success — no body.\n",
+        "description": "Sends a passwordless magic link to the given email address. If an account with that\nemail already exists, a login link is sent. If no account exists, a registration link\nis sent and the recipient completes sign-up by clicking through. This unified endpoint\nlets you implement a single email-entry UI that handles both cases transparently.\n\nThe `redirect_uri` is validated against the app's registered hosts; an unregistered\nURI returns HTTP 400. Both `email` and `redirect_uri` are required. Requests are\nrate-limited per IP (10 per minute) and per email-IP pair (3 per minute). Returns\nHTTP 204 on success — no body. If the app has Allowed Users enabled and the\naddress is not on the list, returns HTTP 403 `user_not_allowed`. That refusal\nis the same for new and existing addresses, so it does not reveal whether an\naccount exists.\n\nFor a new user, `full_name` and (with `set_org`) the `org` details ride the pending\nregistration and are applied when the link is verified; nothing is created before\nthe click. They are ignored when the email already belongs to a user. Malformed\nvalues return HTTP 422 before the address is looked up, so the response cannot\nreveal whether an account exists.\n",
         "operationId": "post_api_v1_auth_request_link",
         "parameters": [],
         "requestBody": {
@@ -36596,14 +37021,74 @@
               "schema": {
                 "example": {
                   "email": "user@example.com",
+                  "full_name": "Example Name",
+                  "mcp_client_id": "string",
+                  "org": {
+                    "enabled_auth_methods": [
+                      "string"
+                    ],
+                    "name": "Example Name",
+                    "slug": "example-slug",
+                    "website": "string"
+                  },
                   "redirect_uri": "https://example.com",
-                  "set_org": true
+                  "set_org": true,
+                  "signup_origin": "string"
                 },
                 "properties": {
                   "email": {
                     "description": "Email address to send the magic link to.",
                     "example": "user@example.com",
                     "type": "string"
+                  },
+                  "full_name": {
+                    "description": "Display name for the account the verified link will create.",
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "mcp_client_id": {
+                    "description": "Opaque dynamic-registration client id for an MCP consent signup. Platform resolves it to a closed analytics key.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "org": {
+                    "description": "Company details for the organization a `set_org` registration creates at confirmation. Ignored when the domain org already exists or the mailbox is personal (which keeps the platform's own identity and takes only the sign-in methods).",
+                    "example": {
+                      "enabled_auth_methods": [
+                        "string"
+                      ],
+                      "name": "Example Name",
+                      "slug": "example-slug",
+                      "website": "string"
+                    },
+                    "properties": {
+                      "enabled_auth_methods": {
+                        "description": "Sign-in methods the new organization starts with. Empty keeps the platform default.",
+                        "example": [
+                          "string"
+                        ],
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "name": {
+                        "description": "Organization display name.",
+                        "example": "Example Name",
+                        "type": "string"
+                      },
+                      "slug": {
+                        "description": "Organization slug. Must be spelled from the email's own domain: the platform default (domain stem) or the whole domain with separators dashed.",
+                        "example": "example-slug",
+                        "type": "string"
+                      },
+                      "website": {
+                        "description": "Organization website URL (http or https).",
+                        "example": "string",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
                   },
                   "redirect_uri": {
                     "description": "URL the user is redirected to after clicking the magic link. Must be registered with the app.",
@@ -36614,6 +37099,11 @@
                     "description": "For a new user, create or reuse an organization from the work-email domain during confirmation.",
                     "example": true,
                     "type": "boolean"
+                  },
+                  "signup_origin": {
+                    "description": "Closed product intent for a new signup. Missing or unknown values become generic and never affect authentication.",
+                    "example": "string",
+                    "type": "string"
                   }
                 },
                 "type": "object"
@@ -36628,6 +37118,9 @@
           },
           "400": {
             "description": "Missing email or redirect_uri"
+          },
+          "403": {
+            "description": "This email address is not allowed to access this app"
           },
           "422": {
             "description": "Validation failed"
@@ -36648,7 +37141,7 @@
     },
     "/api/v1/auth/token": {
       "post": {
-        "description": "Consumes a single-use login token delivered via email and returns an access token,\nrefresh token, and the authenticated user object. One-time tokens are issued by the\npasswordless login flow and expire after a short window; submitting an expired or\nalready-used token returns HTTP 401.\n\nIf `timezone` is provided and the user's current timezone is still the default\n(`\"America/Los_Angeles\"`), the account timezone is updated in the same request.\nRequests are rate-limited to 10 per IP per minute; exceeding this returns HTTP 429.\n",
+        "description": "Exchanges an email-login token (including email reply links) or an internal\nimpersonation login token for session credentials. Passwordless magic-link tokens\nfrom `/api/v1/auth/login/link`, `/api/v1/auth/register/link`, or\n`/api/v1/auth/request/link` must instead go to `/api/v1/auth/verify/link`.\nNumeric email codes go to `/api/v1/auth/code/verify` with `email` and `code`.\nAccess and refresh tokens are not accepted here. Invalid, expired, or already-used\nlogin tokens return HTTP 401 with structured `error.type`, `error.code`, and\n`error.message` fields.\n\nIf `timezone` is provided and the user's current timezone is still the default\n(`\"America/Los_Angeles\"`), the account timezone is updated in the same request.\nRequests are rate-limited to 10 per IP per minute; exceeding this returns HTTP 429.\n",
         "operationId": "post_api_v1_auth_token",
         "parameters": [],
         "requestBody": {
@@ -36666,7 +37159,7 @@
                     "type": "string"
                   },
                   "token": {
-                    "description": "Single-use login token extracted from the magic link or email code flow.",
+                    "description": "Single-use email-login or impersonation token; not a passwordless magic-link token or numeric code.",
                     "example": "string",
                     "type": "string"
                   }
@@ -36716,7 +37209,7 @@
     },
     "/api/v1/auth/verify/link": {
       "post": {
-        "description": "Consumes a single-use token from a magic link URL and returns an access token,\nrefresh token, and the authenticated user object. This endpoint completes both the\nlogin flow (initiated by `/auth/request_login_link`) and the registration flow\n(initiated by `/auth/request_register_link` or `/auth/request_link`).\n\nExtract the token from the `token` query parameter of the magic link redirect URI\nand POST it here. Expired or already-used tokens return HTTP 401 — expired links\ncarry the error code `expired_token`, unknown or already-used tokens carry\n`invalid_or_expired_token`. If the app has disabled passwordless authentication\nthe request returns HTTP 403. Rate-limited to 10 requests per IP per minute —\nexceeding this returns HTTP 429.\n",
+        "description": "Consumes a single-use token from a magic link URL and returns an access token,\nrefresh token, and the authenticated user object. This endpoint completes both the\nlogin flow (initiated by `/api/v1/auth/login/link`) and the registration flow\n(initiated by `/api/v1/auth/register/link` or `/api/v1/auth/request/link`).\n\nExtract the token from the `token` query parameter of the magic link redirect URI\nand POST JSON `{\"token\":\"<token from redirect URI>\"}` to\n`/api/v1/auth/verify/link`, not `/api/v1/auth/token`. Expired or already-used tokens return HTTP 401 — expired links\nhave `error.code` = `authentication_error` and `error.message` =\n`expired_token`; unknown or already-used tokens have `error.message` =\n`invalid_or_expired_token`. If the app has disabled passwordless authentication\nthe request returns HTTP 403. Rate-limited to 10 requests per IP per minute —\nexceeding this returns HTTP 429.\n",
         "operationId": "post_api_v1_auth_verify_link",
         "parameters": [],
         "requestBody": {
@@ -43529,6 +44022,36 @@
             }
           },
           {
+            "description": "Exact team IDs whose sources to include.",
+            "example": [
+              "string"
+            ],
+            "in": "query",
+            "name": "team",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Exact backing thread IDs whose sources to include.",
+            "example": [
+              "string"
+            ],
+            "in": "query",
+            "name": "thread",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
             "description": "Installation ID (`ins_...`). Returns only sources associated with this installation.",
             "example": "string",
             "in": "query",
@@ -44253,6 +44776,209 @@
           }
         },
         "summary": "Trigger ingestion on a knowledge source",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/knowledge_sources/{source}/search": {
+      "post": {
+        "description": "Executes a search query against the indexed documents in a single knowledge source and\nreturns matching results ranked by relevance.\n\nThree search modes are supported: `\"hybrid\"` (default) combines vector similarity and\nfull-text scoring, `\"vector\"` uses embedding-based semantic search only, and\n`\"fulltext\"` uses keyword-based search only. Use `\"hybrid\"` for most use cases;\nprefer `\"vector\"` when semantic meaning matters more than exact terms.\n\nOptionally restrict results to documents ingested within the last N days using\n`recency_days`. Results are ordered by relevance score descending.\n",
+        "operationId": "post_api_v1_knowledge_sources__source_search",
+        "parameters": [
+          {
+            "description": "Knowledge source ID (`ksrc_...`) to search within.",
+            "example": "string",
+            "in": "path",
+            "name": "source",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "max_results": 1,
+                  "min_similarity": 1.0,
+                  "mode": "string",
+                  "query": "string",
+                  "recency_days": 1
+                },
+                "properties": {
+                  "max_results": {
+                    "description": "Maximum number of results to return. The platform applies its own upper bound; omit to use the default.",
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "min_similarity": {
+                    "description": "Cosine-similarity floor for the vector leg, 0.0-1.0. Candidates below it are discarded before ranking, so a high value trades recall for precision. Pass `0.0` to disable the floor when a missed match costs more than a weak one — note that with no floor every query returns results, so an empty response can no longer be read as \"no match\". Omit to use the default.",
+                    "example": 1.0,
+                    "type": "number"
+                  },
+                  "mode": {
+                    "description": "Search algorithm to use. One of `\"hybrid\"` (default, combines vector and full-text), `\"vector\"` (semantic similarity only), or `\"fulltext\"` (keyword matching only).",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "query": {
+                    "description": "Natural language or keyword query string to search for.",
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "recency_days": {
+                    "description": "When set, limits results to documents ingested within the last N days. Omit to search across all documents regardless of age.",
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "query"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "Search results ranked by relevance.",
+                  "example": {
+                    "data": [
+                      {
+                        "content": "ArchAstro connects your agents to external knowledge sources for real-time context retrieval.",
+                        "content_type": "application/json",
+                        "created_at": "2024-01-01T00:00:00Z",
+                        "id": "cim_0aBcDeFgHiJkLmNoPqRsTu",
+                        "kind": "chunk",
+                        "metadata": {
+                          "key": "value"
+                        },
+                        "raw_content": {},
+                        "type": "gmail"
+                      }
+                    ]
+                  },
+                  "properties": {
+                    "data": {
+                      "description": "Array of matching knowledge items ordered by relevance score descending.",
+                      "example": [
+                        {
+                          "content": "ArchAstro connects your agents to external knowledge sources for real-time context retrieval.",
+                          "content_type": "application/json",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "id": "cim_0aBcDeFgHiJkLmNoPqRsTu",
+                          "kind": "chunk",
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "raw_content": {},
+                          "type": "gmail"
+                        }
+                      ],
+                      "items": {
+                        "description": "A single chunk returned by a knowledge search query. Represents an indexed content item matched against the search terms.",
+                        "example": {
+                          "content": "ArchAstro connects your agents to external knowledge sources for real-time context retrieval.",
+                          "content_type": "application/json",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "id": "cim_0aBcDeFgHiJkLmNoPqRsTu",
+                          "kind": "chunk",
+                          "metadata": {
+                            "key": "value"
+                          },
+                          "raw_content": {},
+                          "type": "gmail"
+                        },
+                        "properties": {
+                          "content": {
+                            "description": "Normalized plain-text content of the matched chunk.",
+                            "example": "ArchAstro connects your agents to external knowledge sources for real-time context retrieval.",
+                            "type": "string"
+                          },
+                          "content_type": {
+                            "description": "MIME type of the content, e.g. `\"text/plain\"` or `\"text/html\"`.",
+                            "example": "application/json",
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "description": "When this item was indexed into the knowledge base (ISO 8601).",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "Context item ID (`cim_...`).",
+                            "example": "cim_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "kind": {
+                            "default": "chunk",
+                            "description": "Result variant discriminator. Always `\"chunk\"` for this object type.",
+                            "enum": [
+                              "chunk"
+                            ],
+                            "example": "chunk",
+                            "type": "string"
+                          },
+                          "metadata": {
+                            "description": "Arbitrary key-value metadata attached to this item by the source connector.",
+                            "example": {
+                              "key": "value"
+                            },
+                            "type": "object"
+                          },
+                          "raw_content": {
+                            "description": "Raw content payload as stored by the source connector, before normalization.",
+                            "example": {},
+                            "type": "object"
+                          },
+                          "type": {
+                            "description": "Type identifier of the parent knowledge source (e.g. `\"gmail\"`, `\"github_activity\"`). Returns `\"unknown\"` when the source association is not loaded.",
+                            "example": "gmail",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "App-scoped token required. Use a token scoped to the target app."
+          },
+          "404": {
+            "description": "Knowledge source not found"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "Search within a knowledge source",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -45319,6 +46045,380 @@
         ]
       }
     },
+    "/api/v1/orgs/{org}/artifacts": {
+      "get": {
+        "description": "Returns completed system-owned organization snapshots, newest first. Private user, team, agent and thread artifacts are excluded.",
+        "operationId": "get_api_v1_orgs__org_artifacts",
+        "parameters": [
+          {
+            "description": "Organization ID.",
+            "example": "string",
+            "in": "path",
+            "name": "org",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum snapshots returned, from 1 to 100.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor for the next page of older snapshots.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exact, case-sensitive grouping key.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nonempty literal group prefix; mutually exclusive with group_key.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key_prefix",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "after_cursor": "string",
+                    "before_cursor": "string",
+                    "data": [
+                      {
+                        "agent": "agt_0aBcDeFgHiJkLmNoPqRsTu",
+                        "content_type": "application/json",
+                        "created_at": "2024-01-01T00:00:00Z",
+                        "current_version": "afv_0aBcDeFgHiJkLmNoPqRsTu",
+                        "description": "An example description.",
+                        "file": "string",
+                        "file_name": "Example Name",
+                        "file_url": "https://example.com",
+                        "group_key": "string",
+                        "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
+                        "image_source": {
+                          "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                          "height": 600,
+                          "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                          "mime_type": "application/json",
+                          "refresh_url": "https://example.com",
+                          "url": "https://example.com",
+                          "width": 800
+                        },
+                        "name": "Example Name",
+                        "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                        "sandbox": "string",
+                        "system": true,
+                        "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                        "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                        "updated_at": "2024-01-01T00:00:00Z",
+                        "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                        "version": 1
+                      }
+                    ],
+                    "has_more": true
+                  },
+                  "properties": {
+                    "after_cursor": {
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "before_cursor": {
+                      "description": "Always null; pagination is forward-only.",
+                      "example": "string",
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "data": {
+                      "example": [
+                        {
+                          "agent": "agt_0aBcDeFgHiJkLmNoPqRsTu",
+                          "content_type": "application/json",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "current_version": "afv_0aBcDeFgHiJkLmNoPqRsTu",
+                          "description": "An example description.",
+                          "file": "string",
+                          "file_name": "Example Name",
+                          "file_url": "https://example.com",
+                          "group_key": "string",
+                          "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
+                          "image_source": {
+                            "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                            "height": 600,
+                            "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                            "mime_type": "application/json",
+                            "refresh_url": "https://example.com",
+                            "url": "https://example.com",
+                            "width": 800
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "sandbox": "string",
+                          "system": true,
+                          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                          "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "updated_at": "2024-01-01T00:00:00Z",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "version": 1
+                        }
+                      ],
+                      "items": {
+                        "description": "A versioned artifact produced or managed by an agent, such as a generated file, report, or code output.",
+                        "example": {
+                          "agent": "agt_0aBcDeFgHiJkLmNoPqRsTu",
+                          "content_type": "application/json",
+                          "created_at": "2024-01-01T00:00:00Z",
+                          "current_version": "afv_0aBcDeFgHiJkLmNoPqRsTu",
+                          "description": "An example description.",
+                          "file": "string",
+                          "file_name": "Example Name",
+                          "file_url": "https://example.com",
+                          "group_key": "string",
+                          "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
+                          "image_source": {
+                            "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                            "height": 600,
+                            "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                            "mime_type": "application/json",
+                            "refresh_url": "https://example.com",
+                            "url": "https://example.com",
+                            "width": 800
+                          },
+                          "name": "Example Name",
+                          "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                          "sandbox": "string",
+                          "system": true,
+                          "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                          "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "updated_at": "2024-01-01T00:00:00Z",
+                          "user": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                          "version": 1
+                        },
+                        "properties": {
+                          "agent": {
+                            "description": "ID of the agent that produced this artifact (`agt_...`). `null` if not agent-produced.",
+                            "example": "agt_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "content_type": {
+                            "description": "MIME type of the current version's file, e.g. `\"text/csv\"` or `\"image/png\"`. `null` if no file is attached.",
+                            "example": "application/json",
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "description": "When the artifact was first created (ISO 8601).",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "current_version": {
+                            "description": "ID of the current (latest published) artifact version (`artv_...`). `null` if no version has been published.",
+                            "example": "afv_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "description": {
+                            "description": "Optional longer description of the artifact's contents or purpose. `null` if not set.",
+                            "example": "An example description.",
+                            "type": "string"
+                          },
+                          "file": {
+                            "description": "Storage file ID for the current version (`fil_...`). `null` if no file is attached.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "file_name": {
+                            "description": "Original filename of the current version's file, e.g. `\"output.csv\"`. `null` if no file is attached.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "file_url": {
+                            "description": "Short-lived signed URL for downloading the current version's file. `null` if no file is attached.",
+                            "example": "https://example.com",
+                            "type": "string"
+                          },
+                          "group_key": {
+                            "description": "Optional nonunique, case-sensitive grouping key, limited to 1024 UTF-8 bytes. Null when unset; belongs to the artifact, not a content version.",
+                            "example": "string",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "id": {
+                            "description": "Artifact ID (`art_...`).",
+                            "example": "art_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "image_source": {
+                            "description": "Image source metadata for rendering the current version's file inline. Present only when `content_type` starts with `\"image/\"`. `null` otherwise.",
+                            "example": {
+                              "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                              "height": 600,
+                              "media": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                              "mime_type": "application/json",
+                              "refresh_url": "https://example.com",
+                              "url": "https://example.com",
+                              "width": 800
+                            },
+                            "properties": {
+                              "file": {
+                                "description": "ID of the underlying storage file (`fil_...`). `null` when the image is not backed by a platform storage file.",
+                                "example": "fil_0aBcDeFgHiJkLmNoPqRsTu",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "height": {
+                                "description": "Height of the image in pixels. `null` if not known.",
+                                "example": 600,
+                                "nullable": true,
+                                "type": "integer"
+                              },
+                              "media": {
+                                "description": "ID of the associated media record (`med_...`). `null` when the image is not linked to a media entity.",
+                                "example": "med_0aBcDeFgHiJkLmNoPqRsTu",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "mime_type": {
+                                "description": "MIME type of the image, e.g. `\"image/png\"` or `\"image/jpeg\"`. `null` if not known.",
+                                "example": "application/json",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "refresh_url": {
+                                "description": "Endpoint URL you can call to obtain a fresh signed `url` when the current one has expired. `null` if the URL does not require refreshing.",
+                                "example": "https://example.com",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "url": {
+                                "description": "Signed or public URL for downloading the image. May be time-limited; use `refresh_url` to obtain a new URL when this one expires.",
+                                "example": "https://example.com",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "width": {
+                                "description": "Width of the image in pixels. `null` if not known.",
+                                "example": 800,
+                                "nullable": true,
+                                "type": "integer"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "name": {
+                            "description": "Human-readable name for the artifact, e.g. `\"Q2 Report\"`. `null` if not set.",
+                            "example": "Example Name",
+                            "type": "string"
+                          },
+                          "org": {
+                            "description": "ID of the organization this artifact belongs to (`org_...`).",
+                            "example": "org_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "sandbox": {
+                            "description": "Identifier of the sandbox environment associated with this artifact. `null` if not sandbox-scoped.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "system": {
+                            "description": "True when the artifact has no user, team, or agent owner. An organization may own a system artifact.",
+                            "example": true,
+                            "type": "boolean"
+                          },
+                          "team": {
+                            "description": "ID of the team that owns this artifact (`tea_...`). `null` if not team-scoped.",
+                            "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "thread": {
+                            "description": "ID of the thread in which this artifact was created (`thr_...`). `null` if not thread-scoped.",
+                            "example": "thr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "description": "When the artifact record was last modified (ISO 8601).",
+                            "example": "2024-01-01T00:00:00Z",
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "user": {
+                            "description": "ID of the user who created this artifact (`usr_...`). `null` if not user-scoped.",
+                            "example": "usr_0aBcDeFgHiJkLmNoPqRsTu",
+                            "type": "string"
+                          },
+                          "version": {
+                            "description": "Current version number of the artifact. Increments each time a new version is published.",
+                            "example": 1,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid group filters; Invalid cursor"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Organization not found"
+          }
+        },
+        "summary": "List completed organization artifacts",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/private_service_definitions/{app_id}/{private_service_id}": {
       "get": {
         "description": "Returns the canonical callable definition authorized by an enrollment token.",
@@ -45960,7 +47060,7 @@
     },
     "/api/v1/sandboxes/{sandbox}/keys": {
       "post": {
-        "description": "Issues a new API key for the specified sandbox. Keys can be either\n`\"publishable\"` (safe to embed in client-side code) or `\"secret\"` (server-side\nonly). The full key value is returned once in the `full_key` field of this\nresponse and is never retrievable again — store it securely immediately.\n\nThe caller must authenticate with app-scoped credentials and be able to\nmodify the sandbox (org members for org sandboxes; developers / all-powerful\nfor app-level). If the sandbox does not belong to the caller's app or is not\nvisible, a 404 is returned. Multiple active keys per sandbox are supported;\nrevoke individual keys with the revoke key endpoint.\n",
+        "description": "Issues a new API key for the specified sandbox. Keys can be either\n`\"publishable\"` (safe to embed in client-side code) or `\"secret\"` (server-side\nonly). The full key value is returned in the `full_key` field. Secret values\nare never retrievable again — store them securely immediately. Publishable\nvalues remain available as `key_value` when retrieving the sandbox.\n\nThe caller must authenticate with app-scoped credentials and be able to\nmodify the sandbox (org members for org sandboxes; developers / all-powerful\nfor app-level). If the sandbox does not belong to the caller's app or is not\nvisible, a 404 is returned. Multiple active keys per sandbox are supported;\nrevoke individual keys with the revoke key endpoint.\n",
         "operationId": "post_api_v1_sandboxes__sandbox_keys",
         "parameters": [
           {
@@ -46082,7 +47182,7 @@
     },
     "/api/v1/scripts/run": {
       "post": {
-        "description": "Executes the provided script source and returns the result value together\nwith any `print` output captured during the run. Use this endpoint to\nevaluate scripts interactively during development, or to drive automation\nfrom external tooling.\n\nThe script runs with the authenticated viewer's identity by default. Pass\n`run_as_user` to impersonate a specific user, or `run_as_agent` to run as\na specific agent. These two params are mutually exclusive — supplying both\nreturns a 422 error.\n\nRuntime environment variables defined for the app are automatically injected\ninto the script's `variables.env` scope. When the script raises a runtime\nerror, the response still returns HTTP 200 with `error`, `findings`, and any\npartial output; the error is also recorded in the app's activity feed.\n",
+        "description": "Executes the provided script source and returns the result value together\nwith any `print` output captured during the run. Use this endpoint to\nevaluate scripts interactively during development, or to drive automation\nfrom external tooling.\n\nThe script runs with the authenticated viewer's identity by default. Pass\n`run_as_user` to impersonate a specific user, or `run_as_agent` to run as\na specific agent, subject to the caller's delegation permissions. These two params are mutually exclusive — supplying both\nreturns a 422 error.\n\nRuntime environment variables resolved for the execution identity's app and organization are automatically injected\ninto the script's `variables.env` scope. When the script raises a runtime\nerror, the response still returns HTTP 200 with `error`, `findings`, and any\npartial output; the error is also recorded in the app's activity feed.\n",
         "operationId": "post_api_v1_scripts_run",
         "parameters": [],
         "requestBody": {
@@ -46090,12 +47190,18 @@
             "application/json": {
               "schema": {
                 "example": {
+                  "resolution_context_config": "string",
                   "run_as_agent": "string",
                   "run_as_user": "string",
                   "scope": {},
                   "script": "string"
                 },
                 "properties": {
+                  "resolution_context_config": {
+                    "description": "Optional Script config ID establishing the authorized installation context for imports.",
+                    "example": "string",
+                    "type": "string"
+                  },
                   "run_as_agent": {
                     "description": "Agent ID (`agt_...`) to impersonate during execution. When set, the script's `system.viewer` is replaced with a viewer for this agent. Mutually exclusive with `run_as_user`. `null` by default.",
                     "example": "string",
@@ -46138,6 +47244,12 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Execution identity is not authorized"
+          },
+          "404": {
+            "description": "Execution identity was not found"
           },
           "422": {
             "description": "run_as_user and run_as_agent are mutually exclusive"
@@ -46190,11 +47302,17 @@
             "application/json": {
               "schema": {
                 "example": {
+                  "resolution_context_config": "string",
                   "scope": {},
                   "script": "string",
                   "scripts": {}
                 },
                 "properties": {
+                  "resolution_context_config": {
+                    "description": "Optional config ID establishing the authorized installation context for imports.",
+                    "example": "string",
+                    "type": "string"
+                  },
                   "scope": {
                     "default": {},
                     "description": "Optional overrides for the execution scope. Accepts `variables`, `system`, or other top-level scope keys.",
@@ -50661,7 +51779,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -51581,7 +52699,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -52356,6 +53474,7 @@
             "application/json": {
               "schema": {
                 "example": {
+                  "force": true,
                   "harness": "string",
                   "lease_duration_seconds": 1,
                   "lease_id": "string",
@@ -52364,6 +53483,12 @@
                   "session_name": "Example Name"
                 },
                 "properties": {
+                  "force": {
+                    "default": false,
+                    "description": "Take the lease from a live but dead holder instead of returning a conflict. Releases the prior session's lease and claims the new one atomically. Always scoped to the task's assigned owner, same as an ordinary claim.",
+                    "example": true,
+                    "type": "boolean"
+                  },
                   "harness": {
                     "description": "Bounded harness identifier.",
                     "example": "string",
@@ -52565,6 +53690,180 @@
           "bearer"
         ]
       },
+      "get": {
+        "description": "Returns indexed link identities ordered by external_scope, object_type, then object_id ascending. This does not read the legacy Task links map.",
+        "operationId": "get_api_v1_tasks__task_links",
+        "parameters": [
+          {
+            "description": "Task ID (`tsk_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "task",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Explicit owning team for privileged calls.",
+            "example": "string",
+            "in": "query",
+            "name": "team",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Explicit owning user for privileged calls.",
+            "example": "string",
+            "in": "query",
+            "name": "user",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Explicit owning agent for privileged calls.",
+            "example": "string",
+            "in": "query",
+            "name": "agent",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Explicit organization for privileged calls; must agree with owner.",
+            "example": "string",
+            "in": "query",
+            "name": "org",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum links to return. Capped at 100.",
+            "example": 1,
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor returned by the previous page.",
+            "example": "string",
+            "in": "query",
+            "name": "after_cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "description": "External links attached to the task.",
+                  "example": {
+                    "after_cursor": "string",
+                    "before_cursor": "string",
+                    "data": [
+                      {
+                        "external_scope": "string",
+                        "object_id": "string",
+                        "object_type": "string"
+                      }
+                    ],
+                    "has_more": true
+                  },
+                  "properties": {
+                    "after_cursor": {
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "before_cursor": {
+                      "example": "string",
+                      "type": "string"
+                    },
+                    "data": {
+                      "example": [
+                        {
+                          "external_scope": "string",
+                          "object_id": "string",
+                          "object_type": "string"
+                        }
+                      ],
+                      "items": {
+                        "description": "An indexed external object linked to a task.",
+                        "example": {
+                          "external_scope": "string",
+                          "object_id": "string",
+                          "object_type": "string"
+                        },
+                        "properties": {
+                          "external_scope": {
+                            "description": "External container identity.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "object_id": {
+                            "description": "Object identity within that container.",
+                            "example": "string",
+                            "type": "string"
+                          },
+                          "object_type": {
+                            "description": "External object kind.",
+                            "example": "string",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "external_scope",
+                          "object_type",
+                          "object_id"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "has_more": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "has_more"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Task not found"
+          },
+          "422": {
+            "description": "Invalid parameters"
+          }
+        },
+        "summary": "List a task's external links",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
       "post": {
         "operationId": "post_api_v1_tasks__task_links",
         "parameters": [
@@ -52621,11 +53920,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/TaskExternalLink"
                 }
               }
             },
-            "description": "The created external link."
+            "description": "The created external link, with its identity normalized."
           },
           "401": {
             "description": "Unauthorized"
@@ -53346,7 +54645,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -53557,6 +54856,9 @@
           },
           "404": {
             "description": "Team or member not found"
+          },
+          "409": {
+            "description": "Conflict — cannot remove the last owner"
           }
         },
         "summary": "Remove a team membership by ID",
@@ -54928,6 +56230,26 @@
         "operationId": "get_api_v1_teams__team_artifacts",
         "parameters": [
           {
+            "description": "Case-sensitive exact group key. Mutually exclusive with group_key_prefix; null keys do not match.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nonempty case-sensitive literal prefix (percent, underscore and backslash are literal). Mutually exclusive with group_key.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key_prefix",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Team ID (`tea_...`). The authenticated user must be a member of this team.",
             "example": "string",
             "in": "path",
@@ -54955,6 +56277,7 @@
                         "file": "string",
                         "file_name": "Example Name",
                         "file_url": "https://example.com",
+                        "group_key": "string",
                         "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_source": {
                           "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -54968,6 +56291,7 @@
                         "name": "Example Name",
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox": "string",
+                        "system": true,
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                         "updated_at": "2024-01-01T00:00:00Z",
@@ -54989,6 +56313,7 @@
                           "file": "string",
                           "file_name": "Example Name",
                           "file_url": "https://example.com",
+                          "group_key": "string",
                           "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_source": {
                             "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -55002,6 +56327,7 @@
                           "name": "Example Name",
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "string",
+                          "system": true,
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                           "updated_at": "2024-01-01T00:00:00Z",
@@ -55020,6 +56346,7 @@
                           "file": "string",
                           "file_name": "Example Name",
                           "file_url": "https://example.com",
+                          "group_key": "string",
                           "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_source": {
                             "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -55033,6 +56360,7 @@
                           "name": "Example Name",
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "string",
+                          "system": true,
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                           "updated_at": "2024-01-01T00:00:00Z",
@@ -55079,6 +56407,12 @@
                           "file_url": {
                             "description": "Short-lived signed URL for downloading the current version's file. `null` if no file is attached.",
                             "example": "https://example.com",
+                            "type": "string"
+                          },
+                          "group_key": {
+                            "description": "Optional nonunique, case-sensitive grouping key, limited to 1024 UTF-8 bytes. Null when unset; belongs to the artifact, not a content version.",
+                            "example": "string",
+                            "nullable": true,
                             "type": "string"
                           },
                           "id": {
@@ -55158,6 +56492,11 @@
                             "example": "string",
                             "type": "string"
                           },
+                          "system": {
+                            "description": "True when the artifact has no user, team, or agent owner. An organization may own a system artifact.",
+                            "example": true,
+                            "type": "boolean"
+                          },
                           "team": {
                             "description": "ID of the team that owns this artifact (`tea_...`). `null` if not team-scoped.",
                             "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
@@ -55201,6 +56540,9 @@
               }
             },
             "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid group filters"
           },
           "401": {
             "description": "Unauthorized"
@@ -55783,7 +57125,7 @@
     },
     "/api/v1/teams/{team}/invite": {
       "post": {
-        "description": "Generates a new invite code for the specified team. The authenticated user\nmust be a member of the team with the `owner` or `admin` role.\n\nThe returned code is a short alphanumeric string that other users can\npresent to join the team. Each call produces a new code; previously issued\ncodes are not invalidated by this request.\n",
+        "description": "Generates a new invite code for the specified team. The authenticated user\nmust be a member of the team with the `owner` or `admin` role.\n\nThe returned code is a short alphanumeric string that other users can\npresent to join the team. Each call produces a new code; previously issued\ncodes are not invalidated by this request. Codes expire after seven days.\n\nSharing a code intentionally grants membership across organizations within\nthe same application, including access to objects shared with team members.\nTreat it as a bearer credential. Revoke an individual code with\nDELETE /api/v1/teams/:team/invite/:code before issuing a replacement.\nRevocation does not remove existing members or their access.\n",
         "operationId": "post_api_v1_teams__team_invite",
         "parameters": [
           {
@@ -55819,6 +57161,53 @@
           }
         },
         "summary": "Create a team invite",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/teams/{team}/invite/{code}": {
+      "delete": {
+        "description": "Deletes one invite code for this team. Requires an owner or admin membership.\nFuture redemption returns 404, as for an unknown or expired code. Existing\nmemberships and their access are unchanged; remove members separately to end\ntheir access. Redemption already in flight is not cancelled.\n\nTo replace a code, revoke it and then create a new invite. Creating a new\ninvite alone does not invalidate any previous code. Other codes remain valid.\n",
+        "operationId": "delete_api_v1_teams__team_invite__code",
+        "parameters": [
+          {
+            "description": "Team ID (`tm_...`).",
+            "example": "string",
+            "in": "path",
+            "name": "team",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The invite code to revoke.",
+            "example": "string",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Team or invite not found"
+          }
+        },
+        "summary": "Revoke a team invite code",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -56025,6 +57414,9 @@
           },
           "404": {
             "description": "Team or member not found"
+          },
+          "409": {
+            "description": "Conflict — cannot remove the last owner"
           }
         },
         "summary": "Remove a member or org from a team",
@@ -57455,7 +58847,7 @@
                                         "type": "string"
                                       },
                                       "image_url": {
-                                        "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                        "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                         "example": "https://example.com",
                                         "nullable": true,
                                         "type": "string"
@@ -57995,7 +59387,7 @@
                                         "type": "string"
                                       },
                                       "image_url": {
-                                        "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                        "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                         "example": "https://example.com",
                                         "nullable": true,
                                         "type": "string"
@@ -60092,7 +61484,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -60202,6 +61594,7 @@
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
                     "epic": "billing-cadence",
+                    "id": "string",
                     "links": {
                       "key": "value"
                     },
@@ -60242,6 +61635,7 @@
                       "description": "An example description.",
                       "due_date": "2024-01-01T00:00:00Z",
                       "epic": "billing-cadence",
+                      "id": "string",
                       "links": {
                         "key": "value"
                       },
@@ -60278,6 +61672,11 @@
                       "epic": {
                         "description": "Optional free-form grouping label.",
                         "example": "billing-cadence",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "Optional caller-generated task public ID (`tsk_...`). Persist it before creating a task when creation must survive a lost response. An existing ID returns 409 without modifying the task; read the task by ID to reconcile. Omit for a server-generated ID.",
+                        "example": "string",
                         "type": "string"
                       },
                       "links": {
@@ -60335,7 +61734,7 @@
                         "type": "string"
                       },
                       "status": {
-                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
+                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`. Defaults to `\"open\"` when omitted.",
                         "example": "open",
                         "type": "string"
                       },
@@ -60392,6 +61791,9 @@
           },
           "404": {
             "description": "Task owner not found"
+          },
+          "409": {
+            "description": "Conflict"
           },
           "422": {
             "description": "Validation error"
@@ -61248,7 +62650,7 @@
                                   "type": "string"
                                 },
                                 "status": {
-                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                                   "example": "open",
                                   "type": "string"
                                 },
@@ -62307,7 +63709,7 @@
                                 "type": "string"
                               },
                               "status": {
-                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                                 "example": "open",
                                 "type": "string"
                               },
@@ -63201,7 +64603,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -67303,7 +68705,7 @@
                                           "type": "string"
                                         },
                                         "image_url": {
-                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
@@ -67843,7 +69245,7 @@
                                           "type": "string"
                                         },
                                         "image_url": {
-                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
@@ -69824,6 +71226,26 @@
         "operationId": "get_api_v1_threads__thread_artifacts",
         "parameters": [
           {
+            "description": "Case-sensitive exact group key. Mutually exclusive with group_key_prefix; null keys do not match.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nonempty case-sensitive literal prefix (percent, underscore and backslash are literal). Mutually exclusive with group_key.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key_prefix",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "Thread ID (`thr_...`). Must be accessible to the authenticated user.",
             "example": "string",
             "in": "path",
@@ -69851,6 +71273,7 @@
                         "file": "string",
                         "file_name": "Example Name",
                         "file_url": "https://example.com",
+                        "group_key": "string",
                         "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_source": {
                           "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -69864,6 +71287,7 @@
                         "name": "Example Name",
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox": "string",
+                        "system": true,
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                         "updated_at": "2024-01-01T00:00:00Z",
@@ -69885,6 +71309,7 @@
                           "file": "string",
                           "file_name": "Example Name",
                           "file_url": "https://example.com",
+                          "group_key": "string",
                           "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_source": {
                             "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -69898,6 +71323,7 @@
                           "name": "Example Name",
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "string",
+                          "system": true,
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                           "updated_at": "2024-01-01T00:00:00Z",
@@ -69916,6 +71342,7 @@
                           "file": "string",
                           "file_name": "Example Name",
                           "file_url": "https://example.com",
+                          "group_key": "string",
                           "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_source": {
                             "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -69929,6 +71356,7 @@
                           "name": "Example Name",
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "string",
+                          "system": true,
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                           "updated_at": "2024-01-01T00:00:00Z",
@@ -69975,6 +71403,12 @@
                           "file_url": {
                             "description": "Short-lived signed URL for downloading the current version's file. `null` if no file is attached.",
                             "example": "https://example.com",
+                            "type": "string"
+                          },
+                          "group_key": {
+                            "description": "Optional nonunique, case-sensitive grouping key, limited to 1024 UTF-8 bytes. Null when unset; belongs to the artifact, not a content version.",
+                            "example": "string",
+                            "nullable": true,
                             "type": "string"
                           },
                           "id": {
@@ -70054,6 +71488,11 @@
                             "example": "string",
                             "type": "string"
                           },
+                          "system": {
+                            "description": "True when the artifact has no user, team, or agent owner. An organization may own a system artifact.",
+                            "example": true,
+                            "type": "boolean"
+                          },
                           "team": {
                             "description": "ID of the team that owns this artifact (`tea_...`). `null` if not team-scoped.",
                             "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
@@ -70097,6 +71536,9 @@
               }
             },
             "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid group filters"
           },
           "401": {
             "description": "Unauthorized"
@@ -73021,7 +74463,7 @@
     },
     "/api/v1/threads/{thread}/search": {
       "get": {
-        "description": "Searches canonical message content in the specified thread. `\"text\"` mode\nperforms the existing case-insensitive substring search, `\"embedding\"` ranks\nstored message embeddings by cosine similarity, and `\"hybrid\"` combines the\ntext and embedding rankings with Reciprocal Rank Fusion (RRF). Only messages\nvisible to the authenticated caller are considered.\n\nResults are intentionally lean: each row contains only a bounded content\nsnippet, sender identity, and timestamp. Attachments, reactions, ACLs, and\nmetadata are neither hydrated nor serialized. At most 20 results are\nreturned. Text results support chronological cursor pagination. Embedding and\nhybrid results are relevance-ranked single pages and return null cursors.\n",
+        "description": "Searches canonical message content in the specified thread. `\"text\"` mode\nperforms the existing case-insensitive substring search, `\"embedding\"` ranks\nstored message embeddings by cosine similarity, and `\"hybrid\"` combines the\ntext and embedding rankings with Reciprocal Rank Fusion (RRF). Only messages\nvisible to the authenticated caller are considered.\n\nResults are intentionally lean: each row contains a bounded content snippet,\nsender identity, timestamp, and a small allowlisted structured-post evidence\nprojection. Attachments, reactions, ACLs, and arbitrary metadata are neither\nhydrated nor serialized. At most 20 results are returned. Text results\nsupport chronological cursor pagination. Embedding and hybrid results are\nrelevance-ranked single pages and return null cursors.\n",
         "operationId": "get_api_v1_threads__thread_search",
         "parameters": [
           {
@@ -73114,6 +74556,7 @@
                         "agent": "string",
                         "content": "string",
                         "created_at": "2024-01-01T00:00:00Z",
+                        "evidence": {},
                         "id": "string",
                         "similarity_score": 1.0,
                         "user": "string"
@@ -73139,17 +74582,19 @@
                           "agent": "string",
                           "content": "string",
                           "created_at": "2024-01-01T00:00:00Z",
+                          "evidence": {},
                           "id": "string",
                           "similarity_score": 1.0,
                           "user": "string"
                         }
                       ],
                       "items": {
-                        "description": "A lean message search result.\n\nSearch results intentionally omit attachment, reaction, ACL, and metadata\npayloads so searching a large thread does not hydrate its message history.\n",
+                        "description": "A lean message search result.\n\nSearch results intentionally omit attachment, reaction, ACL, and arbitrary\nmetadata payloads so searching a large thread does not hydrate its message\nhistory. A small allowlisted evidence projection preserves fields needed to\ninterpret structured lifecycle posts.\n",
                         "example": {
                           "agent": "string",
                           "content": "string",
                           "created_at": "2024-01-01T00:00:00Z",
+                          "evidence": {},
                           "id": "string",
                           "similarity_score": 1.0,
                           "user": "string"
@@ -73171,6 +74616,11 @@
                             "format": "date-time",
                             "type": "string"
                           },
+                          "evidence": {
+                            "description": "Bounded, allowlisted structured-post evidence such as source, lifecycle type, references, repository context, and addressee. Empty for ordinary messages.",
+                            "example": {},
+                            "type": "object"
+                          },
                           "id": {
                             "description": "Message ID (`msg_...`).",
                             "example": "string",
@@ -73190,7 +74640,8 @@
                         "required": [
                           "id",
                           "content",
-                          "created_at"
+                          "created_at",
+                          "evidence"
                         ],
                         "type": "object"
                       },
@@ -73955,6 +75406,26 @@
         "operationId": "get_api_v1_users__user_artifacts",
         "parameters": [
           {
+            "description": "Case-sensitive exact group key. Mutually exclusive with group_key_prefix; null keys do not match.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Nonempty case-sensitive literal prefix (percent, underscore and backslash are literal). Mutually exclusive with group_key.",
+            "example": "string",
+            "in": "query",
+            "name": "group_key_prefix",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "description": "User ID (`usr_...`). The authenticated user must be this user or have access to their artifacts.",
             "example": "string",
             "in": "path",
@@ -73982,6 +75453,7 @@
                         "file": "string",
                         "file_name": "Example Name",
                         "file_url": "https://example.com",
+                        "group_key": "string",
                         "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                         "image_source": {
                           "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -73995,6 +75467,7 @@
                         "name": "Example Name",
                         "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                         "sandbox": "string",
+                        "system": true,
                         "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                         "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                         "updated_at": "2024-01-01T00:00:00Z",
@@ -74016,6 +75489,7 @@
                           "file": "string",
                           "file_name": "Example Name",
                           "file_url": "https://example.com",
+                          "group_key": "string",
                           "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_source": {
                             "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -74029,6 +75503,7 @@
                           "name": "Example Name",
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "string",
+                          "system": true,
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                           "updated_at": "2024-01-01T00:00:00Z",
@@ -74047,6 +75522,7 @@
                           "file": "string",
                           "file_name": "Example Name",
                           "file_url": "https://example.com",
+                          "group_key": "string",
                           "id": "art_0aBcDeFgHiJkLmNoPqRsTu",
                           "image_source": {
                             "file": "fil_0aBcDeFgHiJkLmNoPqRsTu",
@@ -74060,6 +75536,7 @@
                           "name": "Example Name",
                           "org": "org_0aBcDeFgHiJkLmNoPqRsTu",
                           "sandbox": "string",
+                          "system": true,
                           "team": "tem_0aBcDeFgHiJkLmNoPqRsTu",
                           "thread": "thr_0aBcDeFgHiJkLmNoPqRsTu",
                           "updated_at": "2024-01-01T00:00:00Z",
@@ -74106,6 +75583,12 @@
                           "file_url": {
                             "description": "Short-lived signed URL for downloading the current version's file. `null` if no file is attached.",
                             "example": "https://example.com",
+                            "type": "string"
+                          },
+                          "group_key": {
+                            "description": "Optional nonunique, case-sensitive grouping key, limited to 1024 UTF-8 bytes. Null when unset; belongs to the artifact, not a content version.",
+                            "example": "string",
+                            "nullable": true,
                             "type": "string"
                           },
                           "id": {
@@ -74185,6 +75668,11 @@
                             "example": "string",
                             "type": "string"
                           },
+                          "system": {
+                            "description": "True when the artifact has no user, team, or agent owner. An organization may own a system artifact.",
+                            "example": true,
+                            "type": "boolean"
+                          },
                           "team": {
                             "description": "ID of the team that owns this artifact (`tea_...`). `null` if not team-scoped.",
                             "example": "tem_0aBcDeFgHiJkLmNoPqRsTu",
@@ -74228,6 +75716,9 @@
               }
             },
             "description": "Successful response"
+          },
+          "400": {
+            "description": "Invalid group filters"
           },
           "401": {
             "description": "Unauthorized"
@@ -74283,6 +75774,7 @@
                     "scopes": [
                       "string"
                     ],
+                    "token_kind": "string",
                     "workspace_key": "string"
                   },
                   "properties": {
@@ -74317,6 +75809,11 @@
                       },
                       "type": "array"
                     },
+                    "token_kind": {
+                      "description": "Credential authority model: `oauth` or `github_app_user`.",
+                      "example": "string",
+                      "type": "string"
+                    },
                     "workspace_key": {
                       "description": "GitHub login associated with the credential.",
                       "example": "string",
@@ -74327,7 +75824,8 @@
                     "access_token",
                     "integration",
                     "provider",
-                    "scopes"
+                    "scopes",
+                    "token_kind"
                   ],
                   "type": "object"
                 }
@@ -75893,7 +77391,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -76003,6 +77501,7 @@
                     "description": "An example description.",
                     "due_date": "2024-01-01T00:00:00Z",
                     "epic": "billing-cadence",
+                    "id": "string",
                     "links": {
                       "key": "value"
                     },
@@ -76043,6 +77542,7 @@
                       "description": "An example description.",
                       "due_date": "2024-01-01T00:00:00Z",
                       "epic": "billing-cadence",
+                      "id": "string",
                       "links": {
                         "key": "value"
                       },
@@ -76079,6 +77579,11 @@
                       "epic": {
                         "description": "Optional free-form grouping label.",
                         "example": "billing-cadence",
+                        "type": "string"
+                      },
+                      "id": {
+                        "description": "Optional caller-generated task public ID (`tsk_...`). Persist it before creating a task when creation must survive a lost response. An existing ID returns 409 without modifying the task; read the task by ID to reconcile. Omit for a server-generated ID.",
+                        "example": "string",
                         "type": "string"
                       },
                       "links": {
@@ -76136,7 +77641,7 @@
                         "type": "string"
                       },
                       "status": {
-                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`. Defaults to `\"open\"` when omitted.",
+                        "description": "Initial status for the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`. Defaults to `\"open\"` when omitted.",
                         "example": "open",
                         "type": "string"
                       },
@@ -76193,6 +77698,9 @@
           },
           "404": {
             "description": "Task owner not found"
+          },
+          "409": {
+            "description": "Conflict"
           },
           "422": {
             "description": "Validation error"
@@ -77049,7 +78557,7 @@
                                   "type": "string"
                                 },
                                 "status": {
-                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                                  "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                                   "example": "open",
                                   "type": "string"
                                 },
@@ -77995,7 +79503,7 @@
                                 "type": "string"
                               },
                               "status": {
-                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                                "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                                 "example": "open",
                                 "type": "string"
                               },
@@ -78889,7 +80397,7 @@
                             "type": "string"
                           },
                           "status": {
-                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                            "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                             "example": "open",
                             "type": "string"
                           },
@@ -83038,7 +84546,7 @@
                                           "type": "string"
                                         },
                                         "image_url": {
-                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
@@ -83578,7 +85086,7 @@
                                           "type": "string"
                                         },
                                         "image_url": {
-                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                          "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                           "example": "https://example.com",
                                           "nullable": true,
                                           "type": "string"
@@ -87012,7 +88520,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -87552,7 +89060,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -91952,7 +93460,7 @@
                                 "type": "string"
                               },
                               "image_url": {
-                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
@@ -92492,7 +94000,7 @@
                                 "type": "string"
                               },
                               "image_url": {
-                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
@@ -94182,7 +95690,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -94722,7 +96230,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -100613,7 +102121,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -101153,7 +102661,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -105278,7 +106786,7 @@
                                   "type": "string"
                                 },
                                 "image_url": {
-                                  "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                  "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                   "example": "https://example.com",
                                   "nullable": true,
                                   "type": "string"
@@ -105818,7 +107326,7 @@
                                   "type": "string"
                                 },
                                 "image_url": {
-                                  "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                  "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                   "example": "https://example.com",
                                   "nullable": true,
                                   "type": "string"
@@ -111149,7 +112657,7 @@
                                 "type": "string"
                               },
                               "image_url": {
-                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
@@ -111689,7 +113197,7 @@
                                 "type": "string"
                               },
                               "image_url": {
-                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                 "example": "https://example.com",
                                 "nullable": true,
                                 "type": "string"
@@ -113379,7 +114887,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -113919,7 +115427,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -119810,7 +121318,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -120350,7 +121858,7 @@
                                       "type": "string"
                                     },
                                     "image_url": {
-                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image, and always `null` for org-scoped rows — the permanent URL is minted for system-scope (catalog) Solutions only.",
+                                      "description": "Absolute URL of the Solution's cover image — the bundled asset the body's `image:` field names. A stable, non-expiring capability URL (like `org_logo.url`), safe to hold in caches and OpenGraph tags; it 404s if the Solution stops declaring a cover. `null` when the Solution has no cover image. Org-only rows remain `null`; when a list entry merges an org copy with its system counterpart, it may reuse the system row's public cover URL. Permanent URLs are never minted for private org assets.",
                                       "example": "https://example.com",
                                       "nullable": true,
                                       "type": "string"
@@ -129389,7 +130897,7 @@
                       "type": "string"
                     },
                     "status": {
-                      "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, or `\"done\"`.",
+                      "description": "Current status of the task. One of `\"open\"`, `\"in_progress\"`, `\"in_review\"`, `\"paused\"`, `\"failed\"`, `\"superseding\"`, `\"done\"`, or `\"cancelled\"`.",
                       "example": "open",
                       "type": "string"
                     },
