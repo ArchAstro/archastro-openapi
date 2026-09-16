@@ -181,6 +181,13 @@ function generatePackageInit(spec: SdkSpec): string {
   lines.push("from importlib.metadata import version as _pkg_version");
   lines.push("");
   lines.push("from .client import AsyncPlatformClient, PlatformClient  # noqa: F401");
+  // The runtime's timeout surface is part of the package's public API: the
+  // README teaches `request_timeout` from the package root, and callers thread
+  // a deadline through it. Emitting the re-export keeps a regeneration from
+  // silently dropping a documented import.
+  lines.push(
+    "from .runtime.http_client import DEFAULT_TIMEOUT_S, request_timeout  # noqa: F401"
+  );
   for (const versionSet of spec.versions) {
     const cls = pyVersionClassName(versionSet.version);
     lines.push(

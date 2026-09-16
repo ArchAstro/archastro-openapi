@@ -2852,6 +2852,18 @@ describe("Full Python generation", () => {
     expect(init).toContain(`_pkg_version("${ast.name}")`);
   });
 
+  it("re-exports the runtime timeout surface from the package root", () => {
+    // `request_timeout` is the documented way to bound a call, and callers
+    // import it from the package root. It lives in the hand-maintained
+    // runtime, so the generated __init__ has to re-export it or a
+    // regeneration silently removes a public import.
+    const init =
+      files["/tmp/test-python-sdk/src/archastro/platform/__init__.py"]!;
+    expect(init).toContain(
+      "from .runtime.http_client import DEFAULT_TIMEOUT_S, request_timeout"
+    );
+  });
+
   it("versioned resource files use correct import depth", () => {
     const teamResource =
       files[
