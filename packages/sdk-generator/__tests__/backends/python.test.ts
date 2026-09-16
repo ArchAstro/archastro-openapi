@@ -338,6 +338,107 @@ describe("Pydantic emitter", () => {
       'async_2: Optional[str] = Field(default=None, alias="async_")'
     );
   });
+
+  it("emits Python literals for collection defaults", () => {
+    // `String([])` is the empty string and `String({})` is "[object Object]",
+    // so an OpenAPI `default: []` used to emit `Field(default=, ...)` — a
+    // SyntaxError that failed the whole SDK regeneration at the ruff step.
+    const out = emitPydanticFile([
+      {
+        name: "ExpressionResult",
+        fields: [
+          {
+            name: "output",
+            type: {
+              kind: "optional",
+              inner: { kind: "array", items: { kind: "unknown" } },
+            },
+            required: false,
+            default: [],
+            description: "Output lines from println calls.",
+          },
+          {
+            name: "scope",
+            type: {
+              kind: "optional",
+              inner: { kind: "map", valueType: { kind: "unknown" } },
+            },
+            required: false,
+            default: {},
+            description: "Evaluation scope.",
+          },
+        ],
+      },
+    ]);
+
+    expect(out).toContain(
+      'output: Optional[list[Any]] = Field(default=[], description="Output lines from println calls.")'
+    );
+    expect(out).toContain(
+      'scope: Optional[dict[str, Any]] = Field(default={}, description="Evaluation scope.")'
+    );
+    expect(out).not.toContain("default=,");
+    expect(out).not.toContain("[object Object]");
+  });
+
+  it("converts nested default values to Python literals", () => {
+    // Nested JSON values carry JavaScript spellings; `true`/`null` are not
+    // Python, so each element has to be converted rather than stringified.
+    const out = emitPydanticFile([
+      {
+        name: "NestedDefaults",
+        fields: [
+          {
+            name: "mixed",
+            type: {
+              kind: "optional",
+              inner: { kind: "array", items: { kind: "unknown" } },
+            },
+            required: false,
+            default: [1, "a", true, null],
+            description: "Mixed literal list.",
+          },
+          {
+            name: "nested",
+            type: {
+              kind: "optional",
+              inner: { kind: "map", valueType: { kind: "unknown" } },
+            },
+            required: false,
+            default: { enabled: false, tags: [] },
+            description: "Nested mapping.",
+          },
+        ],
+      },
+    ]);
+
+    expect(out).toContain('default=[1, "a", True, None]');
+    expect(out).toContain('default={"enabled": False, "tags": []}');
+  });
+
+  it("emits a collection default on a bare annotation without Field", () => {
+    // A field with no description and no alias skips Field() entirely and
+    // assigns the default directly, which hit the same conversion path.
+    const out = emitPydanticFile([
+      {
+        name: "BareDefault",
+        fields: [
+          {
+            name: "items",
+            type: {
+              kind: "optional",
+              inner: { kind: "array", items: { kind: "unknown" } },
+            },
+            required: false,
+            default: [],
+          },
+        ],
+      },
+    ]);
+
+    expect(out).toContain("items: Optional[list[Any]] = []");
+    expect(out).not.toMatch(/items: Optional\[list\[Any\]\] = *$/m);
+  });
 });
 
 describe("Python resource emitter", () => {
