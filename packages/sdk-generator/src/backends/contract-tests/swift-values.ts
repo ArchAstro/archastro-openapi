@@ -83,6 +83,10 @@ export function swiftTypedValue(
       });
     }
     case "union":
+      // Inline unions are represented as JSONValue in generated Swift inputs.
+      // Populate the first variant's required fields so Prism accepts the
+      // request instead of rejecting an empty object with a 422.
+      return generateDummyValue(typeRef, fieldName, "swift");
     case "unknown":
       return "[:]";
     case "void":
