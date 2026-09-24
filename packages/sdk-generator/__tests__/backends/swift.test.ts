@@ -14,7 +14,8 @@ import {
 } from "../../src/backends/swift/type-map.js";
 import { emitSwiftContractTests } from "../../src/backends/contract-tests/swift-emitter.js";
 import { emitSwiftChannelContractTestFile } from "../../src/backends/contract-tests/channel-emitter-swift.js";
-import type { SchemaDef } from "../../src/ast/types.js";
+import { swiftTypedValue } from "../../src/backends/contract-tests/swift-values.js";
+import type { SchemaDef, TypeRef } from "../../src/ast/types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixture = JSON.parse(
@@ -327,5 +328,37 @@ describe("swift contract tests emitter", () => {
     expect(output).toContain(
       'localTools: [["type": "test", "function": ["name": "test-name"]]]'
     );
+  });
+
+  it("populates inline union JSONValue inputs with a valid variant", () => {
+    // Discriminated inline union, as in ExternalObjectCreateInput.object:
+    // Prism rejects `[:]` with a 422 because `type` and `name` are required.
+    const union: TypeRef = {
+      kind: "union",
+      variants: [
+        {
+          kind: "object",
+          fields: [
+            {
+              name: "type",
+              type: { kind: "enum", values: ["r2_bucket"] },
+              required: true,
+            },
+            {
+              name: "name",
+              type: { kind: "primitive", type: "string" },
+              required: true,
+            },
+          ],
+        },
+      ],
+    };
+
+    const validObject = '["type": "r2_bucket", "name": "test-name"]';
+    expect(swiftTypedValue(union, "object", "Object", [])).toBe(validObject);
+    expect(swiftTypedValue(union, "object", "Object", [], "json")).toBe(validObject);
+    expect(
+      swiftTypedValue({ kind: "array", items: union }, "questions", "Questions", [])
+    ).toBe(`[${validObject}]`);
   });
 });
