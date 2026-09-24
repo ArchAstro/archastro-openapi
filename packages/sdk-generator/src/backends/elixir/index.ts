@@ -1129,14 +1129,20 @@ function descriptor(type: TypeRef): string {
     case "union": {
       const variants = `[${type.variants.map(descriptor).join(", ")}]`;
       if (type.discriminator) {
-      const inferredMapping = Object.fromEntries(
-        type.variants
-          .filter((variant): variant is Extract<TypeRef, { kind: "ref" }> => variant.kind === "ref")
-          .map((variant) => [variant.schema, variant.schema])
-      );
-      const mapping = Object.entries(type.discriminator.mapping ?? inferredMapping)
-          .map(([tag, schema]) => `${exString(tag)} => ${typeModule(schema)}`).join(", ");
-        return `{:union, ${variants}, {${exString(type.discriminator.propertyName)}, %{${mapping}}}}`;
+        const inferredMapping = Object.fromEntries(
+          type.variants
+            .filter((variant): variant is Extract<TypeRef, { kind: "ref" }> => variant.kind === "ref")
+            .map((variant) => [variant.schema, variant.schema])
+        );
+        const entries = Object.entries(type.discriminator.mapping ?? inferredMapping);
+        // Inline variants have no schema name to map a tag to. An empty
+        // mapping would reject every value, so let Codec try each variant;
+        // their own discriminator enums keep the match exact.
+        if (entries.length > 0) {
+          const mapping = entries
+            .map(([tag, schema]) => `${exString(tag)} => ${typeModule(schema)}`).join(", ");
+          return `{:union, ${variants}, {${exString(type.discriminator.propertyName)}, %{${mapping}}}}`;
+        }
       }
       return `{:union, ${variants}}`;
     }

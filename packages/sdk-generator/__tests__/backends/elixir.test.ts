@@ -226,6 +226,44 @@ describe("elixir backend", () => {
     expect(output).toMatch(/choice: ArchAstro\.SDK\.Types\..*ChoiceVariant1\.t\(\) \| ArchAstro\.SDK\.Types\..*ChoiceVariant2\.t\(\)/);
   });
 
+  it("decodes discriminated inline union variants without a mapping by trying each variant", () => {
+    // ExternalObject.object: `discriminator: {propertyName: "type"}` over inline
+    // variants. There is no $ref to map a tag to, so an emitted `%{}` mapping
+    // made Codec reject every value.
+    const spec = ast();
+    const operation = spec.versions
+      .flatMap((version) => version.resources)
+      .flatMap(function walk(resource): typeof resource[] {
+        return [resource, ...resource.children.flatMap(walk)];
+      })
+      .flatMap((resource) => resource.operations)[0]!;
+    const variant = (tag: string) => ({
+      kind: "object" as const,
+      fields: [
+        { name: "type", required: true, type: { kind: "enum" as const, values: [tag] } },
+        { name: "name", required: true, type: { kind: "primitive" as const, type: "string" as const } },
+      ],
+    });
+    operation.returnType = {
+      kind: "object",
+      fields: [{
+        name: "object",
+        required: true,
+        type: {
+          kind: "union",
+          variants: [variant("r2_bucket"), variant("d1_database")],
+          discriminator: { propertyName: "type" },
+        },
+      }],
+    };
+
+    const output = Object.values(generateElixir(spec, { outDir: "sdk" })).join("\n");
+    expect(output).not.toContain('{"type", %{}}');
+    expect(output).toMatch(
+      /object: \{"object", \{:union, \[\{:ref, ArchAstro\.SDK\.Types\.\S*ObjectVariant1\}, \{:ref, ArchAstro\.SDK\.Types\.\S*ObjectVariant2\}\]\}\}/
+    );
+  });
+
   it("hoists top-level inline union response variants into strict structs", () => {
     const spec = ast();
     const operation = spec.versions
