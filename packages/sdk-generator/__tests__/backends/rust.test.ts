@@ -49,6 +49,11 @@ describe("rust backend", () => {
     expect(output).toContain("ChannelEventStream<");
   });
 
+  it("allows large enum variants in version modules, where SSE event enums live", () => {
+    const files = generateRust(ast(), { outDir: "sdk" });
+    expect(files["sdk/src/generated/v1.rs"]).toContain("#![allow(clippy::large_enum_variant)]");
+  });
+
   it("lifts synthetic api/version wrappers out of the public namespace", () => {
     const files = generateRust(ast(), { outDir: "sdk" });
     const version = files["sdk/src/generated/v1.rs"]!;
@@ -92,6 +97,34 @@ describe("rust backend", () => {
     expect(types).toContain("pub enum RecursiveNodeChoice");
     expect(types).toContain("Variant1(String)");
     expect(types).toContain("Variant2(i64)");
+  });
+});
+
+describe("rust channel leave collision", () => {
+  function specWithLeaveEvent() {
+    const spec = ast();
+    spec.channels.push({
+      name: "Artifact",
+      className: "ArtifactChannel",
+      joins: [{ topicPattern: "api:artifact:{artifact_id}", name: "join_artifact", params: [], returnType: { kind: "unknown" } }],
+      messages: [{ event: "leave", params: [], returnType: { kind: "unknown" } }],
+      pushes: [],
+    });
+    return spec;
+  }
+
+  it("renames a leave event so it does not duplicate the lifecycle leave()", () => {
+    const channels = generateRust(specWithLeaveEvent(), { outDir: "sdk" })["sdk/src/generated/channels.rs"]!;
+    const artifact = channels.slice(channels.indexOf("pub struct ArtifactChannel"));
+    expect(artifact.match(/pub async fn leave\(/g)).toHaveLength(1);
+    expect(artifact).toContain("pub async fn leave_message(&self)");
+    expect(artifact).toContain('self.channel.push("leave", serde_json::json!({}))');
+  });
+
+  it("calls the renamed method from the channel contract test", () => {
+    const files = emitRustContractTests(specWithLeaveEvent(), "sdk");
+    const output = Object.values(files).join("\n");
+    expect(output).toContain("channel.leave_message().await");
   });
 });
 

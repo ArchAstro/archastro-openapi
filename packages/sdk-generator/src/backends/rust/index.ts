@@ -13,7 +13,7 @@ import type {
 } from "../../ast/types.js";
 import { addContentHash, cleanStaleFiles, generatedHeader } from "../../utils/codegen.js";
 import { hoistInlineObjects } from "../python/inline-object-hoist.js";
-import { rustIdent, rustString, rustTypeName, uniqueRustNames } from "./identifiers.js";
+import { rustChannelJoinMethodName, rustChannelMessageMethodName, rustIdent, rustString, rustTypeName, uniqueRustNames } from "./identifiers.js";
 
 export const RUST_GENERATED_DIR = "src/generated";
 export type GeneratedFiles = Record<string, string>;
@@ -245,6 +245,8 @@ function inlineRefs(ref: TypeRef): string[] {
 function emitVersion(version: VersionedResourceSet): string {
   const lines = [
     header(),
+    // SSE event enums wrap whole models, so variant sizes differ widely.
+    "#![allow(clippy::large_enum_variant)]",
     "use reqwest::Method;",
     "use serde::{Deserialize, Serialize};",
     "use serde_json::Value;",
@@ -452,7 +454,7 @@ function emitChannel(channel: ChannelDef): string {
   const lines: string[] = [...definitions];
   lines.push(doc(channel.description), "#[derive(Clone)]", `pub struct ${name}<R = Value> {`, "    /// Underlying joined Phoenix channel.", "    pub channel: Channel,", "    /// Typed payload returned by the join.", "    pub join_response: R,", "}", `impl ${name}<Value> {`);
   channel.joins.forEach((join, index) => {
-    const method = rustIdent(join.name ?? (channel.joins.length > 1 ? `join_${index + 1}` : "join"));
+    const method = rustChannelJoinMethodName(channel, index);
     const segment = rustTypeName(join.sdkTypeName ?? join.name ?? `Join${index + 1}`);
     const placeholders = [...join.topicPattern.matchAll(/\{([^}]+)\}/g)].map((match) => match[1]!);
     const params = uniqueRustNames(placeholders);
@@ -477,7 +479,7 @@ function emitChannel(channel: ChannelDef): string {
   lines.push("}", `impl<R> ${name}<R> {`);
   lines.push("    /// Leave the underlying Phoenix channel.", "    pub async fn leave(&self) -> Result<()> { self.channel.leave().await }");
   for (const message of channel.messages) {
-    const method = rustIdent(message.event);
+    const method = rustChannelMessageMethodName(channel, message.event);
     const inputName = `${name}${rustTypeName(message.sdkTypeName ?? message.event)}Input`;
     const args = message.params.length > 0 ? `, input: &${inputName}` : "";
     const payload = message.params.length > 0 ? "serde_json::to_value(input)?" : "serde_json::json!({})";
