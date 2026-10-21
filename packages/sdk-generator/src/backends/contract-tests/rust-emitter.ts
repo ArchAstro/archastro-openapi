@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import type { BodyDef, ChannelDef, ChannelJoinDef, FieldDef, OperationDef, ParamDef, ResourceDef, SchemaDef, SdkSpec, TypeRef } from "../../ast/types.js";
 import { generatedHeader } from "../../utils/codegen.js";
-import { rustIdent, rustString, rustTypeName } from "../rust/identifiers.js";
+import { rustChannelJoinMethodName, rustChannelMessageMethodName, rustIdent, rustString, rustTypeName } from "../rust/identifiers.js";
 
 export const RUST_TESTS_DIR = "tests";
 type GeneratedFiles = Record<string, string>;
@@ -93,7 +93,7 @@ function renderChannels(channels: ChannelDef[], schemas: SchemaDef[]): string {
           const value = fieldsJson(message.params, schemas, new Set());
           lines.push(`    let message_${index}: ${type} = serde_json::from_str(${rawString(JSON.stringify(value))}).expect("valid message input");`);
         }
-        lines.push(`    channel.${rustIdent(message.event)}(${message.params.length > 0 ? `&message_${index}` : ""}).await.expect("channel push");`);
+        lines.push(`    channel.${rustChannelMessageMethodName(channel, message.event)}(${message.params.length > 0 ? `&message_${index}` : ""}).await.expect("channel push");`);
       });
       channel.pushes.forEach((push, index) => {
         lines.push(`    let mut push_${index} = channel.subscribe_${rustIdent(push.event)}();`, `    push_${index}.next().await.expect("server push").expect("decode server push");`);
@@ -120,7 +120,7 @@ function channelJoinSetup(channel: ChannelDef, joinDef: ChannelJoinDef, joinInde
   return {
     lines,
     args,
-    method: rustIdent(joinDef.name ?? (channel.joins.length > 1 ? `join_${joinIndex + 1}` : "join")),
+    method: rustChannelJoinMethodName(channel, joinIndex),
     topicVar: "topic",
   };
 }

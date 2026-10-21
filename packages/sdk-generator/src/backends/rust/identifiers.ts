@@ -1,3 +1,4 @@
+import type { ChannelDef } from "../../ast/types.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
 
 const KEYWORDS = new Set([
@@ -38,4 +39,20 @@ export function uniqueRustNames(values: string[], reserved: string[] = []): stri
     used.add(candidate);
     return candidate;
   });
+}
+
+export function rustChannelJoinMethodName(channel: ChannelDef, index: number): string {
+  const join = channel.joins[index]!;
+  return rustIdent(join.name ?? (channel.joins.length > 1 ? `join_${index + 1}` : "join"));
+}
+
+/**
+ * The channel type also defines `leave()` and its join constructors. A message
+ * event with one of those names (the Artifact channel has a `leave` event)
+ * would be a duplicate definition, so it gets a `_message` suffix.
+ */
+export function rustChannelMessageMethodName(channel: ChannelDef, event: string): string {
+  const name = rustIdent(event);
+  const reserved = new Set(["leave", ...channel.joins.map((_, index) => rustChannelJoinMethodName(channel, index))]);
+  return reserved.has(name) ? `${name}_message` : name;
 }
