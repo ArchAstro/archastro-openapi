@@ -7,6 +7,7 @@ import type {
 } from "../../ast/types.js";
 import { CodeBuilder, generatedHeader } from "../../utils/codegen.js";
 import { camelCase, pascalCase, snakeCase } from "../../utils/naming.js";
+import { tsChannelMessageMethodName } from "../typescript/channel-emitter.js";
 import { generateDummyValue } from "./value-generator.js";
 
 /**
@@ -440,7 +441,7 @@ function joinMethodName(
 }
 
 function messageMethodName(event: string): string {
-  return camelCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  return tsChannelMessageMethodName(event);
 }
 
 function pushHandlerName(event: string): string {

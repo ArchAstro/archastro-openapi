@@ -226,8 +226,22 @@ export function tsChannelJoinMethodName(
   return total > 1 ? `join${index + 1}` : "join";
 }
 
+/**
+ * Instance members the channel class defines itself. A client-to-server
+ * message whose event camel-cases to one of these (the Artifact channel has a
+ * `leave` event) would otherwise emit a second member with the same name,
+ * which fails `tsc` with TS2393 or shadows the field.
+ */
+const TS_CHANNEL_RESERVED_MEMBERS = new Set([
+  "leave",
+  "channel",
+  "joinResponse",
+  "constructor",
+]);
+
 export function tsChannelMessageMethodName(event: string): string {
-  return camelCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const name = camelCase(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  return TS_CHANNEL_RESERVED_MEMBERS.has(name) ? `${name}Message` : name;
 }
 
 export function tsChannelPushHandlerName(event: string): string {

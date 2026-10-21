@@ -411,8 +411,21 @@ export function pyChannelJoinMethodName(
   return total > 1 ? `join_${index + 1}` : "join";
 }
 
+/**
+ * Class members the channel class defines itself. A message event with the
+ * same name (the Artifact channel has a `leave` event) would silently replace
+ * the member, because Python lets a later `def` override an earlier one.
+ */
+const PY_CHANNEL_RESERVED_MEMBERS = new Set([
+  "leave",
+  "join",
+  "topic",
+  "join_response",
+]);
+
 export function pyChannelMessageMethodName(event: string): string {
-  return pythonParameterName(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  const name = pythonParameterName(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  return PY_CHANNEL_RESERVED_MEMBERS.has(name) ? `${name}_message` : name;
 }
 
 export function pyChannelPushHandlerName(event: string): string {
