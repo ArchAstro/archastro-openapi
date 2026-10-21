@@ -20,7 +20,7 @@ import {
   groupByTopLevelResource,
   type MethodCallInfo,
 } from "./method-chain-builder.js";
-import { generateDummyValue } from "./value-generator.js";
+import { generateDummyValue, generatePathArgValue } from "./value-generator.js";
 import { swiftBodyValue } from "./swift-values.js";
 import {
   emitSwiftChannelContractTestFile,
@@ -123,13 +123,13 @@ function buildSwiftArgs(
   for (let i = 0; i < resource.scopeParams.length; i++) {
     const param = resource.scopeParams[i]!;
     parts.push(
-      `${names.scope[i]}: ${generateDummyValue(param.type, param.name, "swift")}`
+      `${names.scope[i]}: ${generatePathArgValue(param.type, param.name, "swift")}`
     );
   }
   for (let i = 0; i < op.pathParams.length; i++) {
     const param = op.pathParams[i]!;
     parts.push(
-      `${names.path[i]}: ${generateDummyValue(param.type, param.name, "swift")}`
+      `${names.path[i]}: ${generatePathArgValue(param.type, param.name, "swift")}`
     );
   }
   if (op.body) {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  generatePathArgValue,
   renderLiteral,
   generateDummyValue,
   generateBodyLiteral,
@@ -60,6 +61,20 @@ describe("generateDummyValue", () => {
     expect(
       generateDummyValue({ kind: "primitive", type: "datetime" }, "created_at", "elixir")
     ).toBe("~U[2024-01-01 00:00:00Z]");
+  });
+});
+
+describe("generatePathArgValue", () => {
+  it("passes typed path params as strings, matching the Go and Swift SDK signatures", () => {
+    const integer = { kind: "primitive", type: "integer" } as const;
+    expect(generatePathArgValue(integer, "job_id", "go")).toBe('"1"');
+    expect(generatePathArgValue(integer, "job_id", "swift")).toBe('"1"');
+    expect(generatePathArgValue({ kind: "primitive", type: "boolean" }, "flag", "go")).toBe('"true"');
+  });
+
+  it("leaves string path params unchanged", () => {
+    const string = { kind: "primitive", type: "string" } as const;
+    expect(generatePathArgValue(string, "thread", "go")).toBe(generateDummyValue(string, "thread", "go"));
   });
 });
 
