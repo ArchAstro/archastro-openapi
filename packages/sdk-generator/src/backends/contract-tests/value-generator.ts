@@ -70,6 +70,23 @@ function isValidIdentifier(s: string): boolean {
 }
 
 /**
+ * Path and scope arguments are strings in the Go and Swift SDKs whatever the
+ * schema type, so an integer, float or boolean parameter (for example the
+ * integer `job_id` of task_ownership_conversions) is passed as the string form
+ * of its placeholder, which Prism still accepts for the typed path segment.
+ */
+export function generatePathArgValue(
+  typeRef: TypeRef,
+  fieldName: string,
+  lang: "go" | "swift"
+): string {
+  if (typeRef.kind === "primitive" && ["integer", "float", "boolean"].includes(typeRef.type)) {
+    return JSON.stringify(generatePrimitiveValue(typeRef.type, fieldName, lang));
+  }
+  return generateDummyValue(typeRef, fieldName, lang);
+}
+
+/**
  * Generate a value literal for a TypeRef.
  *
  * When an `example` is supplied (from the OpenAPI spec) it is rendered verbatim

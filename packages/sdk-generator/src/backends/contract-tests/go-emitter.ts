@@ -27,7 +27,7 @@ import {
   groupByTopLevelResource,
   type MethodCallInfo,
 } from "./method-chain-builder.js";
-import { generateDummyValue } from "./value-generator.js";
+import { generatePathArgValue } from "./value-generator.js";
 import {
   goBodyValue,
   goParamsValue,
@@ -197,10 +197,10 @@ function buildGoArgs(call: MethodCallInfo, ctx: GoValueContext): string[] {
   const args: string[] = [];
 
   for (const param of resource.scopeParams) {
-    args.push(generateDummyValue(param.type, param.name, "go"));
+    args.push(generatePathArgValue(param.type, param.name, "go"));
   }
   for (const param of op.pathParams) {
-    args.push(generateDummyValue(param.type, param.name, "go"));
+    args.push(generatePathArgValue(param.type, param.name, "go"));
   }
   if (op.body) {
     const inputStructName = hasInlineBody(op)
