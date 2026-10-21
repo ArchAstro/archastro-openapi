@@ -2622,6 +2622,27 @@ describe("Python channel emitter typed payloads", () => {
 });
 
 describe("Python channel emitter edge cases", () => {
+  it("does not let a leave event replace the lifecycle leave()", () => {
+    // Python lets a later `def leave` silently override the lifecycle method.
+    const out = emitPythonChannelFile({
+      name: "Artifact",
+      className: "ArtifactChannel",
+      joins: [
+        {
+          topicPattern: "api:artifact:{artifact_id}",
+          name: "join_artifact",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [{ event: "leave", params: [], returnType: { kind: "unknown" } }],
+      pushes: [],
+    });
+    expect(out.match(/async def leave\(/g)).toHaveLength(1);
+    expect(out).toContain("async def leave_message(");
+    expect(out).toContain('self._channel.push("leave", payload)');
+  });
+
   it("emits await channel.join() with no args when all params are topic-only", () => {
     const out = emitPythonChannelFile({
       name: "Object",

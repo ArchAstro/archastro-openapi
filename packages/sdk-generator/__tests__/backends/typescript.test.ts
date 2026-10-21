@@ -1206,6 +1206,31 @@ describe("Channel emitter", () => {
 });
 
 describe("Channel emitter edge cases", () => {
+  it("does not emit a message method that collides with leave()", () => {
+    // The Artifact channel has a client-to-server `leave` event. Emitting it
+    // as `leave(payload)` next to the lifecycle `leave()` fails tsc (TS2393).
+    const out = emitChannelFile({
+      name: "Artifact",
+      className: "ArtifactChannel",
+      joins: [
+        {
+          topicPattern: "api:artifact:{artifact_id}",
+          name: "join_artifact",
+          params: [],
+          returnType: { kind: "unknown" },
+        },
+      ],
+      messages: [
+        { event: "leave", params: [], returnType: { kind: "unknown" } },
+      ],
+      pushes: [],
+    });
+    expect(out.match(/async leave\(/g)).toHaveLength(1);
+    expect(out).toContain("async leave(): Promise<void>");
+    expect(out).toContain("async leaveMessage(payload: Record<string, unknown>)");
+    expect(out).toContain('this.channel.push("leave", payload)');
+  });
+
   it("emits channel.join() with no argument when all params are topic-only", () => {
     const out = emitChannelFile({
       name: "Object",

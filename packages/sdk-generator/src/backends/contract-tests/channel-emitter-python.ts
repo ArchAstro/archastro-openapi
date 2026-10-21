@@ -8,6 +8,7 @@ import type {
 import { CodeBuilder, generatedHeaderPython } from "../../utils/codegen.js";
 import { pascalCase, snakeCase } from "../../utils/naming.js";
 import { pythonParameterName, uniquePythonParameterNames } from "../python/identifiers.js";
+import { pyChannelMessageMethodName } from "../python/channel-emitter.js";
 import { generateDummyValue } from "./value-generator.js";
 
 /**
@@ -391,7 +392,7 @@ function pythonJoinMethodName(
 }
 
 function pythonMessageMethodName(event: string): string {
-  return pythonParameterName(event.replace(/[^a-zA-Z0-9_]/g, "_"));
+  return pyChannelMessageMethodName(event);
 }
 
 function pythonPushHandlerName(event: string): string {
