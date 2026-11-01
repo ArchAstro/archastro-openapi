@@ -196,7 +196,48 @@ export function inferResourceTree(
   // e.g., teams has operation "join" AND child "join" → child becomes "team_join"
   resolveChildOperationCollisions(roots);
 
+  // Post-process: two operations on one resource can infer the same name when
+  // the HTTP method is the same but the path shape differs, e.g.
+  // PUT /drafts and PUT /drafts/{key} both infer "replace".
+  resolveOperationNameCollisions(roots);
+
   return { resources: roots, scopeParams };
+}
+
+/**
+ * Give operations that share a name within one resource distinct names.
+ *
+ * The operation on the shallowest path (then alphabetically first) keeps the
+ * inferred name so existing SDK surfaces do not change. Each other colliding
+ * operation is suffixed with its last path parameter ("replace" ->
+ * "replaceByKey"), or a numeric suffix when that is not enough.
+ */
+function resolveOperationNameCollisions(resources: ResourceDef[]): void {
+  for (const resource of resources) {
+    const byName = new Map<string, OperationDef[]>();
+    for (const op of resource.operations) {
+      byName.set(op.name, [...(byName.get(op.name) ?? []), op]);
+    }
+    const taken = new Set(resource.operations.map((o) => o.name));
+
+    for (const [name, ops] of byName) {
+      if (ops.length < 2) continue;
+      const ordered = [...ops].sort((a, b) => {
+        const depth = (o: OperationDef) => o.path.split("/").filter(Boolean).length;
+        return depth(a) - depth(b) || a.path.localeCompare(b.path);
+      });
+      for (const op of ordered.slice(1)) {
+        const lastParam = [...op.path.matchAll(/\{([^}]+)\}/g)].pop()?.[1];
+        const base = lastParam ? `${name}By${pascalCase(lastParam)}` : name;
+        let candidate = base;
+        for (let n = 2; taken.has(candidate); n++) candidate = `${base}${n}`;
+        taken.add(candidate);
+        op.name = candidate;
+      }
+    }
+
+    resolveOperationNameCollisions(resource.children);
+  }
 }
 
 function resolveChildOperationCollisions(resources: ResourceDef[]): void {
