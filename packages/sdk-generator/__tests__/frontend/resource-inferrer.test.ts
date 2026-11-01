@@ -259,3 +259,44 @@ describe("inferResourceTree – scope parameter metadata", () => {
     expect(widgets?.scopeParams[0]?.type).toEqual({ kind: "primitive", type: "integer" });
   });
 });
+
+describe("inferResourceTree – operation name collisions", () => {
+  it("gives PUT on a collection and PUT on an item distinct names", () => {
+    const { resources } = inferResourceTree(
+      [
+        op("GET", "/api/v1/task_epics/{epic}/drafts", "list_drafts"),
+        op("PUT", "/api/v1/task_epics/{epic}/drafts", "put_drafts"),
+        op("DELETE", "/api/v1/task_epics/{epic}/drafts/{key}", "delete_draft"),
+        op("PUT", "/api/v1/task_epics/{epic}/drafts/{key}", "put_draft"),
+      ],
+      { apiPrefix: "/api/v1" }
+    );
+    const drafts = resources
+      .flatMap(function walk(r: any): any[] {
+        return [r, ...r.children.flatMap(walk)];
+      })
+      .find((r) => r.name === "drafts")!;
+    const names = Object.fromEntries(
+      drafts.operations.map((o: any) => [o.operationId, o.name])
+    );
+    expect(names.put_drafts).toBe("replace");
+    expect(names.put_draft).toBe("replaceByKey");
+    expect(new Set(Object.values(names)).size).toBe(4);
+  });
+
+  it("names are independent of input order", () => {
+    const ops = [
+      op("PUT", "/api/v1/things/{thing}/items", "a"),
+      op("PUT", "/api/v1/things/{thing}/items/{key}", "b"),
+    ];
+    const run = (o: ParsedOperation[]) =>
+      inferResourceTree(o, { apiPrefix: "/api/v1" })
+        .resources.flatMap(function walk(r: any): any[] {
+          return [...r.operations, ...r.children.flatMap(walk)];
+        })
+        .map((x: any) => `${x.operationId}=${x.name}`)
+        .sort();
+    expect(run(ops)).toEqual(["a=replace", "b=replaceByKey"]);
+    expect(run([...ops].reverse())).toEqual(run(ops));
+  });
+});
