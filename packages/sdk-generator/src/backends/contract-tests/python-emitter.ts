@@ -197,7 +197,7 @@ function emitResourceTestFile(
   cb.line("from archastro.platform import AsyncPlatformClient, PlatformClient");
   cb.line("from archastro.platform.runtime.http_client import ApiError");
   const needsBaseModel = calls.some((call) =>
-    ["model", "model_list"].includes(pythonResponseShape(call.operation))
+    ["model", "model_list", "model_union"].includes(pythonResponseShape(call.operation))
   );
   if (needsBaseModel) {
     cb.line("from pydantic import BaseModel");
@@ -382,6 +382,13 @@ function emitResultAssertions(
       }
       break;
     }
+    case "model_union":
+      cb.line(
+        responseAllowsNull(call.operation.returnType)
+          ? "assert result is None or isinstance(result, (BaseModel, dict))"
+          : "assert isinstance(result, (BaseModel, dict))"
+      );
+      break;
     case "untyped":
       cb.line("assert result is not None");
       break;

@@ -8,6 +8,8 @@ import { pascalCase } from "../../utils/naming.js";
  * - "raw"         — bytes via request_raw; stays a {content, mime_type} dict
  * - "model"       — single Pydantic model (named $ref or hoisted inline object)
  * - "model_list"  — list of Pydantic models
+ * - "model_union" — union of $ref models and plain objects (e.g. a
+ *                   `representation` switch); validated against the union
  * - "untyped"     — anything else (scalars, bare dicts); stays raw JSON
  *
  * This classifier is shared by the resource emitter (which decides whether to
@@ -20,6 +22,7 @@ export type PythonResponseShape =
   | "raw"
   | "model"
   | "model_list"
+  | "model_union"
   | "untyped";
 
 /** Peel a single outer `nullable` / `optional` wrapper. */
@@ -50,21 +53,39 @@ export function pythonResponseShape(op: OperationDef): PythonResponseShape {
       return ret.fields.length > 0 ? "model" : "untyped";
     case "array":
       return ret.items.kind === "ref" ? "model_list" : "untyped";
+    case "union":
+      return isModelUnion(ret) ? "model_union" : unionRefError(op, ret);
     default:
       // A model buried in a shape we don't deserialize (union, optional,
       // nested array) would mean the return annotation promises a model the
       // runtime never constructs — the exact bug response_type fixes. Fail
       // generation so spec evolution cannot reintroduce it silently.
-      if (containsRef(ret)) {
-        throw new Error(
-          `[sdk-generator] ${op.operationId}: response shape "${ret.kind}" ` +
-            `contains a schema ref but is not deserialized (no response_type ` +
-            `emitted); the Python return annotation would not match runtime ` +
-            `behavior. Extend pythonResponseShape to cover this shape.`
-        );
-      }
+      if (containsRef(ret)) return unionRefError(op, ret);
       return "untyped";
   }
+}
+
+/**
+ * A union of $ref models and plain objects (at least one of each), such as a
+ * list endpoint that returns summaries or full entities depending on a query
+ * parameter. Pure $ref unions are still rejected below.
+ */
+function isModelUnion(ref: TypeRef & { kind: "union" }): boolean {
+  return (
+    ref.variants.some((v) => v.kind === "ref") &&
+    ref.variants.some((v) => v.kind === "object") &&
+    ref.variants.every((v) => v.kind === "ref" || v.kind === "object")
+  );
+}
+
+function unionRefError(op: OperationDef, ret: TypeRef): "untyped" {
+  if (!containsRef(ret)) return "untyped";
+  throw new Error(
+    `[sdk-generator] ${op.operationId}: response shape "${ret.kind}" ` +
+      `contains a schema ref but is not deserialized (no response_type ` +
+      `emitted); the Python return annotation would not match runtime ` +
+      `behavior. Extend pythonResponseShape to cover this shape.`
+  );
 }
 
 /**
@@ -133,6 +154,18 @@ export function pythonResponseTypeExpr(
         return responseAllowsNull(op.returnType) ? `${listType} | None` : listType;
       }
       return undefined;
+    }
+    case "model_union": {
+      const inner = unwrapNullability(op.returnType);
+      if (inner.kind !== "union") return undefined;
+      // $ref variants first so the model wins ties; plain objects stay dicts.
+      const refs = inner.variants.filter((v) => v.kind === "ref");
+      const objects = inner.variants.some((v) => v.kind === "object")
+        ? ["dict[str, Any]"]
+        : [];
+      const names = [...new Set([...refs.map((v) => (v as { schema: string }).schema), ...objects])];
+      if (responseAllowsNull(op.returnType)) names.push("None");
+      return names.join(" | ");
     }
     default:
       return undefined;
