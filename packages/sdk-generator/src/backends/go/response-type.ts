@@ -17,10 +17,12 @@ import {
  * - "model_list" → `[]Model`
  * - "untyped"    → `JSONValue`
  */
-export type GoResponseShape = PythonResponseShape;
+export type GoResponseShape = Exclude<PythonResponseShape, "model_union">;
 
 export function goResponseShape(op: OperationDef): GoResponseShape {
-  return pythonResponseShape(op);
+  const shape = pythonResponseShape(op);
+  // Unions of models decode as untyped JSON here.
+  return shape === "model_union" ? "untyped" : shape;
 }
 
 /**

@@ -17,10 +17,12 @@ import {
  * - "model_list" → `[Model]`
  * - "untyped"    → `JSONValue`
  */
-export type SwiftResponseShape = PythonResponseShape;
+export type SwiftResponseShape = Exclude<PythonResponseShape, "model_union">;
 
 export function swiftResponseShape(op: OperationDef): SwiftResponseShape {
-  return pythonResponseShape(op);
+  const shape = pythonResponseShape(op);
+  // Unions of models decode as untyped JSON here.
+  return shape === "model_union" ? "untyped" : shape;
 }
 
 /**

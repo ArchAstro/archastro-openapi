@@ -16,7 +16,10 @@ import {
 } from "../../src/backends/python/typeddict-emitter.js";
 import { CodeBuilder } from "../../src/utils/codegen.js";
 import { emitPythonContractTests } from "../../src/backends/contract-tests/python-emitter.js";
-import { pythonResponseShape } from "../../src/backends/python/response-type.js";
+import {
+  pythonResponseShape,
+  pythonResponseTypeExpr,
+} from "../../src/backends/python/response-type.js";
 import { emitPythonChannelContractTestFile } from "../../src/backends/contract-tests/channel-emitter-python.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -774,6 +777,30 @@ describe("Python resource emitter passes response_type for typed responses", () 
         errors: [],
       })
     ).toThrow(/not deserialized/);
+  });
+
+  it("classifies a union of a $ref and a plain object as model_union", () => {
+    const op = {
+      name: "list",
+      operationId: "get_api_v1_epics",
+      method: "GET",
+      path: "/api/v1/epics",
+      deprecated: false,
+      pathParams: [],
+      queryParams: [],
+      returnType: {
+        kind: "union" as const,
+        variants: [
+          { kind: "object" as const, fields: [] },
+          { kind: "ref" as const, schema: "EpicCollection" },
+        ],
+      },
+      errors: [],
+    };
+    expect(pythonResponseShape(op)).toBe("model_union");
+    expect(pythonResponseTypeExpr(op, undefined)).toBe(
+      "EpicCollection | dict[str, Any]"
+    );
   });
 
   it("classifies a nullable schema-ref response as a deserialized model", () => {
