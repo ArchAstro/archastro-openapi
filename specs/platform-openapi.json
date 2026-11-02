@@ -5243,6 +5243,35 @@
         ],
         "type": "object"
       },
+      "AgentOverrides": {
+        "description": "Raw per-thread model and tool overrides. Empty values inherit agent defaults.",
+        "example": {
+          "llm_model": "string",
+          "tools": {
+            "add": [
+              "string"
+            ],
+            "remove": [
+              "string"
+            ]
+          }
+        },
+        "properties": {
+          "llm_model": {
+            "description": "Model override, or null to inherit.",
+            "example": "string",
+            "nullable": true,
+            "type": "string"
+          },
+          "tools": {
+            "$ref": "#/components/schemas/Tools"
+          }
+        },
+        "required": [
+          "tools"
+        ],
+        "type": "object"
+      },
       "AgentRequest": {
         "description": "A request for human approval or input. Secret input is never returned.",
         "example": {
@@ -9266,6 +9295,17 @@
                   "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                 },
                 "membership_type": "owner",
+                "overrides": {
+                  "llm_model": "string",
+                  "tools": {
+                    "add": [
+                      "string"
+                    ],
+                    "remove": [
+                      "string"
+                    ]
+                  }
+                },
                 "type": "user",
                 "user": {
                   "alias": "jdoe",
@@ -11002,6 +11042,17 @@
                   "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                 },
                 "membership_type": "owner",
+                "overrides": {
+                  "llm_model": "string",
+                  "tools": {
+                    "add": [
+                      "string"
+                    ],
+                    "remove": [
+                      "string"
+                    ]
+                  }
+                },
                 "type": "user",
                 "user": {
                   "alias": "jdoe",
@@ -12187,6 +12238,17 @@
             "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
           },
           "membership_type": "owner",
+          "overrides": {
+            "llm_model": "string",
+            "tools": {
+              "add": [
+                "string"
+              ],
+              "remove": [
+                "string"
+              ]
+            }
+          },
           "type": "user",
           "user": {
             "alias": "jdoe",
@@ -12221,6 +12283,26 @@
             "description": "Role of this member within the thread. Common values are `\"owner\"` and `\"member\"`. `null` when the membership type is not applicable.",
             "example": "owner",
             "type": "string"
+          },
+          "overrides": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgentOverrides"
+              }
+            ],
+            "description": "Raw agent overrides; null for human members.",
+            "example": {
+              "llm_model": "string",
+              "tools": {
+                "add": [
+                  "string"
+                ],
+                "remove": [
+                  "string"
+                ]
+              }
+            },
+            "nullable": true
           },
           "type": {
             "description": "Kind of participant. One of `\"user\"` (a human user) or `\"agent\"` (an AI agent).",
@@ -13061,6 +13143,17 @@
                 "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
               },
               "membership_type": "owner",
+              "overrides": {
+                "llm_model": "string",
+                "tools": {
+                  "add": [
+                    "string"
+                  ],
+                  "remove": [
+                    "string"
+                  ]
+                }
+              },
               "type": "user",
               "user": {
                 "alias": "jdoe",
@@ -27080,6 +27173,43 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "Tools": {
+        "example": {
+          "add": [
+            "string"
+          ],
+          "remove": [
+            "string"
+          ]
+        },
+        "properties": {
+          "add": {
+            "description": "Builtin tools to add.",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "remove": {
+            "description": "Tools to remove.",
+            "example": [
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "add",
+          "remove"
+        ],
         "type": "object"
       },
       "Trajectory": {
@@ -74504,6 +74634,76 @@
         ]
       }
     },
+    "/api/v1/task_epic_comments/{comment}/resolve": {
+      "post": {
+        "operationId": "post_api_v1_task_epic_comments__comment_resolve",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "comment",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "404": {
+            "description": "Epic not found"
+          },
+          "409": {
+            "description": "Epic publishing"
+          },
+          "422": {
+            "description": "Invalid review change"
+          }
+        },
+        "summary": "ResolveComment for an Epic",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/task_epic_comments/{comment}/unresolve": {
+      "post": {
+        "operationId": "post_api_v1_task_epic_comments__comment_unresolve",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "comment",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "404": {
+            "description": "Epic not found"
+          },
+          "409": {
+            "description": "Epic publishing"
+          },
+          "422": {
+            "description": "Invalid review change"
+          }
+        },
+        "summary": "UnresolveComment for an Epic",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/task_epics/{epic}": {
       "get": {
         "operationId": "get_api_v1_task_epics__epic",
@@ -74638,6 +74838,377 @@
           }
         },
         "summary": "Cancel a task Epic",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/task_epics/{epic}/comments": {
+      "get": {
+        "operationId": "get_api_v1_task_epics__epic_comments",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "epic",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Epic not found"
+          }
+        },
+        "summary": "List Epic comments",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "post": {
+        "operationId": "post_api_v1_task_epics__epic_comments",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "epic",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "body": "string",
+                  "target": {
+                    "key": "string",
+                    "kind": "string"
+                  }
+                },
+                "properties": {
+                  "body": {
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "target": {
+                    "example": {
+                      "key": "string",
+                      "kind": "string"
+                    },
+                    "properties": {
+                      "key": {
+                        "example": "string",
+                        "type": "string"
+                      },
+                      "kind": {
+                        "example": "string",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "target",
+                  "body"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Epic not found"
+          },
+          "409": {
+            "description": "Epic publishing"
+          },
+          "422": {
+            "description": "Invalid review change"
+          }
+        },
+        "summary": "CreateComment for an Epic",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/task_epics/{epic}/decisions": {
+      "get": {
+        "operationId": "get_api_v1_task_epics__epic_decisions",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "epic",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful response"
+          },
+          "404": {
+            "description": "Epic not found"
+          }
+        },
+        "summary": "List Epic decisions",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/task_epics/{epic}/decisions/{decision}": {
+      "delete": {
+        "operationId": "delete_api_v1_task_epics__epic_decisions__decision",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "epic",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "example": "string",
+            "in": "path",
+            "name": "decision",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "404": {
+            "description": "Epic not found"
+          },
+          "409": {
+            "description": "Epic publishing"
+          },
+          "422": {
+            "description": "Invalid review change"
+          }
+        },
+        "summary": "RemoveDecision for an Epic",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "put": {
+        "operationId": "put_api_v1_task_epics__epic_decisions__decision",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "epic",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "example": "string",
+            "in": "path",
+            "name": "decision",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "context": "string",
+                  "description": "An example description.",
+                  "name": "Example Name",
+                  "options": [
+                    "string"
+                  ],
+                  "question": "string",
+                  "recommended": 1
+                },
+                "properties": {
+                  "context": {
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "description": {
+                    "example": "An example description.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "example": "Example Name",
+                    "type": "string"
+                  },
+                  "options": {
+                    "example": [
+                      "string"
+                    ],
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "question": {
+                    "example": "string",
+                    "type": "string"
+                  },
+                  "recommended": {
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "name",
+                  "options"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "404": {
+            "description": "Epic not found"
+          },
+          "409": {
+            "description": "Epic publishing"
+          },
+          "422": {
+            "description": "Invalid review change"
+          }
+        },
+        "summary": "UpsertDecision for an Epic",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/task_epics/{epic}/decisions/{decision}/answer": {
+      "post": {
+        "operationId": "post_api_v1_task_epics__epic_decisions__decision_answer",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "epic",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "example": "string",
+            "in": "path",
+            "name": "decision",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "defaulted": true,
+                  "option": 1
+                },
+                "properties": {
+                  "defaulted": {
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "option": {
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "option"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "404": {
+            "description": "Epic not found"
+          },
+          "409": {
+            "description": "Epic publishing"
+          },
+          "422": {
+            "description": "Invalid review change"
+          }
+        },
+        "summary": "AnswerDecision for an Epic",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -75144,6 +75715,57 @@
           }
         },
         "summary": "PutDraft task Epic drafts",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
+    "/api/v1/task_epics/{epic}/publish": {
+      "post": {
+        "operationId": "post_api_v1_task_epics__epic_publish",
+        "parameters": [
+          {
+            "example": "string",
+            "in": "path",
+            "name": "epic",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "expected_drafts_version": 1
+                },
+                "properties": {
+                  "expected_drafts_version": {
+                    "example": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "expected_drafts_version"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "404": {
+            "description": "Epic not found"
+          }
+        },
+        "summary": "Publish reviewed task Epic drafts",
         "x-auth": [
           "publishable_key",
           "bearer"
@@ -101343,6 +101965,174 @@
         ]
       }
     },
+    "/api/v1/threads/{thread}/agents/{agent}/overrides": {
+      "get": {
+        "operationId": "get_api_v1_threads__thread_agents__agent_overrides",
+        "parameters": [
+          {
+            "description": "Thread ID.",
+            "example": "string",
+            "in": "path",
+            "name": "thread",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Agent ID.",
+            "example": "string",
+            "in": "path",
+            "name": "agent",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentOverrides"
+                }
+              }
+            },
+            "description": "The agent's raw thread overrides."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Thread or agent membership not found"
+          }
+        },
+        "summary": "Read an agent's thread overrides",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      },
+      "put": {
+        "description": "Fully replaces the agent's raw thread overrides. Omitted fields reset to their\nempty values, and an empty object clears every override. Only viewers allowed\nto modify the thread may write. Roster-based memberships are not supported.\n",
+        "operationId": "put_api_v1_threads__thread_agents__agent_overrides",
+        "parameters": [
+          {
+            "description": "Thread ID.",
+            "example": "string",
+            "in": "path",
+            "name": "thread",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Agent ID.",
+            "example": "string",
+            "in": "path",
+            "name": "agent",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "llm_model": "string",
+                  "tools": {
+                    "add": [
+                      "string"
+                    ],
+                    "remove": [
+                      "string"
+                    ]
+                  }
+                },
+                "properties": {
+                  "llm_model": {
+                    "description": "Model override; omitted or null clears it.",
+                    "example": "string",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "tools": {
+                    "description": "Tool add and remove lists; omitted lists are cleared.",
+                    "example": {
+                      "add": [
+                        "string"
+                      ],
+                      "remove": [
+                        "string"
+                      ]
+                    },
+                    "properties": {
+                      "add": {
+                        "description": "Builtin tool keys to add.",
+                        "example": [
+                          "string"
+                        ],
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "remove": {
+                        "description": "Builtin tool keys or artifact_ot to remove.",
+                        "example": [
+                          "string"
+                        ],
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentOverrides"
+                }
+              }
+            },
+            "description": "The stored raw overrides."
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Thread or agent membership not found"
+          },
+          "422": {
+            "description": "Invalid overrides or unsupported thread membership"
+          }
+        },
+        "summary": "Replace an agent's thread overrides",
+        "x-auth": [
+          "publishable_key",
+          "bearer"
+        ]
+      }
+    },
     "/api/v1/threads/{thread}/artifacts": {
       "get": {
         "description": "Returns all artifacts produced during a thread's AI conversation. Artifacts are\nstructured outputs such as code files, documents, or generated assets created\nby the AI agent in response to messages in the thread.\n\nThe authenticated user must have access to the specified thread. Results are\nreturned in a single page; there is no cursor-based pagination for this endpoint.\n",
@@ -102915,6 +103705,17 @@
                         "joined_at": "2024-01-01T00:00:00Z",
                         "member_type": "user",
                         "membership_type": "owner",
+                        "overrides": {
+                          "llm_model": "string",
+                          "tools": {
+                            "add": [
+                              "string"
+                            ],
+                            "remove": [
+                              "string"
+                            ]
+                          }
+                        },
                         "role": "owner",
                         "type": "user",
                         "user": {
@@ -102943,6 +103744,17 @@
                           "joined_at": "2024-01-01T00:00:00Z",
                           "member_type": "user",
                           "membership_type": "owner",
+                          "overrides": {
+                            "llm_model": "string",
+                            "tools": {
+                              "add": [
+                                "string"
+                              ],
+                              "remove": [
+                                "string"
+                              ]
+                            }
+                          },
                           "role": "owner",
                           "type": "user",
                           "user": {
@@ -102968,6 +103780,17 @@
                           "joined_at": "2024-01-01T00:00:00Z",
                           "member_type": "user",
                           "membership_type": "owner",
+                          "overrides": {
+                            "llm_model": "string",
+                            "tools": {
+                              "add": [
+                                "string"
+                              ],
+                              "remove": [
+                                "string"
+                              ]
+                            }
+                          },
                           "role": "owner",
                           "type": "user",
                           "user": {
@@ -103041,6 +103864,70 @@
                             "description": "Role of this member, commonly `\"owner\"` or `\"member\"`.",
                             "example": "owner",
                             "type": "string"
+                          },
+                          "overrides": {
+                            "description": "Raw agent overrides; null for human members.",
+                            "example": {
+                              "llm_model": "string",
+                              "tools": {
+                                "add": [
+                                  "string"
+                                ],
+                                "remove": [
+                                  "string"
+                                ]
+                              }
+                            },
+                            "nullable": true,
+                            "properties": {
+                              "llm_model": {
+                                "description": "Model override, or null to inherit.",
+                                "example": "string",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "tools": {
+                                "example": {
+                                  "add": [
+                                    "string"
+                                  ],
+                                  "remove": [
+                                    "string"
+                                  ]
+                                },
+                                "properties": {
+                                  "add": {
+                                    "description": "Builtin tools to add.",
+                                    "example": [
+                                      "string"
+                                    ],
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "remove": {
+                                    "description": "Tools to remove.",
+                                    "example": [
+                                      "string"
+                                    ],
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "add",
+                                  "remove"
+                                ],
+                                "type": "object"
+                              }
+                            },
+                            "required": [
+                              "tools"
+                            ],
+                            "type": "object"
                           },
                           "role": {
                             "description": "Backward-compatible alias of `membership_type`.",
@@ -106470,6 +107357,21 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "description": "Tags to remove from the thread.",
+            "example": [
+              "string"
+            ],
+            "in": "query",
+            "name": "tags",
+            "required": true,
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
             }
           }
         ],
@@ -114794,7 +115696,7 @@
     },
     "/api/v1/users/{user}/threads": {
       "get": {
-        "description": "Returns all threads visible to the specified user. The authenticated caller must\nhave access to the target user's account; a 403 is returned otherwise.\n\nPass one or more `agent` IDs to narrow results to threads where at least one of\nthe listed agents is also a member — useful for displaying every thread a user\nshares with a particular agent. Pass one or more `filter` objects to narrow\nresults by thread metadata key/value pairs. Both narrowings may be combined in\na single request.\n\nResults are returned as a flat array; no cursor-based pagination is applied.\nThreads are ordered with default threads first, then by most recent activity\n(newest first), each carrying a `last_activity` timestamp.\n",
+        "description": "Returns all threads visible to the specified user. The authenticated caller must\nhave access to the target user's account; a 403 is returned otherwise.\n\nPass one or more `agent` IDs to narrow results to threads where at least one of\nthe listed agents is also a member — useful for displaying every thread a user\nshares with a particular agent. Pass one or more `filter` objects to narrow\nresults by thread metadata key/value pairs. Pass one or more `tags` to keep only\nthreads carrying at least one of them. All narrowings may be combined in a\nsingle request.\n\nResults are returned as a flat array; no cursor-based pagination is applied.\nThreads are ordered with default threads first, then by most recent activity\n(newest first), each carrying a `last_activity` timestamp.\n",
         "operationId": "get_api_v1_users__user_threads",
         "parameters": [
           {
@@ -114865,6 +115767,21 @@
                   "value"
                 ],
                 "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Optional: only return threads tagged with at least one of these tags (OR-match). Repeated query params, e.g. `?tags[]=blocked&tags[]=needs-review`.",
+            "example": [
+              "string"
+            ],
+            "in": "query",
+            "name": "tags",
+            "required": false,
+            "schema": {
+              "items": {
+                "type": "string"
               },
               "type": "array"
             }
@@ -126905,6 +127822,17 @@
                       "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                     },
                     "membership_type": "owner",
+                    "overrides": {
+                      "llm_model": "string",
+                      "tools": {
+                        "add": [
+                          "string"
+                        ],
+                        "remove": [
+                          "string"
+                        ]
+                      }
+                    },
                     "type": "user",
                     "user": {
                       "alias": "jdoe",
@@ -128622,6 +129550,17 @@
                         "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                       },
                       "membership_type": "owner",
+                      "overrides": {
+                        "llm_model": "string",
+                        "tools": {
+                          "add": [
+                            "string"
+                          ],
+                          "remove": [
+                            "string"
+                          ]
+                        }
+                      },
                       "type": "user",
                       "user": {
                         "alias": "jdoe",
@@ -131582,6 +132521,17 @@
                           "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                         },
                         "membership_type": "owner",
+                        "overrides": {
+                          "llm_model": "string",
+                          "tools": {
+                            "add": [
+                              "string"
+                            ],
+                            "remove": [
+                              "string"
+                            ]
+                          }
+                        },
                         "type": "user",
                         "user": {
                           "alias": "jdoe",
@@ -131826,6 +132776,17 @@
                           "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                         },
                         "membership_type": "owner",
+                        "overrides": {
+                          "llm_model": "string",
+                          "tools": {
+                            "add": [
+                              "string"
+                            ],
+                            "remove": [
+                              "string"
+                            ]
+                          }
+                        },
                         "type": "user",
                         "user": {
                           "alias": "jdoe",
@@ -133839,6 +134800,70 @@
                           "description": "Role of this member within the thread. Common values are `\"owner\"` and `\"member\"`. `null` when the membership type is not applicable.",
                           "example": "owner",
                           "type": "string"
+                        },
+                        "overrides": {
+                          "description": "Raw agent overrides; null for human members.",
+                          "example": {
+                            "llm_model": "string",
+                            "tools": {
+                              "add": [
+                                "string"
+                              ],
+                              "remove": [
+                                "string"
+                              ]
+                            }
+                          },
+                          "nullable": true,
+                          "properties": {
+                            "llm_model": {
+                              "description": "Model override, or null to inherit.",
+                              "example": "string",
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "tools": {
+                              "example": {
+                                "add": [
+                                  "string"
+                                ],
+                                "remove": [
+                                  "string"
+                                ]
+                              },
+                              "properties": {
+                                "add": {
+                                  "description": "Builtin tools to add.",
+                                  "example": [
+                                    "string"
+                                  ],
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "remove": {
+                                  "description": "Tools to remove.",
+                                  "example": [
+                                    "string"
+                                  ],
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "add",
+                                "remove"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "tools"
+                          ],
+                          "type": "object"
                         },
                         "type": {
                           "description": "Kind of participant. One of `\"user\"` (a human user) or `\"agent\"` (an AI agent).",
@@ -149745,6 +150770,17 @@
                       "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                     },
                     "membership_type": "owner",
+                    "overrides": {
+                      "llm_model": "string",
+                      "tools": {
+                        "add": [
+                          "string"
+                        ],
+                        "remove": [
+                          "string"
+                        ]
+                      }
+                    },
                     "type": "user",
                     "user": {
                       "alias": "jdoe",
@@ -150926,6 +151962,17 @@
                         "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                       },
                       "membership_type": "owner",
+                      "overrides": {
+                        "llm_model": "string",
+                        "tools": {
+                          "add": [
+                            "string"
+                          ],
+                          "remove": [
+                            "string"
+                          ]
+                        }
+                      },
                       "type": "user",
                       "user": {
                         "alias": "jdoe",
@@ -153886,6 +154933,17 @@
                           "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                         },
                         "membership_type": "owner",
+                        "overrides": {
+                          "llm_model": "string",
+                          "tools": {
+                            "add": [
+                              "string"
+                            ],
+                            "remove": [
+                              "string"
+                            ]
+                          }
+                        },
                         "type": "user",
                         "user": {
                           "alias": "jdoe",
@@ -154130,6 +155188,17 @@
                           "user": "usr_0aBcDeFgHiJkLmNoPqRsTu"
                         },
                         "membership_type": "owner",
+                        "overrides": {
+                          "llm_model": "string",
+                          "tools": {
+                            "add": [
+                              "string"
+                            ],
+                            "remove": [
+                              "string"
+                            ]
+                          }
+                        },
                         "type": "user",
                         "user": {
                           "alias": "jdoe",
@@ -156143,6 +157212,70 @@
                           "description": "Role of this member within the thread. Common values are `\"owner\"` and `\"member\"`. `null` when the membership type is not applicable.",
                           "example": "owner",
                           "type": "string"
+                        },
+                        "overrides": {
+                          "description": "Raw agent overrides; null for human members.",
+                          "example": {
+                            "llm_model": "string",
+                            "tools": {
+                              "add": [
+                                "string"
+                              ],
+                              "remove": [
+                                "string"
+                              ]
+                            }
+                          },
+                          "nullable": true,
+                          "properties": {
+                            "llm_model": {
+                              "description": "Model override, or null to inherit.",
+                              "example": "string",
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "tools": {
+                              "example": {
+                                "add": [
+                                  "string"
+                                ],
+                                "remove": [
+                                  "string"
+                                ]
+                              },
+                              "properties": {
+                                "add": {
+                                  "description": "Builtin tools to add.",
+                                  "example": [
+                                    "string"
+                                  ],
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "remove": {
+                                  "description": "Tools to remove.",
+                                  "example": [
+                                    "string"
+                                  ],
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "add",
+                                "remove"
+                              ],
+                              "type": "object"
+                            }
+                          },
+                          "required": [
+                            "tools"
+                          ],
+                          "type": "object"
                         },
                         "type": {
                           "description": "Kind of participant. One of `\"user\"` (a human user) or `\"agent\"` (an AI agent).",
@@ -173638,6 +174771,275 @@
                 "type": "array"
               }
             },
+            "type": "object"
+          }
+        }
+      ],
+      "x-auth": [
+        "bearer"
+      ]
+    },
+    {
+      "description": null,
+      "joins": [
+        {
+          "description": null,
+          "name": "join_epic",
+          "params": {
+            "example": {
+              "public_id": "string"
+            },
+            "properties": {
+              "public_id": {
+                "example": "string",
+                "type": "string"
+              }
+            },
+            "required": [
+              "public_id"
+            ],
+            "type": "object"
+          },
+          "pattern": "task_epics:{public_id}",
+          "returns": {
+            "type": "object"
+          }
+        }
+      ],
+      "messages": [],
+      "name": "EpicsChannel",
+      "pushes": [
+        {
+          "description": null,
+          "event": "draft_changed",
+          "payload": {
+            "example": {
+              "drafts_version": 1,
+              "epic_id": "string",
+              "ids": [
+                "string"
+              ]
+            },
+            "properties": {
+              "drafts_version": {
+                "example": 1,
+                "type": "integer"
+              },
+              "epic_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "ids": {
+                "example": [
+                  "string"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "epic_id",
+              "drafts_version",
+              "ids"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "description": null,
+          "event": "comment_added",
+          "payload": {
+            "example": {
+              "drafts_version": 1,
+              "epic_id": "string",
+              "ids": [
+                "string"
+              ]
+            },
+            "properties": {
+              "drafts_version": {
+                "example": 1,
+                "type": "integer"
+              },
+              "epic_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "ids": {
+                "example": [
+                  "string"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "epic_id",
+              "drafts_version",
+              "ids"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "description": null,
+          "event": "comment_resolved",
+          "payload": {
+            "example": {
+              "drafts_version": 1,
+              "epic_id": "string",
+              "ids": [
+                "string"
+              ],
+              "resolved": true
+            },
+            "properties": {
+              "drafts_version": {
+                "example": 1,
+                "type": "integer"
+              },
+              "epic_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "ids": {
+                "example": [
+                  "string"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "resolved": {
+                "example": true,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "epic_id",
+              "drafts_version",
+              "ids",
+              "resolved"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "description": null,
+          "event": "decision_changed",
+          "payload": {
+            "example": {
+              "drafts_version": 1,
+              "epic_id": "string",
+              "ids": [
+                "string"
+              ]
+            },
+            "properties": {
+              "drafts_version": {
+                "example": 1,
+                "type": "integer"
+              },
+              "epic_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "ids": {
+                "example": [
+                  "string"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "epic_id",
+              "drafts_version",
+              "ids"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "description": null,
+          "event": "publish_started",
+          "payload": {
+            "example": {
+              "drafts_version": 1,
+              "epic_id": "string",
+              "ids": [
+                "string"
+              ]
+            },
+            "properties": {
+              "drafts_version": {
+                "example": 1,
+                "type": "integer"
+              },
+              "epic_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "ids": {
+                "example": [
+                  "string"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "epic_id",
+              "drafts_version",
+              "ids"
+            ],
+            "type": "object"
+          }
+        },
+        {
+          "description": null,
+          "event": "publish_completed",
+          "payload": {
+            "example": {
+              "drafts_version": 1,
+              "epic_id": "string",
+              "ids": [
+                "string"
+              ]
+            },
+            "properties": {
+              "drafts_version": {
+                "example": 1,
+                "type": "integer"
+              },
+              "epic_id": {
+                "example": "string",
+                "type": "string"
+              },
+              "ids": {
+                "example": [
+                  "string"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "epic_id",
+              "drafts_version",
+              "ids"
+            ],
             "type": "object"
           }
         }
