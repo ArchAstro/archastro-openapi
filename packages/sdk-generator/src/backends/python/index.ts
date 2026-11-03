@@ -134,7 +134,8 @@ export function writePythonFiles(
   for (const [filePath, content] of Object.entries(files)) {
     const dir = filePath.substring(0, filePath.lastIndexOf("/"));
     mkdirSync(dir, { recursive: true });
-    writeFileSync(filePath, addContentHash(content, "#"), "utf-8");
+    const commentPrefix = filePath.endsWith(".mjs") ? "//" : "#";
+    writeFileSync(filePath, addContentHash(content, commentPrefix), "utf-8");
   }
 }
 
