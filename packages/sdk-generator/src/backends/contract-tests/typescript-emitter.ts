@@ -329,12 +329,12 @@ function emitGlobalSetup(opts: {
   return `${generatedHeader()}
 
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname${includePrism ? ", join" : ""} } from "node:path";
 import { fileURLToPath } from "node:url";
-${includeHarness ? 'import { createRequire } from "node:module";\n' : ""}
+${includePrism ? 'import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";\nimport { tmpdir } from "node:os";\n' : ""}${includeHarness ? 'import { createRequire } from "node:module";\n' : ""}
 const __dirname = dirname(fileURLToPath(import.meta.url));
 ${includeHarness ? 'const require = createRequire(import.meta.url);\n' : ""}
-${includePrism ? `let prismProcess: ChildProcessWithoutNullStreams | undefined;` : ""}
+${includePrism ? `let prismProcess: ChildProcessWithoutNullStreams | undefined;\nlet prismSpecDir: string | undefined;` : ""}
 ${includeHarness ? `let harnessProcess: ChildProcessWithoutNullStreams | undefined;` : ""}
 
 ${includeHarness ? '// Channel contract tests are opt-in. Set ARCHASTRO_RUN_CHANNEL_CONTRACT_TESTS=1\n// to spawn the harness-service subprocess and run them; otherwise the channel\n// test files are filtered out by the vitest config and the subprocess is skipped.\nfunction channelTestsEnabled(): boolean {\n  const v = process.env.ARCHASTRO_RUN_CHANNEL_CONTRACT_TESTS;\n  return v === "1" || v === "true" || v === "yes";\n}\n' : ""}
@@ -346,9 +346,10 @@ ${includeHarness ? harnessSetup() : ""}
 }
 
 export async function teardown() {
-${includePrism ? '  prismProcess?.kill("SIGTERM");' : ""}
+${includePrism ? '  prismProcess?.kill("SIGTERM");\n  if (prismSpecDir) rmSync(prismSpecDir, { recursive: true, force: true });' : ""}
 ${includeHarness ? '  harnessProcess?.kill("SIGTERM");' : ""}
 }
+${includePrism ? prismSpecFn() : ""}
 ${includePrism ? prismWaitFn() : ""}
 ${includeHarness ? harnessReadUrlsFn() : ""}
 `;
@@ -360,11 +361,34 @@ function prismSetup(): string {
   // Static responses keep shape-contract tests deterministic. Prism's dynamic
   // faker can crash on valid deeply nested oneOf schemas.
   prismProcess = spawn("npx", [
-    "@stoplight/prism-cli", "mock", specPath,
+    "@stoplight/prism-cli", "mock", writePrismSpec(specPath),
     "--port", prismPort,
     "--host", "127.0.0.1",
   ], { stdio: ["pipe", "pipe", "pipe"] });
   await waitForPrism(parseInt(prismPort), 30_000);`;
+}
+
+function prismSpecFn(): string {
+  return `
+// The SDKs send array query params as \`name[]=value\`, but Prism looks them up
+// under the exact name \`name\`, so it reports a required array param as missing.
+// Prism gets a copy of the spec with those params optional.
+function writePrismSpec(specPath: string): string {
+  const spec = JSON.parse(readFileSync(specPath, "utf8"));
+  for (const pathItem of Object.values<Record<string, any>>(spec.paths ?? {})) {
+    for (const holder of [pathItem, ...Object.values<any>(pathItem)]) {
+      for (const param of holder?.parameters ?? []) {
+        if (param.in === "query" && param.schema?.type === "array") {
+          param.required = false;
+        }
+      }
+    }
+  }
+  prismSpecDir = mkdtempSync(join(tmpdir(), "prism-spec-"));
+  const prismSpecPath = join(prismSpecDir, "platform-openapi.json");
+  writeFileSync(prismSpecPath, JSON.stringify(spec));
+  return prismSpecPath;
+}`;
 }
 
 function prismWaitFn(): string {

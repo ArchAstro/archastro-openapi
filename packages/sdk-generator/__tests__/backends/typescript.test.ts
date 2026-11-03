@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { tmpdir } from "node:os";
+import { resolve, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import * as ts from "typescript";
 import type { ResourceDef, SchemaDef, TypeRef } from "../../src/ast/types.js";
@@ -811,6 +812,80 @@ describe("TypeScript contract tests include raw response operations", () => {
       files["/tmp/test-sdk/__tests__/contract/global-setup.ts"]!;
 
     expect(setup).not.toContain('"--dynamic"');
+  });
+
+  it("gives Prism a spec copy with only array query params optional", () => {
+    const setup =
+      files["/tmp/test-sdk/__tests__/contract/global-setup.ts"]!;
+    expect(setup).toContain('"mock", writePrismSpec(specPath)');
+    expect(setup).toContain('import { resolve, dirname, join } from "node:path"');
+    expect(setup).toContain("rmSync(prismSpecDir");
+
+    const spec = {
+      paths: {
+        "/things/{id}": {
+          summary: "not a parameter holder",
+          parameters: [
+            { name: "ids", in: "query", required: true, schema: { type: "array", items: { type: "string" } } },
+          ],
+          delete: {
+            parameters: [
+              { name: "id", in: "path", required: true, schema: { type: "string" } },
+              { name: "tags", in: "query", required: true, schema: { type: "array", items: { type: "string" } } },
+              { name: "mode", in: "query", required: true, schema: { type: "string" } },
+            ],
+          },
+        },
+      },
+    };
+    const dir = mkdtempSync(join(tmpdir(), "prism-spec-test-"));
+    const specPath = join(dir, "spec.json");
+    writeFileSync(specPath, JSON.stringify(spec));
+
+    // Run the emitted function, so the test checks what it does to a spec.
+    const source = setup.slice(
+      setup.indexOf("function writePrismSpec"),
+      setup.indexOf("async function waitForPrism")
+    );
+    const writePrismSpec = new Function(
+      "readFileSync",
+      "mkdtempSync",
+      "writeFileSync",
+      "join",
+      "tmpdir",
+      `let prismSpecDir; ${ts.transpile(source)}; return writePrismSpec;`
+    )(readFileSync, mkdtempSync, writeFileSync, join, tmpdir) as (path: string) => string;
+    const copyPath = writePrismSpec(specPath);
+    const copy = JSON.parse(readFileSync(copyPath, "utf8"));
+    rmSync(dirname(copyPath), { recursive: true, force: true });
+    rmSync(dir, { recursive: true, force: true });
+
+    const thing = copy.paths["/things/{id}"];
+    expect(thing.parameters[0].required).toBe(false);
+    expect(thing.delete.parameters.map((p: { required: boolean }) => p.required)).toEqual([
+      true,
+      false,
+      true,
+    ]);
+  });
+
+  it("omits the Prism spec copy when the spec has no REST operations", () => {
+    const emptyAst = parseOpenApiSpec(
+      { openapi: "3.0.0", info: { title: "No REST", version: "1.0.0" }, paths: {} },
+      {
+        name: "archastro-platform",
+        version: "0.1.0",
+        baseUrl: "https://platform.archastro.ai",
+        apiBase: "/api",
+        defaultVersion: "v1",
+      }
+    );
+    const setup = emitTypeScriptContractTests(emptyAst, { outDir: "/tmp/test-sdk" })[
+      "/tmp/test-sdk/__tests__/contract/global-setup.ts"
+    ]!;
+
+    expect(setup).not.toContain("writePrismSpec");
+    expect(setup).not.toContain("node:fs");
   });
 });
 
