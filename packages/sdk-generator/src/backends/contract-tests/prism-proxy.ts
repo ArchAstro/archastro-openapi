@@ -21,18 +21,22 @@ export function emitPrismProxyScript(): string {
 //
 // Usage: node prism-proxy.mjs <port> <prism command...>
 // The Prism command gets \`--port <free port>\` appended. The proxy listens on
-// <port> once Prism answers, and exits when Prism exits.
+// <port> once Prism answers, and exits when Prism exits, with 128 + the
+// signal number if a signal stopped Prism.
 
 import { spawn } from "node:child_process";
 import http from "node:http";
 import net from "node:net";
+import { constants } from "node:os";
 
 const [port, command, ...args] = process.argv.slice(2);
 const prismPort = await freePort();
 const prism = spawn(command, [...args, "--port", String(prismPort)], {
   stdio: "inherit",
 });
-prism.on("exit", (code) => process.exit(code ?? 0));
+prism.on("exit", (code, signal) =>
+  process.exit(code ?? 128 + (constants.signals[signal] ?? 0))
+);
 for (const signal of ["SIGTERM", "SIGINT"]) {
   process.on(signal, () => prism.kill(signal));
 }

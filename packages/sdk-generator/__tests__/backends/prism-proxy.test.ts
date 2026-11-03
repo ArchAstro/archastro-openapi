@@ -7,7 +7,8 @@ import { join } from "node:path";
 import { emitPrismProxyScript } from "../../src/backends/contract-tests/prism-proxy.js";
 
 // Stands in for Prism: listens on the `--port` it is given (after an optional
-// delay) and echoes each request back, or exits with `--exit <code>`.
+// delay) and echoes each request back, or exits with `--exit <code>` or
+// `--signal <name>`.
 const FAKE_PRISM = `
 import http from "node:http";
 const arg = (name) => {
@@ -15,6 +16,7 @@ const arg = (name) => {
   return i < 0 ? undefined : process.argv[i + 1];
 };
 if (arg("--exit")) process.exit(Number(arg("--exit")));
+if (arg("--signal")) process.kill(process.pid, arg("--signal"));
 console.log("pid:" + process.pid);
 setTimeout(() => {
   http.createServer((req, res) => {
@@ -112,6 +114,13 @@ describe("Prism proxy script", () => {
     expect(await exited).toBe(3);
   });
 
+  it("exits with 128 plus the signal number when a signal stops Prism", async () => {
+    const port = await freePort();
+    const { exited } = startProxy(port, "--signal", "SIGKILL");
+
+    expect(await exited).toBe(137);
+  });
+
   it("stops Prism when it is terminated", async () => {
     const port = await freePort();
     const { child, exited, stdout } = startProxy(port);
@@ -119,7 +128,7 @@ describe("Prism proxy script", () => {
     const prismPid = Number(/pid:(\d+)/.exec(stdout())![1]);
 
     child.kill("SIGTERM");
-    await exited;
+    expect(await exited).toBe(143);
 
     expect(() => process.kill(prismPid, 0)).toThrow();
   });
