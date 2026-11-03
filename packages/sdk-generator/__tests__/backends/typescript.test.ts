@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { resolve, dirname, join } from "node:path";
+import { resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import * as ts from "typescript";
 import type { ResourceDef, SchemaDef, TypeRef } from "../../src/ast/types.js";
@@ -814,62 +813,18 @@ describe("TypeScript contract tests include raw response operations", () => {
     expect(setup).not.toContain('"--dynamic"');
   });
 
-  it("gives Prism a spec copy with only array query params optional", () => {
+  it("starts Prism behind the generated array-query proxy", () => {
     const setup =
       files["/tmp/test-sdk/__tests__/contract/global-setup.ts"]!;
-    expect(setup).toContain('"mock", writePrismSpec(specPath)');
-    expect(setup).toContain('import { resolve, dirname, join } from "node:path"');
-    expect(setup).toContain("rmSync(prismSpecDir");
 
-    const spec = {
-      paths: {
-        "/things/{id}": {
-          summary: "not a parameter holder",
-          parameters: [
-            { name: "ids", in: "query", required: true, schema: { type: "array", items: { type: "string" } } },
-          ],
-          delete: {
-            parameters: [
-              { name: "id", in: "path", required: true, schema: { type: "string" } },
-              { name: "tags", in: "query", required: true, schema: { type: "array", items: { type: "string" } } },
-              { name: "mode", in: "query", required: true, schema: { type: "string" } },
-            ],
-          },
-        },
-      },
-    };
-    const dir = mkdtempSync(join(tmpdir(), "prism-spec-test-"));
-    const specPath = join(dir, "spec.json");
-    writeFileSync(specPath, JSON.stringify(spec));
-
-    // Run the emitted function, so the test checks what it does to a spec.
-    const source = setup.slice(
-      setup.indexOf("function writePrismSpec"),
-      setup.indexOf("async function waitForPrism")
+    expect(files["/tmp/test-sdk/__tests__/contract/prism-proxy.mjs"]).toContain(
+      "rewrites `name[]=value` query params"
     );
-    const writePrismSpec = new Function(
-      "readFileSync",
-      "mkdtempSync",
-      "writeFileSync",
-      "join",
-      "tmpdir",
-      `let prismSpecDir; ${ts.transpile(source)}; return writePrismSpec;`
-    )(readFileSync, mkdtempSync, writeFileSync, join, tmpdir) as (path: string) => string;
-    const copyPath = writePrismSpec(specPath);
-    const copy = JSON.parse(readFileSync(copyPath, "utf8"));
-    rmSync(dirname(copyPath), { recursive: true, force: true });
-    rmSync(dir, { recursive: true, force: true });
-
-    const thing = copy.paths["/things/{id}"];
-    expect(thing.parameters[0].required).toBe(false);
-    expect(thing.delete.parameters.map((p: { required: boolean }) => p.required)).toEqual([
-      true,
-      false,
-      true,
-    ]);
+    expect(setup).toContain('resolve(__dirname, "prism-proxy.mjs"), prismPort,');
+    expect(setup).toContain('"npx", "@stoplight/prism-cli", "mock", specPath,');
   });
 
-  it("omits the Prism spec copy when the spec has no REST operations", () => {
+  it("omits the Prism proxy when the spec has no REST operations", () => {
     const emptyAst = parseOpenApiSpec(
       { openapi: "3.0.0", info: { title: "No REST", version: "1.0.0" }, paths: {} },
       {
@@ -880,12 +835,10 @@ describe("TypeScript contract tests include raw response operations", () => {
         defaultVersion: "v1",
       }
     );
-    const setup = emitTypeScriptContractTests(emptyAst, { outDir: "/tmp/test-sdk" })[
-      "/tmp/test-sdk/__tests__/contract/global-setup.ts"
-    ]!;
+    const emitted = emitTypeScriptContractTests(emptyAst, { outDir: "/tmp/test-sdk" });
 
-    expect(setup).not.toContain("writePrismSpec");
-    expect(setup).not.toContain("node:fs");
+    expect(emitted["/tmp/test-sdk/__tests__/contract/prism-proxy.mjs"]).toBeUndefined();
+    expect(emitted["/tmp/test-sdk/__tests__/contract/global-setup.ts"]).not.toContain("prism-proxy");
   });
 });
 

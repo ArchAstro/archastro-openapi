@@ -1,12 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SchemaDef } from "../../src/ast/types.js";
 import { parseOpenApiSpec } from "../../src/frontend/index.js";
-import { generatePython } from "../../src/backends/python/index.js";
+import { generatePython, writePythonFiles } from "../../src/backends/python/index.js";
 import { emitPydanticFile } from "../../src/backends/python/pydantic-emitter.js";
 import { emitPythonResourceFile } from "../../src/backends/python/resource-emitter.js";
 import { emitPythonClientFile } from "../../src/backends/python/client-emitter.js";
@@ -3289,7 +3288,7 @@ describe("Python contract-tests emitter wires channels into the conftest", () =>
 
     expect(conftest).toContain("PRISM_BIN = os.environ.get(");
     expect(conftest).toContain("../../node_modules/.bin/prism");
-    expect(conftest).toContain("[PRISM_BIN,");
+    expect(conftest).toContain("PRISM_BIN, \"mock\", SPEC_PATH");
     expect(conftest).toContain("npm ci --ignore-scripts");
     expect(conftest).not.toContain('"npx"');
     expect(conftest).not.toContain("npm install @archastro/channel-harness");
@@ -3302,85 +3301,30 @@ describe("Python contract-tests emitter wires channels into the conftest", () =>
     expect(conftest).not.toContain('"--dynamic"');
   });
 
-  it("gives Prism a spec copy with only array query params optional", () => {
+  it("starts Prism behind the generated array-query proxy", () => {
     const files = emitPythonContractTests(ast, { outDir: "/tmp/test-python-sdk" });
     const conftest = files["/tmp/test-python-sdk/tests/contract/conftest.py"]!;
-    expect(conftest).toContain('[PRISM_BIN, "mock", _write_prism_spec(),');
-    expect(conftest).toContain("shutil.rmtree(_prism_spec_dir");
 
-    const spec = {
-      paths: {
-        "/things/{id}": {
-          summary: "not a parameter holder",
-          parameters: [
-            { name: "ids", in: "query", required: true, schema: { type: "array", items: { type: "string" } } },
-          ],
-          delete: {
-            parameters: [
-              { name: "id", in: "path", required: true, schema: { type: "string" } },
-              { name: "tags", in: "query", required: true, schema: { type: "array", items: { type: "string" } } },
-              { name: "mode", in: "query", required: true, schema: { type: "string" } },
-            ],
-          },
-        },
-      },
-    };
-    const dir = mkdtempSync(join(tmpdir(), "prism-spec-test-"));
-    const specPath = join(dir, "spec.json");
-    writeFileSync(specPath, JSON.stringify(spec));
-
-    // Run the emitted function, so the test checks what it does to a spec.
-    const source = conftest.slice(
-      conftest.indexOf("def _write_prism_spec"),
-      conftest.indexOf("def _wait_for_prism")
+    expect(files["/tmp/test-python-sdk/tests/contract/prism-proxy.mjs"]).toContain(
+      "rewrites `name[]=value` query params"
     );
-    const script = [
-      "import json, os, sys, tempfile",
-      "SPEC_PATH = sys.argv[1]",
-      source,
-      "print(_write_prism_spec())",
-    ].join("\n");
-    const copyPath = execFileSync("python3", ["-I", "-c", script, specPath], {
-      encoding: "utf8",
-    }).trim();
-    const copy = JSON.parse(readFileSync(copyPath, "utf8"));
-    rmSync(dirname(copyPath), { recursive: true, force: true });
-    rmSync(dir, { recursive: true, force: true });
-
-    const thing = copy.paths["/things/{id}"];
-    expect(thing.parameters[0].required).toBe(false);
-    expect(thing.delete.parameters.map((p: { required: boolean }) => p.required)).toEqual([
-      true,
-      false,
-      true,
-    ]);
+    expect(conftest).toContain(
+      '["node", os.path.join(os.path.dirname(__file__), "prism-proxy.mjs"), PRISM_PORT,'
+    );
+    expect(conftest).toContain('PRISM_BIN, "mock", SPEC_PATH, "--host", "127.0.0.1"],');
   });
 
-  it("imports json for the Prism spec copy when the spec has no channels", () => {
-    const restOnly = parseOpenApiSpec(
-      {
-        openapi: "3.0.0",
-        info: { title: "REST only", version: "1.0.0" },
-        paths: {
-          "/api/v1/things": {
-            get: { operationId: "listThings", responses: { "200": { description: "ok" } } },
-          },
-        },
-      },
-      {
-        name: "archastro-platform",
-        version: "0.1.0",
-        baseUrl: "https://platform.archastro.ai",
-        apiBase: "/api",
-        defaultVersion: "v1",
-      }
-    );
-    const conftest = emitPythonContractTests(restOnly, { outDir: "/tmp/test-python-sdk" })[
-      "/tmp/test-python-sdk/tests/contract/conftest.py"
-    ]!;
+  it("writes the Prism proxy with a JavaScript content-hash comment", () => {
+    const outDir = mkdtempSync(join(tmpdir(), "python-writer-"));
+    const files = emitPythonContractTests(ast, { outDir });
+    writePythonFiles(files, []);
 
-    expect(conftest).toContain("_write_prism_spec()");
-    expect(conftest).toMatch(/^import json$/m);
+    const proxy = readFileSync(join(outDir, "tests/contract/prism-proxy.mjs"), "utf8");
+    const conftest = readFileSync(join(outDir, "tests/contract/conftest.py"), "utf8");
+    rmSync(outDir, { recursive: true, force: true });
+
+    expect(proxy).toMatch(/^\/\/ Content hash: [0-9a-f]{12}$/m);
+    expect(conftest).toMatch(/^# Content hash: [0-9a-f]{12}$/m);
   });
 
   it("emits per-channel test files under tests/contract/channels/", () => {

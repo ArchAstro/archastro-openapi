@@ -18,6 +18,7 @@ import {
   emitPythonChannelContractTestFile,
   pythonChannelTestFileStem,
 } from "./channel-emitter-python.js";
+import { emitPrismProxyScript, PRISM_PROXY_FILE } from "./prism-proxy.js";
 
 type GeneratedFiles = Record<string, string>;
 
@@ -28,6 +29,7 @@ type GeneratedFiles = Record<string, string>;
  * - tests/contract/{version}/test_{resource}.py  — per-resource REST tests (Prism-backed)
  * - tests/contract/channels/test_{channel}.py    — per-channel harness tests
  * - tests/contract/conftest.py                   — Prism + harness-service lifecycle
+ * - tests/contract/prism-proxy.mjs               — Prism behind an array-query proxy
  */
 export function emitPythonContractTests(
   spec: SdkSpec,
@@ -81,6 +83,9 @@ export function emitPythonContractTests(
     includePrism: restCallCount > 0,
     includeHarness: spec.channels.length > 0 || streamCallCount > 0,
   });
+  if (restCallCount > 0) {
+    files[`${testDir}/${PRISM_PROXY_FILE}`] = emitPrismProxyScript();
+  }
 
   return files;
 }
@@ -514,13 +519,15 @@ function emitConftest(opts: {
     generatedHeaderPython().trim(),
     "",
   ];
-  if (includeHarness || includePrism) lines.push("import json");
+  if (includeHarness) lines.push("import json");
   lines.push("import os");
   if (includeHarness) lines.push("import selectors");
-  if (includePrism) lines.push("import shutil");
-  lines.push("import signal", "import subprocess");
-  if (includePrism) lines.push("import tempfile");
-  lines.push("import time", "");
+  lines.push(
+    "import signal",
+    "import subprocess",
+    "import time",
+    ""
+  );
   if (includePrism) lines.push("import httpx");
   lines.push("import pytest", "");
 
@@ -546,7 +553,7 @@ function emitConftest(opts: {
       ""
     );
   }
-  if (includePrism) lines.push("_prism_process = None", "_prism_spec_dir = None");
+  if (includePrism) lines.push("_prism_process = None");
   if (includeHarness) lines.push(...harnessGlobals());
 
   if (includeHarness) {
@@ -578,10 +585,11 @@ function emitConftest(opts: {
         "            f\"or run 'npm ci --ignore-scripts'.\"",
         "        )",
         "    # Static responses keep shape-contract tests deterministic. Prism's dynamic",
-        "    # faker can crash on valid deeply nested oneOf schemas.",
+        "    # faker can crash on valid deeply nested oneOf schemas. The proxy rewrites",
+        "    # the SDK's `name[]=` array query params into the form Prism matches.",
         "    _prism_process = subprocess.Popen(",
-        '        [PRISM_BIN, "mock", _write_prism_spec(),',
-        '         "--port", PRISM_PORT, "--host", "127.0.0.1"],',
+        `        ["node", os.path.join(os.path.dirname(__file__), "${PRISM_PROXY_FILE}"), PRISM_PORT,`,
+        '         PRISM_BIN, "mock", SPEC_PATH, "--host", "127.0.0.1"],',
         "        stdout=subprocess.PIPE,",
         "        stderr=subprocess.PIPE,",
         "    )",
@@ -608,9 +616,7 @@ function emitConftest(opts: {
         "        try:",
         "            _prism_process.wait(timeout=10)",
         "        except subprocess.TimeoutExpired:",
-        "            _prism_process.kill()",
-        "    if _prism_spec_dir:",
-        "        shutil.rmtree(_prism_spec_dir, ignore_errors=True)"
+        "            _prism_process.kill()"
       );
     }
     if (includeHarness) {
@@ -623,27 +629,6 @@ function emitConftest(opts: {
 
   if (includePrism) {
     lines.push(
-      "",
-      "",
-      "def _write_prism_spec():",
-      "    # The SDKs send array query params as `name[]=value`, but Prism looks them up",
-      "    # under the exact name `name`, so it reports a required array param as missing.",
-      "    # Prism gets a copy of the spec with those params optional.",
-      "    global _prism_spec_dir",
-      "    with open(SPEC_PATH, encoding=\"utf-8\") as spec_file:",
-      "        spec = json.load(spec_file)",
-      "    for path_item in spec.get(\"paths\", {}).values():",
-      "        for holder in [path_item, *path_item.values()]:",
-      "            if not isinstance(holder, dict):",
-      "                continue",
-      "            for param in holder.get(\"parameters\", []):",
-      "                if param.get(\"in\") == \"query\" and param.get(\"schema\", {}).get(\"type\") == \"array\":",
-      "                    param[\"required\"] = False",
-      "    _prism_spec_dir = tempfile.mkdtemp(prefix=\"prism-spec-\")",
-      "    prism_spec_path = os.path.join(_prism_spec_dir, \"platform-openapi.json\")",
-      "    with open(prism_spec_path, \"w\", encoding=\"utf-8\") as prism_spec_file:",
-      "        json.dump(spec, prism_spec_file)",
-      "    return prism_spec_path",
       "",
       "",
       "def _wait_for_prism(timeout=30):",
