@@ -772,12 +772,38 @@ describe("Python resource emitter passes response_type for typed responses", () 
           kind: "union",
           variants: [
             { kind: "ref", schema: "Widget" },
-            { kind: "ref", schema: "Gadget" },
+            { kind: "array", items: { kind: "ref", schema: "Gadget" } },
           ],
         },
         errors: [],
       })
     ).toThrow(/not deserialized/);
+  });
+
+  it("classifies a union of $ref models as model_union", () => {
+    // GET /orgs/{org}/task_epics returns TaskEpicSummaryPage or
+    // TaskEpicEntityCollection depending on the representation param.
+    const op = {
+      name: "list",
+      operationId: "get_api_v1_orgs__org_task_epics",
+      method: "GET",
+      path: "/api/v1/orgs/{org}/task_epics",
+      deprecated: false,
+      pathParams: [],
+      queryParams: [],
+      returnType: {
+        kind: "union" as const,
+        variants: [
+          { kind: "ref" as const, schema: "TaskEpicSummaryPage" },
+          { kind: "ref" as const, schema: "TaskEpicEntityCollection" },
+        ],
+      },
+      errors: [],
+    };
+    expect(pythonResponseShape(op)).toBe("model_union");
+    expect(pythonResponseTypeExpr(op, undefined)).toBe(
+      "TaskEpicSummaryPage | TaskEpicEntityCollection"
+    );
   });
 
   it("classifies a union of a $ref and a plain object as model_union", () => {
