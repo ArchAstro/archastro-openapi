@@ -94,7 +94,7 @@ export function inferResourceTree(
 
   for (const [resourcePath, ops] of sortedGroups) {
     const segments = resourcePath.split("/").filter(Boolean);
-    const name = segments[segments.length - 1] ?? "root";
+    const name = resourceIdentifier(segments[segments.length - 1] ?? "root");
     let className = pascalCase(singularize(name)) + "Resource";
 
     // Disambiguate class names by walking backwards through ancestor
@@ -288,7 +288,7 @@ function ensureParentChain(
 
     // Create empty intermediate resource
     const segments = current.split("/").filter(Boolean);
-    const name = segments[segments.length - 1] ?? "root";
+    const name = resourceIdentifier(segments[segments.length - 1] ?? "root");
     const intermediate: ResourceDef = {
       name,
       className: pascalCase(singularize(name)) + "Resource",
@@ -661,4 +661,13 @@ function applyResourceOverrides(
     return pascalCase(singularize(override.name)) + "Resource";
   }
   return defaultClassName;
+}
+
+/**
+ * Resource names become property names in every backend (`client.v1.<name>`)
+ * and in generated contract tests, so a hyphenated path segment such as
+ * `by-external-reference` must become an identifier. Paths are unaffected.
+ */
+function resourceIdentifier(segment: string): string {
+  return segment.replace(/-/g, "_");
 }

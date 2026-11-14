@@ -8,8 +8,8 @@ import { pascalCase } from "../../utils/naming.js";
  * - "raw"         — bytes via request_raw; stays a {content, mime_type} dict
  * - "model"       — single Pydantic model (named $ref or hoisted inline object)
  * - "model_list"  — list of Pydantic models
- * - "model_union" — union of $ref models and plain objects (e.g. a
- *                   `representation` switch); validated against the union
+ * - "model_union" — union of $ref models, optionally with plain objects (e.g.
+ *                   a `representation` switch); validated against the union
  * - "untyped"     — anything else (scalars, bare dicts); stays raw JSON
  *
  * This classifier is shared by the resource emitter (which decides whether to
@@ -66,14 +66,15 @@ export function pythonResponseShape(op: OperationDef): PythonResponseShape {
 }
 
 /**
- * A union of $ref models and plain objects (at least one of each), such as a
- * list endpoint that returns summaries or full entities depending on a query
- * parameter. Pure $ref unions are still rejected below.
+ * A union of $ref models, optionally mixed with plain objects, such as a list
+ * endpoint that returns summaries or full entities depending on a query
+ * parameter. Pydantic validates the body against each variant and keeps the
+ * best match, so the variants must be distinguishable by their required
+ * fields. Unions containing scalars, arrays or maps are still rejected below.
  */
 function isModelUnion(ref: TypeRef & { kind: "union" }): boolean {
   return (
     ref.variants.some((v) => v.kind === "ref") &&
-    ref.variants.some((v) => v.kind === "object") &&
     ref.variants.every((v) => v.kind === "ref" || v.kind === "object")
   );
 }

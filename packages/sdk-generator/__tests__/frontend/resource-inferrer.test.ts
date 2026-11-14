@@ -300,3 +300,27 @@ describe("inferResourceTree – operation name collisions", () => {
     expect(run([...ops].reverse())).toEqual(run(ops));
   });
 });
+
+describe("inferResourceTree – hyphenated path segments", () => {
+  it("names a hyphenated collection resource with an identifier, keeping its path", () => {
+    // GET /api/v1/task_epics/by-external-reference became its own resource;
+    // `by-external-reference` emitted `readonly by-external-reference:` in
+    // TypeScript and `client.task_epics.by - external - reference` in tests.
+    const tree = inferResourceTree(
+      [
+        ...collection("/task_epics"),
+        op("GET", "/task_epics/by-external-reference", "get_by_external_reference"),
+        op("POST", "/task_epics/by-external-reference", "post_by_external_reference"),
+      ],
+      {}
+    );
+    const epics = tree.resources.find((r) => r.name === "task_epics")!;
+    const child = epics.children.find((c) => c.path === "/task_epics/by-external-reference");
+    expect(child?.name).toBe("by_external_reference");
+    expect(child?.className).toBe("ByExternalReferenceResource");
+    expect(child?.operations.map((o) => o.path)).toEqual([
+      "/task_epics/by-external-reference",
+      "/task_epics/by-external-reference",
+    ]);
+  });
+});
