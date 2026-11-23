@@ -972,7 +972,6 @@
         "type": "object"
       },
       "Active": {
-        "description": false,
         "example": {
           "type": "active"
         },
@@ -8479,7 +8478,6 @@
         "type": "object"
       },
       "Archived": {
-        "description": false,
         "example": {
           "archived_at": "2024-01-01T00:00:00Z",
           "archived_by": {
@@ -21569,7 +21567,6 @@
         "type": "object"
       },
       "Person": {
-        "description": false,
         "example": {
           "type": "person",
           "user": "string"
@@ -26017,7 +26014,6 @@
         "type": "object"
       },
       "System": {
-        "description": false,
         "example": {
           "type": "system"
         },
@@ -29998,7 +29994,6 @@
         ]
       },
       "ThreadArchiveStateActor": {
-        "description": false,
         "discriminator": {
           "mapping": {
             "person": "#/components/schemas/Person",
@@ -50646,7 +50641,6 @@
                   },
                   "oneOf": [
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "state": "requested"
@@ -50671,7 +50665,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "state": "preparing"
@@ -50696,7 +50689,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "relay": {
@@ -50751,7 +50743,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "reason": "string",
@@ -50782,7 +50773,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "reason": "string",
@@ -50813,7 +50803,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "reason": "string",
@@ -50973,7 +50962,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "description": false,
                   "example": {
                     "data": [
                       {
@@ -56645,7 +56633,6 @@
                   },
                   "oneOf": [
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "state": "requested"
@@ -56670,7 +56657,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "state": "preparing"
@@ -56695,7 +56681,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "relay": {
@@ -56750,7 +56735,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "reason": "string",
@@ -56781,7 +56765,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "reason": "string",
@@ -56812,7 +56795,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "id": "string",
                         "reason": "string",
@@ -59570,7 +59552,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "description": false,
                   "example": {
                     "expires_at": "string",
                     "token": "string"
@@ -72873,7 +72854,6 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "description": false,
                       "example": {
                         "deletions_after_cursor": "string",
                         "tasks_after_cursor": "string"
@@ -72897,7 +72877,6 @@
                       "type": "object"
                     },
                     {
-                      "description": false,
                       "example": {
                         "aggregate_version": 1,
                         "id": "string",
@@ -72958,7 +72937,6 @@
         "x-sdk-streaming": {
           "events": {
             "ready": {
-              "description": false,
               "example": {
                 "deletions_after_cursor": "string",
                 "tasks_after_cursor": "string"
@@ -72982,7 +72960,6 @@
               "type": "object"
             },
             "task_changed": {
-              "description": false,
               "example": {
                 "aggregate_version": 1,
                 "id": "string",
@@ -75256,7 +75233,6 @@
                             },
                             "oneOf": [
                               {
-                                "description": false,
                                 "example": {
                                   "type": "active"
                                 },
@@ -75275,7 +75251,6 @@
                                 "type": "object"
                               },
                               {
-                                "description": false,
                                 "example": {
                                   "archived_at": "2024-01-01T00:00:00Z",
                                   "archived_by": {
@@ -75291,7 +75266,6 @@
                                     "type": "string"
                                   },
                                   "archived_by": {
-                                    "description": false,
                                     "discriminator": {
                                       "propertyName": "type"
                                     },
@@ -75301,7 +75275,6 @@
                                     },
                                     "oneOf": [
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "person",
                                           "user": "string"
@@ -75326,7 +75299,6 @@
                                         "type": "object"
                                       },
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "system"
                                         },
@@ -108629,7 +108601,6 @@
                             },
                             "oneOf": [
                               {
-                                "description": false,
                                 "example": {
                                   "type": "active"
                                 },
@@ -108648,7 +108619,6 @@
                                 "type": "object"
                               },
                               {
-                                "description": false,
                                 "example": {
                                   "archived_at": "2024-01-01T00:00:00Z",
                                   "archived_by": {
@@ -108664,7 +108634,6 @@
                                     "type": "string"
                                   },
                                   "archived_by": {
-                                    "description": false,
                                     "discriminator": {
                                       "propertyName": "type"
                                     },
@@ -108674,7 +108643,6 @@
                                     },
                                     "oneOf": [
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "person",
                                           "user": "string"
@@ -108699,7 +108667,6 @@
                                         "type": "object"
                                       },
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "system"
                                         },
@@ -114534,7 +114501,6 @@
                         }
                       ],
                       "items": {
-                        "description": false,
                         "example": {
                           "linked_relation": "created",
                           "target": "string",
@@ -114574,7 +114540,6 @@
                             },
                             "oneOf": [
                               {
-                                "description": false,
                                 "example": {
                                   "type": "active"
                                 },
@@ -114593,7 +114558,6 @@
                                 "type": "object"
                               },
                               {
-                                "description": false,
                                 "example": {
                                   "archived_at": "2024-01-01T00:00:00Z",
                                   "archived_by": {
@@ -114609,7 +114573,6 @@
                                     "type": "string"
                                   },
                                   "archived_by": {
-                                    "description": false,
                                     "discriminator": {
                                       "propertyName": "type"
                                     },
@@ -114619,7 +114582,6 @@
                                     },
                                     "oneOf": [
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "person",
                                           "user": "string"
@@ -114644,7 +114606,6 @@
                                         "type": "object"
                                       },
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "system"
                                         },
@@ -132742,7 +132703,6 @@
                             },
                             "oneOf": [
                               {
-                                "description": false,
                                 "example": {
                                   "type": "active"
                                 },
@@ -132761,7 +132721,6 @@
                                 "type": "object"
                               },
                               {
-                                "description": false,
                                 "example": {
                                   "archived_at": "2024-01-01T00:00:00Z",
                                   "archived_by": {
@@ -132777,7 +132736,6 @@
                                     "type": "string"
                                   },
                                   "archived_by": {
-                                    "description": false,
                                     "discriminator": {
                                       "propertyName": "type"
                                     },
@@ -132787,7 +132745,6 @@
                                     },
                                     "oneOf": [
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "person",
                                           "user": "string"
@@ -132812,7 +132769,6 @@
                                         "type": "object"
                                       },
                                       {
-                                        "description": false,
                                         "example": {
                                           "type": "system"
                                         },
@@ -156520,7 +156476,6 @@
                         },
                         "oneOf": [
                           {
-                            "description": false,
                             "example": {
                               "type": "active"
                             },
@@ -156539,7 +156494,6 @@
                             "type": "object"
                           },
                           {
-                            "description": false,
                             "example": {
                               "archived_at": "2024-01-01T00:00:00Z",
                               "archived_by": {
@@ -156555,7 +156509,6 @@
                                 "type": "string"
                               },
                               "archived_by": {
-                                "description": false,
                                 "discriminator": {
                                   "propertyName": "type"
                                 },
@@ -156565,7 +156518,6 @@
                                 },
                                 "oneOf": [
                                   {
-                                    "description": false,
                                     "example": {
                                       "type": "person",
                                       "user": "string"
@@ -156590,7 +156542,6 @@
                                     "type": "object"
                                   },
                                   {
-                                    "description": false,
                                     "example": {
                                       "type": "system"
                                     },
@@ -162919,7 +162870,6 @@
                     },
                     "oneOf": [
                       {
-                        "description": false,
                         "example": {
                           "type": "active"
                         },
@@ -162938,7 +162888,6 @@
                         "type": "object"
                       },
                       {
-                        "description": false,
                         "example": {
                           "archived_at": "2024-01-01T00:00:00Z",
                           "archived_by": {
@@ -162954,7 +162903,6 @@
                             "type": "string"
                           },
                           "archived_by": {
-                            "description": false,
                             "discriminator": {
                               "propertyName": "type"
                             },
@@ -162964,7 +162912,6 @@
                             },
                             "oneOf": [
                               {
-                                "description": false,
                                 "example": {
                                   "type": "person",
                                   "user": "string"
@@ -162989,7 +162936,6 @@
                                 "type": "object"
                               },
                               {
-                                "description": false,
                                 "example": {
                                   "type": "system"
                                 },
@@ -182138,7 +182084,6 @@
                         },
                         "oneOf": [
                           {
-                            "description": false,
                             "example": {
                               "type": "active"
                             },
@@ -182157,7 +182102,6 @@
                             "type": "object"
                           },
                           {
-                            "description": false,
                             "example": {
                               "archived_at": "2024-01-01T00:00:00Z",
                               "archived_by": {
@@ -182173,7 +182117,6 @@
                                 "type": "string"
                               },
                               "archived_by": {
-                                "description": false,
                                 "discriminator": {
                                   "propertyName": "type"
                                 },
@@ -182183,7 +182126,6 @@
                                 },
                                 "oneOf": [
                                   {
-                                    "description": false,
                                     "example": {
                                       "type": "person",
                                       "user": "string"
@@ -182208,7 +182150,6 @@
                                     "type": "object"
                                   },
                                   {
-                                    "description": false,
                                     "example": {
                                       "type": "system"
                                     },
