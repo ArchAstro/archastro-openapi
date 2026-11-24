@@ -91,6 +91,12 @@ export function emitSwiftStruct(
     });
     emitInit(cb, params, fields.map((_, i) => memberNames[i]!));
 
+    const types = fields.map((field) => fieldType(field, resolveRef));
+    if (types.some(isDoubleOptional)) {
+      cb.line();
+      emitDecodingInit(cb, types, memberNames);
+    }
+
     if (fields.length > 0) {
       cb.line();
       cb.block("private enum CodingKeys: String, CodingKey", () => {
@@ -134,6 +140,49 @@ function emitInit(cb: CodeBuilder, params: string[], memberNames: string[]): voi
   }
   cb.dedent();
   cb.line("}");
+}
+
+/**
+ * `T??` marks an optional (may be absent) field whose value is also
+ * nullable: outer `nil` = key absent, `.some(nil)` = explicit JSON null.
+ */
+function isDoubleOptional(type: string): boolean {
+  return type.endsWith("??");
+}
+
+/**
+ * Explicit `init(from:)`, emitted only for types with a `T??` field.
+ * Synthesized `Decodable` decodes `T??` with `decodeIfPresent`, which
+ * folds an explicit JSON null into "absent". Every other field decodes
+ * exactly as the synthesized conformance would (`decode` for non-optional,
+ * `decodeIfPresent` for `T?`); `encode(to:)` stays synthesized and already
+ * writes `.some(nil)` as null.
+ */
+function emitDecodingInit(
+  cb: CodeBuilder,
+  types: string[],
+  memberNames: string[]
+): void {
+  cb.block("public init(from decoder: any Decoder) throws", () => {
+    cb.line("let container = try decoder.container(keyedBy: CodingKeys.self)");
+    for (let i = 0; i < types.length; i++) {
+      const type = types[i]!;
+      const member = memberNames[i]!;
+      if (isDoubleOptional(type)) {
+        // Present key (null or value) → `.some(...)`; absent key → `nil`.
+        const inner = type.slice(0, -2);
+        cb.line(
+          `self.${member} = try container.contains(.${member}) ? .some(container.decodeIfPresent(${inner}.self, forKey: .${member})) : nil`
+        );
+      } else if (type.endsWith("?")) {
+        cb.line(
+          `self.${member} = try container.decodeIfPresent(${type.slice(0, -1)}.self, forKey: .${member})`
+        );
+      } else {
+        cb.line(`self.${member} = try container.decode(${type}.self, forKey: .${member})`);
+      }
+    }
+  });
 }
 
 function fieldType(

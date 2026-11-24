@@ -176,6 +176,93 @@ describe("swift model emitter", () => {
     const output = emitSwiftModelsFile(schemas, registry, new Set(["Node"]));
     expect(output).toContain("public final class Node: Codable, @unchecked Sendable");
   });
+
+  it("decodes T?? fields so a present JSON null is .some(nil), not absent", () => {
+    const registry = new SwiftNameRegistry();
+    registry.claim("schema:Task", "Task");
+    const nullableString: TypeRef = {
+      kind: "nullable",
+      inner: { kind: "primitive", type: "string" },
+    };
+    const schemas: SchemaDef[] = [
+      {
+        name: "Task",
+        fields: [
+          { name: "id", type: { kind: "primitive", type: "string" }, required: true },
+          { name: "project_id", type: nullableString, required: false },
+          {
+            name: "closed_at",
+            type: { kind: "optional", inner: { kind: "nullable", inner: { kind: "primitive", type: "datetime" } } },
+            required: false,
+          },
+          { name: "title", type: { kind: "primitive", type: "string" }, required: false },
+          { name: "owner", type: nullableString, required: true },
+        ],
+      },
+    ];
+    const output = emitSwiftModelsFile(schemas, registry, new Set());
+    expect(output).toContain("public var projectId: String??");
+    expect(output).toContain("public var closedAt: Date??");
+    expect(output).toContain(
+      [
+        "    public init(from decoder: any Decoder) throws {",
+        "        let container = try decoder.container(keyedBy: CodingKeys.self)",
+        "        self.id = try container.decode(String.self, forKey: .id)",
+        "        self.projectId = try container.contains(.projectId) ? .some(container.decodeIfPresent(String.self, forKey: .projectId)) : nil",
+        "        self.closedAt = try container.contains(.closedAt) ? .some(container.decodeIfPresent(Date.self, forKey: .closedAt)) : nil",
+        "        self.title = try container.decodeIfPresent(String.self, forKey: .title)",
+        "        self.owner = try container.decodeIfPresent(String.self, forKey: .owner)",
+        "    }",
+      ].join("\n")
+    );
+    // Encoding stays synthesized: it already writes `.some(nil)` as null.
+    expect(output).not.toContain("func encode(to encoder");
+  });
+
+  it("keeps synthesized Decodable for types without T?? fields", () => {
+    const registry = new SwiftNameRegistry();
+    registry.claim("schema:Team", "Team");
+    const schemas: SchemaDef[] = [
+      {
+        name: "Team",
+        fields: [
+          { name: "id", type: { kind: "primitive", type: "string" }, required: true },
+          {
+            name: "parent_id",
+            type: { kind: "nullable", inner: { kind: "primitive", type: "string" } },
+            required: true,
+          },
+          { name: "name", type: { kind: "primitive", type: "string" }, required: false },
+        ],
+      },
+    ];
+    const output = emitSwiftModelsFile(schemas, registry, new Set());
+    expect(output).toContain("public var parentId: String?");
+    expect(output).not.toContain("??");
+    expect(output).not.toContain("init(from decoder");
+  });
+
+  it("emits the T?? decoding init for recursive final classes too", () => {
+    const registry = new SwiftNameRegistry();
+    registry.claim("schema:Node", "Node");
+    const schemas: SchemaDef[] = [
+      {
+        name: "Node",
+        fields: [
+          {
+            name: "next",
+            type: { kind: "nullable", inner: { kind: "ref", schema: "Node" } },
+            required: false,
+          },
+        ],
+      },
+    ];
+    const output = emitSwiftModelsFile(schemas, registry, new Set(["Node"]));
+    expect(output).toContain("public final class Node: Codable, @unchecked Sendable");
+    expect(output).toContain(
+      "self.next = try container.contains(.next) ? .some(container.decodeIfPresent(Node.self, forKey: .next)) : nil"
+    );
+  });
 });
 
 describe("swift backend", () => {
