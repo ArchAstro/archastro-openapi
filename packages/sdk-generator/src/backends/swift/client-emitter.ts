@@ -35,6 +35,10 @@ export function emitSwiftClientFile(spec: SdkSpec): string {
   for (const line of generatedHeader().trim().split("\n")) cb.line(line);
   cb.line();
   cb.line("import Foundation");
+  // URLSession lives in FoundationNetworking on non-Darwin platforms.
+  cb.line("#if canImport(FoundationNetworking)");
+  cb.line("import FoundationNetworking");
+  cb.line("#endif");
   cb.line();
 
   cb.line("/// Client for the platform API. Configure with an API key and/or");
@@ -59,6 +63,9 @@ export function emitSwiftClientFile(spec: SdkSpec): string {
     cb.line();
 
     // Constructor
+    cb.line("/// - Parameter session: `URLSession` every request goes through. Pass");
+    cb.line("///   your own to use a custom configuration (e.g. a `URLProtocol` stub");
+    cb.line("///   in tests). `nil` (the default) lets `HttpClient` create its own.");
     cb.line("public init(");
     cb.indent();
     cb.line(`baseUrl: String = ${swiftString(spec.baseUrl)},`);
@@ -66,7 +73,8 @@ export function emitSwiftClientFile(spec: SdkSpec): string {
     cb.line("getAccessToken: (@Sendable () -> String?)? = nil,");
     cb.line("onRefreshToken: (@Sendable () async throws -> String)? = nil,");
     cb.line("pathPrefix: String? = nil,");
-    cb.line("defaultHeaders: [String: String] = [:]");
+    cb.line("defaultHeaders: [String: String] = [:],");
+    cb.line("session: URLSession? = nil");
     cb.dedent();
     cb.line(") {");
     cb.indent();
@@ -79,7 +87,8 @@ export function emitSwiftClientFile(spec: SdkSpec): string {
     cb.line("getAccessToken: getAccessToken,");
     cb.line("onRefreshToken: onRefreshToken,");
     cb.line("pathPrefix: pathPrefix,");
-    cb.line("defaultHeaders: defaultHeaders");
+    cb.line("defaultHeaders: defaultHeaders,");
+    cb.line("session: session");
     cb.dedent();
     cb.line(")");
     if (hasAuth) cb.line("self.auth = AuthClient(http: http)");
@@ -145,12 +154,13 @@ export function emitSwiftClientFile(spec: SdkSpec): string {
           `/// ${schemes.secret_key.description ?? "Create a client with a secret API key."}`
         );
         cb.block(
-          "public static func withSecretKey(_ key: String, baseUrl: String? = nil) -> PlatformClient",
+          "public static func withSecretKey(_ key: String, baseUrl: String? = nil, session: URLSession? = nil) -> PlatformClient",
           () => {
             cb.line("return PlatformClient(");
             cb.indent();
             cb.line(`baseUrl: baseUrl ?? ${swiftString(spec.baseUrl)},`);
-            cb.line(`defaultHeaders: [${swiftString(header)}: key]`);
+            cb.line(`defaultHeaders: [${swiftString(header)}: key],`);
+            cb.line("session: session");
             cb.dedent();
             cb.line(")");
           }
@@ -162,13 +172,14 @@ export function emitSwiftClientFile(spec: SdkSpec): string {
         cb.line();
         cb.line("/// Create a client with a publishable key and pre-existing access token.");
         cb.block(
-          "public static func withToken(apiKey: String, accessToken: String, baseUrl: String? = nil) -> PlatformClient",
+          "public static func withToken(apiKey: String, accessToken: String, baseUrl: String? = nil, session: URLSession? = nil) -> PlatformClient",
           () => {
             cb.line("return PlatformClient(");
             cb.indent();
             cb.line(`baseUrl: baseUrl ?? ${swiftString(spec.baseUrl)},`);
             cb.line("accessToken: accessToken,");
-            cb.line(`defaultHeaders: [${swiftString(header)}: apiKey]`);
+            cb.line(`defaultHeaders: [${swiftString(header)}: apiKey],`);
+            cb.line("session: session");
             cb.dedent();
             cb.line(")");
           }
@@ -283,12 +294,13 @@ function emitWithCredentials(
   cb.line("/// Create a client by logging in with credentials. Wires automatic");
   cb.line("/// 401 token refresh when the login flow returns a refresh token.");
   cb.block(
-    `public static func withCredentials(apiKey: String, ${sig}, baseUrl: String? = nil) async throws -> PlatformClient`,
+    `public static func withCredentials(apiKey: String, ${sig}, baseUrl: String? = nil, session: URLSession? = nil) async throws -> PlatformClient`,
     () => {
       cb.line("let client = PlatformClient(");
       cb.indent();
       cb.line(`baseUrl: baseUrl ?? ${swiftString(spec.baseUrl)},`);
-      cb.line(`defaultHeaders: [${swiftString(header)}: apiKey]`);
+      cb.line(`defaultHeaders: [${swiftString(header)}: apiKey],`);
+      cb.line("session: session");
       cb.dedent();
       cb.line(")");
       cb.line(`let tokens = try await client.auth.${loginMethod}(${loginArgs})`);
@@ -309,7 +321,8 @@ function emitWithCredentials(
         cb.indent();
         cb.line(`baseUrl: baseUrl ?? ${swiftString(spec.baseUrl)},`);
         cb.line(`defaultHeaders: [${swiftString(header)}: apiKey],`);
-        cb.line("refreshOnly: true");
+        cb.line("refreshOnly: true,");
+        cb.line("session: session");
         cb.dedent();
         cb.line(")");
         cb.line("let refreshAuth = AuthClient(http: refreshHttp)");
