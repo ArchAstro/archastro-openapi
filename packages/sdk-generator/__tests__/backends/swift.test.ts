@@ -323,6 +323,49 @@ describe("swift backend", () => {
     expect(combined).toContain("http.request(");
   });
 
+  it("threads an optional URLSession from PlatformClient.init into HttpClient", () => {
+    const files = generateFixtureFiles();
+    const client = files[Object.keys(files).find((p) => p.endsWith("Client.swift"))!]!;
+
+    expect(client).toContain(
+      "#if canImport(FoundationNetworking)\nimport FoundationNetworking\n#endif"
+    );
+    // Last and defaulted, so existing call sites compile unchanged.
+    expect(client).toContain(
+      'defaultHeaders: [String: String] = [:],\n        session: URLSession? = nil\n    ) {'
+    );
+    expect(client).toContain(
+      "defaultHeaders: defaultHeaders,\n            session: session\n        )"
+    );
+  });
+
+  it("threads the URLSession through every auth factory, refresh client included", () => {
+    const platformSpec = JSON.parse(
+      readFileSync(resolve(__dirname, "../../../../specs/platform-openapi.json"), "utf-8")
+    );
+    const ast = parseOpenApiSpec(platformSpec, { apiBase: "/api", defaultVersion: "v1" });
+    const files = generateSwift(ast, { outDir: "sdk" });
+    const client = files[Object.keys(files).find((p) => p.endsWith("Client.swift"))!]!;
+
+    expect(client).toContain(
+      "public static func withSecretKey(_ key: String, baseUrl: String? = nil, session: URLSession? = nil) -> PlatformClient"
+    );
+    expect(client).toContain(
+      "public static func withToken(apiKey: String, accessToken: String, baseUrl: String? = nil, session: URLSession? = nil) -> PlatformClient"
+    );
+    expect(client).toMatch(
+      /public static func withCredentials\(apiKey: String, [^)]*, baseUrl: String\? = nil, session: URLSession\? = nil\) async throws -> PlatformClient/
+    );
+    // Every PlatformClient(...) and HttpClient(...) the factories build gets it.
+    const factories = client.slice(client.indexOf("// ─── Factory constructors"));
+    const constructions = factories.match(/(?:PlatformClient|HttpClient)\([^)]*\)/g) ?? [];
+    expect(constructions.length).toBe(4);
+    for (const call of constructions) {
+      expect(call).toMatch(/session: session\s*\)$/);
+    }
+    expect(factories).toContain("refreshOnly: true,\n            session: session\n        )");
+  });
+
   it("assigns collision-free type names across the module", () => {
     const ast = parseOpenApiSpec(fixture, { apiBase: "/api", defaultVersion: "v1" });
     const { registry } = prepareSwiftSpec(ast);
