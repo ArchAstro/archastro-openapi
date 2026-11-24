@@ -236,6 +236,18 @@ describe("swift backend", () => {
     expect(combined).toContain("http.request(");
   });
 
+  it("sends array query params as repeated key[] pairs, like the TypeScript runtime", () => {
+    const spec = JSON.parse(JSON.stringify(fixture));
+    const listTeams = spec.paths["/api/apps/{app_id}/teams"].get;
+    listTeams.parameters.push({ name: "tags", in: "query", schema: { type: "array", items: { type: "string" } } });
+    const ast = parseOpenApiSpec(spec, { apiBase: "/api", defaultVersion: "v1" });
+    const combined = Object.values(generateSwift(ast, { outDir: "sdk" })).join("\n");
+    expect(combined).toContain('query.append(("tags[]", item))');
+    expect(combined).not.toContain('query.append(("tags", item))');
+    // Scalars keep their bare key.
+    expect(combined).toContain('query.append(("search", ');
+  });
+
   it("assigns collision-free type names across the module", () => {
     const ast = parseOpenApiSpec(fixture, { apiBase: "/api", defaultVersion: "v1" });
     const { registry } = prepareSwiftSpec(ast);

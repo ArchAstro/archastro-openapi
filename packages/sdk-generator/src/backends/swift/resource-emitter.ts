@@ -378,9 +378,19 @@ function emitQueryBuilder(
   for (let i = 0; i < op.queryParams.length; i++) {
     const param = op.queryParams[i]!;
     const name = names.query[i]!;
-    const wireKey = swiftString(param.wireName ?? param.name);
+    const wireKey = swiftString(swiftQueryWireName(param));
     emitQueryAppend(cb, param, name, wireKey);
   }
+}
+
+/**
+ * Array params go out as repeated `key[]=` pairs, as the TypeScript runtime
+ * sends them: Phoenix (Plug) keeps only the last of repeated bare keys.
+ */
+export function swiftQueryWireName(param: ParamDef): string {
+  const wire = param.wireName ?? param.name;
+  const isArray = unwrapOptional(param.type).kind === "array";
+  return isArray && !wire.endsWith("[]") ? `${wire}[]` : wire;
 }
 
 function emitQueryAppend(
