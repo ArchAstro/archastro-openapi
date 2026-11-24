@@ -397,9 +397,19 @@ function emitQueryAppend(
 
   const appendLines = (expr: string): void => {
     if (inner.kind === "array") {
-      cb.block(`for item in ${expr}`, () => {
+      // One query value per array, in the form Platform's API DSL casts to a
+      // list (ArchAstro.Schema.Validation `{:array, _}`): a single item as
+      // itself, several as a JSON array. Repeated plain keys would keep only
+      // the last value (Plug), and `key[]` is not the name the spec declares.
+      // A lone item that itself starts with "[" goes as JSON too, so the
+      // server never decodes it as a list.
+      const items = `${bare}Items`;
+      cb.line(
+        `let ${items} = ${expr}.map { ${swiftQueryStringExpr(inner.items, "$0")} }`
+      );
+      cb.block(`if let first = ${items}.first`, () => {
         cb.line(
-          `query.append((${wireKey}, ${swiftQueryStringExpr(inner.items, "item")}))`
+          `query.append((${wireKey}, ${items}.count == 1 && !first.hasPrefix("[") ? first : JSONValue.array(${items}.map(JSONValue.string)).queryString))`
         );
       });
     } else {

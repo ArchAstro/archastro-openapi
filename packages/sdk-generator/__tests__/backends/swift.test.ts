@@ -312,6 +312,30 @@ describe("swift backend", () => {
     expect(client).toContain("public final class PlatformClient: Sendable");
   });
 
+  it("sends an array query parameter as one value the API DSL casts to a list", () => {
+    // Platform's `{:array, _}` params accept a single value (wrapped) or a JSON
+    // array string; repeated plain keys would keep only the last value.
+    const spec = structuredClone(fixture);
+    const [path, ops] = Object.entries(spec.paths as Record<string, Record<string, any>>).find(
+      ([, ops]) => ops.get !== undefined
+    )!;
+    ops.get.parameters = [
+      ...(ops.get.parameters ?? []),
+      { name: "tags", in: "query", schema: { type: "array", items: { type: "string" } } },
+      { name: "ids", in: "query", required: true, schema: { type: "array", items: { type: "integer" } } },
+    ];
+    const ast = parseOpenApiSpec(spec, { apiBase: "/api", defaultVersion: "v1" });
+    const combined = Object.values(generateSwift(ast, { outDir: "sdk" })).join("\n");
+
+    expect(path).toBeTruthy();
+    expect(combined).toContain("let tagsItems = tags.map { $0 }");
+    expect(combined).toContain(
+      'query.append(("tags", tagsItems.count == 1 && !first.hasPrefix("[") ? first : JSONValue.array(tagsItems.map(JSONValue.string)).queryString))'
+    );
+    expect(combined).toContain("let idsItems = ids.map { String($0) }");
+    expect(combined).not.toMatch(/for item in (tags|ids)\b/);
+  });
+
   it("emits async resource methods calling the runtime", () => {
     const files = generateFixtureFiles();
     const resourceFiles = Object.entries(files).filter(([p]) =>
